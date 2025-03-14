@@ -50,15 +50,15 @@ ASM_OBJS			= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
 TEMP_FOLDER1		= /tmp/test
 TEMP_FOLDER2		= /tmp/test2
 # Path for binaries to copy to the folders above (targets)
-SOURCE_BIN1 		= resources/64bit-sample
-SOURCE_BIN2 		= resources/32bit-sample
-SOURCE_BIN3 		= /bin/ls
-SOURCE_BIN4 		= /bin/df
+SOURCE_BIN1 		= resources/sample
+SOURCE_BIN2 		= resources/sample.c
+SOURCE_BIN3 		=
+SOURCE_BIN4 		=
 # Path for the binaries inside the target temporary folder
-TARGET_BIN1 		= $(TEMP_FOLDER1)/64bit-sample
-TARGET_BIN2 		= $(TEMP_FOLDER1)/32bit-sample
-TARGET_BIN3 		= $(TEMP_FOLDER1)/ls
-TARGET_BIN4 		= $(TEMP_FOLDER1)/df
+TARGET_BIN1 		= $(TEMP_FOLDER1)/sample
+TARGET_BIN2 		= $(TEMP_FOLDER1)/sample.c
+TARGET_BIN1 		= $(TEMP_FOLDER2)/sample
+TARGET_BIN2 		= $(TEMP_FOLDER2)/sample.c
 
 # **************************************************************************** #
 #       RULES                                                                  #
@@ -66,7 +66,7 @@ TARGET_BIN4 		= $(TEMP_FOLDER1)/df
 
 .PHONY: all run debug clean fclean re debug
 
-all: $(STUB_OBJS) $(NAME)
+all: $(NAME)
 
 $(ASM_OBJS_DIR)%.o: $(ASM_SRCS_DIR)%.s
 	mkdir -p $(ASM_OBJS_DIR)
@@ -88,8 +88,8 @@ setup:
 	mkdir -p $(TEMP_FOLDER2)
 	cp $(SOURCE_BIN1) $(TEMP_FOLDER1)
 	cp $(SOURCE_BIN2) $(TEMP_FOLDER1)
-	cp $(SOURCE_BIN3) $(TEMP_FOLDER1)
-	cp $(SOURCE_BIN4) $(TEMP_FOLDER1)
+	cp $(SOURCE_BIN1) $(TEMP_FOLDER2)
+	cp $(SOURCE_BIN2) $(TEMP_FOLDER2)
 
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind
@@ -104,7 +104,6 @@ run: re setup
 	@echo "-----------------------------"
 	$(TARGET_BIN4)
 
-
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
 
@@ -112,6 +111,6 @@ clean:
 	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TARGET_BIN1) $(TARGET_BIN2) $(TARGET_BIN3) $(TARGET_BIN4)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -rf $(NAME) $(TEMP_FOLDER1) $(TEMP_FOLDER2)
 
 re: fclean all

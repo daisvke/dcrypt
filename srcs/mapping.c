@@ -1,18 +1,5 @@
 #include "stockholm.h"
 
-// Check if a file is 64 bits ELF file
-static int fa_is_elf64(unsigned char *g_mapped_data)
-{
-    Elf64_Ehdr elf_header;
-    fa_memcpy(&elf_header, g_mapped_data, sizeof(Elf64_Ehdr));
-
-    // We get to EI_CLASS by moving forward for 4 bytes
-    // (= 1st field's size of e_ident)
-    if (elf_header.e_ident[EI_CLASS] != ELFCLASS64)
-        return 1;
-    return 0;
-}
-
 // Function to search for a substring in binary data
 bool search_binary(const char *data, size_t data_size, const char *substring, size_t substring_length)
 {
@@ -32,11 +19,12 @@ int fa_map_file_into_memory(const char *filename)
     int fd = open(filename, O_RDONLY);
     if (fd < 0)
         return 1;
-    printf("modes:%d\n", g_modes);
+    printf("modes:%d for %s\n", g_modes,filename);
     // If
     if (g_modes & FA_REVERSE)
     {
-        stockhlm_header.original_filesize = 1;
+        printf("in reverse mode...\n");
+        stockhlm_header.original_filesize = 15052;
     }
     else
     {
