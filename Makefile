@@ -51,14 +51,12 @@ TEMP_FOLDER1		= /tmp/test
 TEMP_FOLDER2		= /tmp/test2
 # Path for binaries to copy to the folders above (targets)
 SOURCE_BIN1 		= resources/sample
-SOURCE_BIN2 		= resources/sample.c
+SOURCE_BIN2 		=
 SOURCE_BIN3 		=
 SOURCE_BIN4 		=
 # Path for the binaries inside the target temporary folder
 TARGET_BIN1 		= $(TEMP_FOLDER1)/sample
-TARGET_BIN2 		= $(TEMP_FOLDER1)/sample.c
-TARGET_BIN1 		= $(TEMP_FOLDER2)/sample
-TARGET_BIN2 		= $(TEMP_FOLDER2)/sample.c
+TARGET_BIN2 		= $(TEMP_FOLDER2)/sample
 
 # **************************************************************************** #
 #       RULES                                                                  #
@@ -84,12 +82,11 @@ clean_asm:
 
 # Setup for the tests
 setup:
+	rm -f $(TARGET_BIN1) $(TARGET_BIN2)
 	mkdir -p $(TEMP_FOLDER1)
 	mkdir -p $(TEMP_FOLDER2)
 	cp $(SOURCE_BIN1) $(TEMP_FOLDER1)
-	cp $(SOURCE_BIN2) $(TEMP_FOLDER1)
 	cp $(SOURCE_BIN1) $(TEMP_FOLDER2)
-	cp $(SOURCE_BIN2) $(TEMP_FOLDER2)
 
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind

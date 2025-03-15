@@ -21,9 +21,9 @@ char *fa_keygen(const char *charset, size_t strength)
 
     for (size_t i = 0; i < strength; ++i)
     {
-        int _random_index = rand() % charset_length;
+        int random_index = rand() % charset_length;
         // Pick a random position from the charset
-        key[i] = charset[_random_index];
+        key[i] = charset[random_index];
     }
     key[strength] = '\0'; // null-terminate the key
 

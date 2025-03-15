@@ -1,5 +1,5 @@
-#ifndef FA_WOODY_WOODPACKER_H
-# define FA_WOODY_WOODPACKER_H
+#ifndef STOCKHOLM_H
+# define STOCKHOLM_H
 
 # include <stdio.h>
 # include <stdlib.h>
@@ -58,35 +58,57 @@ enum fa_e_stockhlm_header
     FA_AES_ENCRYPT_KEY_LEN = 256
 };
 
-// This is the Stockholm header that is written before the original
-// header. It has a size of 0x0118 (= 280) bytes.
+/*
+ * This is the Stockholm header that is written before the original header.
+ * It has a size of 0x0118 (= 280) bytes.
+ */
+
 typedef struct fa_s_stockhlm_header
 {
-    // 0x0000 WANACRY!
-    uint8_t     magicnumber[FA_MAGICNBR_LEN];
-    // 0x0008 Length of RSA encrypted data
-    uint32_t    encrypted_filesize;
+    // 0x0000 Magic value/signature to identify encrypted files.
+    uint8_t     signature[FA_MAGICNBR_LEN];
 
-    // 0x000C RSA encrypted AES file encryption key
-    // uint8_t encryption_key[FA_AES_ENCRYPT_KEY_LEN];
+    /*
+     * 0x0008 Size (in bytes) of the encrypted AES key.
+     * Typically 256 bytes for a 2048-bit RSA key.
+     */
 
-    // 0x010C File type internal to WannaCry (original file type
-    //  of the encrypted file)
-    uint32_t    filetype;
+    uint32_t    rsa_encrypted_key_len;
+
+    /*
+     * 0x000C RSA encrypted AES file encryption key.
+     * AES-128 key (16 bytes) is encrypted using RSA-2048 and stored here.
+     *
+     * If the asymmetric encryption mode is disabled, a unencrypted
+     * AES-128 key is stored.
+     */
+
+    uint8_t     encryption_key[FA_AES_ENCRYPT_KEY_LEN];
+
+    /*
+     * 0x010C File type internal to this program.
+     * 
+     * This is the original file type of the encrypted file.
+     * It is used during decryption to restore file format.
+     */
+
+    uint32_t    original_filetype;
+
     // 0x0110 Original file size
     uint64_t    original_filesize;
+
     // 0x0118 Encrypted file contents  (AES-128 CBC)
 }               fa_t_stockhlm_header;
 
 /*---------------------------- Global variables ---------------------------*/
 
-extern unsigned char    *g_mapped_data; // file is mapped in memory here
-extern uint16_t         g_modes;        // options given from command line
-extern fa_t_stockhlm_header	stockhlm_header;
+extern unsigned char        *g_mapped_data; // file is mapped in memory here
+extern uint16_t             g_modes;        // options given from command line
+extern fa_t_stockhlm_header g_stockhlm_header;
 
 /*---------------------------- Function prototypes ------------------------*/
 
-size_t  a_strlen(const char *s);
+size_t  fa_strlen(const char *s);
 void    *fa_memset(void *src, int c, size_t n);
 void    *fa_memcpy(void *dest, const void *src, size_t n);
 int     fa_strncmp(const char *s1, const char *s2, size_t n);

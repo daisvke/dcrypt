@@ -24,10 +24,17 @@ int fa_process_mapped_data(void)
 		key,			// The randomly generated encryption key
 		FA_KEYSTRENGTH, // The key width
 		g_mapped_data,
-		stockhlm_header.original_filesize, // The .text section size
-		reverse							   // Encryption/decryption mode
+		g_stockhlm_header.original_filesize, // The .text section size
+		reverse								 // Encryption/decryption mode
 	);
 
+	if (g_modes & FA_REVERSE)
+	{
+	}
+	else
+		g_stockhlm_header.original_filesize = g_stockhlm_header.original_filesize;
+
+	printf("encrypted size: %ld,orignial:l %ld\n", g_stockhlm_header.original_filesize, g_stockhlm_header.original_filesize);
 	if (g_modes & FA_VERBOSE)
 		printf(FA_GREEN_COLOR "Done!\n\n" FA_RESET_COLOR);
 
