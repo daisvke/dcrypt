@@ -7,11 +7,14 @@ int fa_process_mapped_data(void)
 {
 	if (g_modes & FA_VERBOSE)
 		printf("\n > STARTING ENCRYPTION...\n\n");
+
 	// Generate the key that will be used for the encryption
-	char *key = "abc";
-	// char *key = fa_keygen(FA_KEYCHARSET, FA_KEYSTRENGTH);
+	char *key = fa_keygen(FA_KEYCHARSET, FA_AES_ENCRYPT_KEY_LEN);
 	if (!key)
 		return 1;
+
+	memcpy(g_stockhlm_header.encryption_key, key, FA_AES_ENCRYPT_KEY_LEN);
+
 	if (g_modes & FA_VERBOSE)
 		printf("Generated random key => " FA_YELLOW_COLOR "%s\n", key);
 
@@ -21,20 +24,15 @@ int fa_process_mapped_data(void)
 	 * The section will be decrypted by the latter during execution.
 	 */
 	xor_with_additive_cipher(
-		key,			// The randomly generated encryption key
-		FA_KEYSTRENGTH, // The key width
+		key,					// The randomly generated encryption key
+		FA_AES_ENCRYPT_KEY_LEN, // The key width
 		g_mapped_data,
 		g_stockhlm_header.original_filesize, // The .text section size
 		reverse								 // Encryption/decryption mode
 	);
 
-	if (g_modes & FA_REVERSE)
-	{
-	}
-	else
-		g_stockhlm_header.original_filesize = g_stockhlm_header.original_filesize;
-
 	printf("encrypted size: %ld,orignial:l %ld\n", g_stockhlm_header.original_filesize, g_stockhlm_header.original_filesize);
+
 	if (g_modes & FA_VERBOSE)
 		printf(FA_GREEN_COLOR "Done!\n\n" FA_RESET_COLOR);
 

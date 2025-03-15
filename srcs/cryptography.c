@@ -8,10 +8,9 @@ char *fa_keygen(const char *charset, size_t strength)
 {
     char *key = malloc((strength + 1) * sizeof(char));
     // Exit in case malloc fails
-    if (key == NULL)
-        return NULL;
+    if (key == NULL) return NULL;
 
-    int charset_length = fa_strlen(charset);
+    int charset_length = strlen(charset);
 
     // Set the seed for the random number generator used by the rand() function.
     // By providing a seed, we can ensure that the sequence of random numbers

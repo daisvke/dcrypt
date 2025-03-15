@@ -16,13 +16,13 @@
 /*-------------------------------- Colors ---------------------------------*/
 
 /* Text colors */
-# define FA_RED_COLOR       "\033[31m"
-# define FA_GREEN_COLOR     "\033[32m"
-# define FA_YELLOW_COLOR    "\033[33m"
-# define FA_RESET_COLOR     "\033[0m"
+# define FA_RED_COLOR           "\033[31m"
+# define FA_GREEN_COLOR         "\033[32m"
+# define FA_YELLOW_COLOR        "\033[33m"
+# define FA_RESET_COLOR         "\033[0m"
 
 /* Background colors */
-# define FA_RESET_BG_COLOR  "\033[49m"
+# define FA_RESET_BG_COLOR      "\033[49m"
 
 /*------------------------ Defines, enum, struct --------------------------*/
 
@@ -31,8 +31,6 @@
 # define FA_TARGET_PATHS        {"/tmp/test/", "/tmp/test2/"}
 // Error code
 # define FA_ERROR               1
-// Length of the key used by the encryptor
-# define FA_KEYSTRENGTH         32
 // Common value representing the size of a memory page in many computer systems
 # define FA_PAGE_SIZE           4096
 
@@ -43,19 +41,27 @@
 // Signature injected in the target files's Stockholm header
 # define FA_SIGNATURE           "STOCKHLM"
 # define FA_STOCKHLM_EXT        ".ft"
+# define FA_STOCKHLM_EXT_LEN    3
 
 enum fa_e_modes
 {
     // Display detailed notifications
-    FA_VERBOSE = 1,
-    FA_REVERSE = 2
+    FA_VERBOSE                  = 1,
+    FA_REVERSE                  = 2
 };
 
 enum fa_e_stockhlm_header
 {
-    FA_NEW_HEADER_SIZE = 0x0118,
-    FA_MAGICNBR_LEN = 8,
-    FA_AES_ENCRYPT_KEY_LEN = 256
+    FA_NEW_HEADER_SIZE          = 0x0118,
+    FA_MAGICNBR_LEN             = 8,
+    FA_AES_ENCRYPT_KEY_LEN      = 256,
+
+    // Header offsets
+    FA_HDR_OFF_SIGN             = 0x0,
+    FA_HDR_OFF_ENCRYPT_KEY_LEN  = 0x8,
+    FA_HDR_OFF_ENCRYPT_KEY      = 0xc,
+    FA_HDR_OFF_FILETYPE         = 0x10c,
+    FA_HDR_OFF_FILESIZE         = 0x110
 };
 
 /*
@@ -73,7 +79,7 @@ typedef struct fa_s_stockhlm_header
      * Typically 256 bytes for a 2048-bit RSA key.
      */
 
-    uint32_t    rsa_encrypted_key_len;
+    uint32_t    encrypted_key_len;
 
     /*
      * 0x000C RSA encrypted AES file encryption key.
@@ -108,10 +114,6 @@ extern fa_t_stockhlm_header g_stockhlm_header;
 
 /*---------------------------- Function prototypes ------------------------*/
 
-size_t  fa_strlen(const char *s);
-void    *fa_memset(void *src, int c, size_t n);
-void    *fa_memcpy(void *dest, const void *src, size_t n);
-int     fa_strncmp(const char *s1, const char *s2, size_t n);
 char    *fa_get_filename(char *argv[]);
 int     fa_map_file_into_memory(const char *filename);
 int     fa_process_mapped_data(void);

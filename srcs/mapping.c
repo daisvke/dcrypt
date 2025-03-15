@@ -4,7 +4,6 @@
 bool search_binary(const char *data, size_t data_size, const char *substring)
 {
     size_t substring_length = strlen(substring);
-    printf("333qsduiffdildsfjqsfwodg...\n");
 
     for (size_t i = 0; i <= data_size - substring_length; i++)
     {
@@ -69,38 +68,80 @@ int fa_map_file_into_memory(const char *filename)
     return 0;
 }
 
-// Write the processed file data back to the file
-int fa_write_processed_data_to_file(char *target_path)
+bool write_encrypted_data_to_file(char *target_path)
 {
-    // Create a buffer to hold the full path
-    char new_target_path[1024];
+    char    new_target_path[1024]; // Create a buffer to hold the full path
+    int     outfilefd;
 
     // Use snprintf() to safely concatenate the strings and get the file path
     //  with our custom extension
     snprintf(
         new_target_path, sizeof(new_target_path),
-        "%s%s", target_path, FA_STOCKHLM_EXT);
+        "%s%s", target_path, FA_STOCKHLM_EXT
+    );
 
-    // 0755: rwx for owner, rx for group and others
-    int outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
+    outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);        
 
     // Check if open() has failed
     if (outfilefd == 1)
         return 1;
 
-    size_t filesize = (g_modes & FA_REVERSE) ? g_stockhlm_header.original_filesize : g_stockhlm_header.original_filesize;
-
-    // Write the processed data to the outfile
-    ssize_t bytes_written = write(outfilefd, g_mapped_data, filesize);
+    // Write the custom header first to the outfile
+    ssize_t bytes_written = write(outfilefd, &g_stockhlm_header, FA_NEW_HEADER_SIZE);
     if (bytes_written < 0)
         return 1;
+
+    // Then write the processed data to the outfile
+    bytes_written = write(outfilefd, g_mapped_data, g_stockhlm_header.original_filesize);
+    if (bytes_written < 0)
+        return 1;
+
+    close(outfilefd);
+    return 0;
+}
+
+bool write_decrypted_data_to_file(char *target_path)
+{
+    char    *new_target_path;
+    int     outfilefd;
+
+    // We remove our custom extension by terminating the filename earlier.
+    target_path[strlen(target_path) - FA_STOCKHLM_EXT_LEN] = '\0';
+
+    // 0755: rwx for owner, rx for group and others
+    outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
+
+    // Check if open() has failed
+    if (outfilefd == 1)
+        return 1;
+
+    // Write the processed data to the outfile
+    ssize_t bytes_written = write(outfilefd, g_mapped_data, g_stockhlm_header.original_filesize);
+    if (bytes_written < 0)
+        return 1;
+
+    close(outfilefd);
+    return 0;
+}
+
+// Write the processed file data back to a new file
+int fa_write_processed_data_to_file(char *target_path)
+{
+    if (g_modes & FA_REVERSE)
+    {
+        if (write_decrypted_data_to_file(target_path) == FA_ERROR)
+            return 1;
+    }
+    else
+    {
+        if (write_encrypted_data_to_file(target_path) == FA_ERROR)
+            return 1;
+    }
 
     if (munmap(g_mapped_data, g_stockhlm_header.original_filesize) < 0)
         return 1;
 
-    close(outfilefd);
-
-    // Remove the old file
+    // Remove the old file from the system
     if (remove(target_path) != 0)
         return 1;
 

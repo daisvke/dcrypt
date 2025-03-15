@@ -1,7 +1,8 @@
 #include "stockholm.h"
 
-/* Get the filename from argv. It should correspond to the only arg
- *  doesn't begin with '-'.
+/*
+ * Get the filename from argv.
+ * It should correspond to the only argument that doesn't begin with '-'.
  */
 char *fa_get_filename(char *argv[])
 {
