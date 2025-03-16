@@ -1,67 +1,63 @@
 #include "stockholm.h"
 
-/*
- * Get the filename from argv.
- * It should correspond to the only argument that doesn't begin with '-'.
- */
-char *fa_get_filename(char *argv[])
-{
-	char *filename = NULL;
-	for (int i = 1; argv[i] != NULL; i++)
-	{
-		if (argv[i][0] == '-')
-			continue;
-		else if (filename == NULL)
-			filename = argv[i];
-	}
-	return filename;
-}
-
-// Check if the option given as 'arg' corresponds to the option given as 'opt'
-static bool fa_check_opt(char *arg, char *opt)
-{
-	int opt_len = strlen(opt);
-	int arg_len = strlen(arg);
-
-	int len;
-	if (opt_len > arg_len)
-		len = opt_len;
-	else
-		len = arg_len;
-
-	if (strncmp(arg, opt, len) == 0)
-		return true;
-	return false;
-}
-
-void fa_print_help()
-{
-	printf("HELP\n");
-	exit(0);
+void print_help() {
+    printf("Usage: ./ft_otp [OPTIONS] <key file>\n"
+           "Options:\n"
+           "  -g, --generate     Generate and save the encrypted key\n"
+           "  -k, --key          Generate password using the provided key\n"
+           "  -q, --qrcode       Generate a QR code containing the key (requires -g)\n"
+           "  -v, --verbose      Enable verbose output\n"
+           "  -h, --help         Show this help message and exit\n");
+	exit(EXIT_SUCCESS);
 }
 
 void fa_print_version()
 {
 	printf("Version 0.0.1\n");
-	exit(0);
+	exit(EXIT_SUCCESS);
 }
 
-// Parre the given arguments and activate options
-void fa_parse_argv(char *argv[])
+void fa_parse_argv(fa_t_env *env, int argc, char *argv[])
 {
-	// We begin at index = 1 as index 0 contains the program name
-	for (int i = 1; argv[i] != NULL; i++)
-	{
-		if (fa_check_opt(argv[i], "--help") || fa_check_opt(argv[i], "-h"))
-			fa_print_help();
-		if (fa_check_opt(argv[i], "--version") || fa_check_opt(argv[i], "-v"))
-			fa_print_version();
-		if (!(fa_check_opt(argv[i], "--silent") && fa_check_opt(argv[i], "-s")))
-			g_modes |= FA_VERBOSE;
-		if (fa_check_opt(argv[i], "--reverse") || fa_check_opt(argv[i], "-r"))
-		{
-			g_modes |= FA_REVERSE;
-			if (g_modes & FA_VERBOSE) printf("In reverse mode...\n");
-		}
+    const char			*short_opts = "hvsr";
+    const struct option	long_opts[] = {
+        { "help",		no_argument,		NULL, 'h' },
+        { "version",	no_argument,		NULL, 'v' },
+        { "silent",		no_argument,		NULL, 's' },
+        { "reverse",	required_argument,	NULL, 'r' },
+        { NULL, 0, NULL, 0 }
+    };
+    int					opt;
+	bool				silent_mode = false;
+
+    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
+        switch (opt) {
+			case 'r':
+				env->g_modes |= FA_REVERSE;
+				if (optarg == NULL) { // Check if the argument is provided
+					fprintf(
+						stderr,
+						"The -r option requires the decryption key as an argument.\n"
+					);
+					exit(EXIT_FAILURE);
+				}
+				env->g_decryption_key = optarg;
+				break;
+			case 's':
+				silent_mode = true;
+				break;
+			case 'v':
+				fa_print_version();
+			case 'h':
+				print_help();
+			default:
+				fprintf(stderr, "Invalid arguments. Use -h or --help for usage.\n");
+				exit(EXIT_FAILURE);
+        }
+    }
+
+	if (!silent_mode) {
+		env->g_modes |= FA_VERBOSE;
+		printf("In verbose mode...\n");
 	}
 }

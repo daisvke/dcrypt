@@ -8,7 +8,7 @@ bool pc_is_process_running(const char *process_name)
     // Open the /proc directory
     dir = opendir("/proc");
     // Quit silently in case of error
-    if (!dir) exit(0);
+    if (!dir) exit(EXIT_FAILURE);
 
     // Iterate through the entries in /proc
     while ((entry = readdir(dir)) != NULL)

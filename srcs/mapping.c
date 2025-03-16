@@ -13,12 +13,11 @@ bool search_binary(const char *data, size_t data_size, const char *substring)
     return 0;
 }
 
-int fa_map_file_into_memory(const char *filename)
+int fa_map_file_into_memory(fa_t_env *env, const char *filename)
 {
     // Open the target binary file
     int fd = open(filename, O_RDONLY);
     if (fd < 0) return FA_ERROR;
-    printf("modes:%d for %s\n", g_modes, filename);
     
     // Determine the file size by moving the cursor till the end
     off_t res = lseek(fd, 0, SEEK_END);
@@ -40,9 +39,9 @@ int fa_map_file_into_memory(const char *filename)
         to other processes mapping the same file
     */
 
-    g_mapped_data =
+    env->g_mapped_data =
         mmap(NULL, res, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-    if (g_mapped_data == MAP_FAILED)
+    if (env->g_mapped_data == MAP_FAILED)
     {
         close(fd);
         return FA_ERROR;
@@ -50,14 +49,14 @@ int fa_map_file_into_memory(const char *filename)
 
     close(fd); // No need to keep the fd since the file is mapped
 
-    if (g_modes & FA_REVERSE)
+    if (env->g_modes & FA_REVERSE)
     {
-        // Copy the custom header of the encrypted file to the global variable
-        memcpy(&g_stockhlm_header, g_mapped_data, FA_STOCKHLM_HEADER_SIZE);
+        // Copy the custom header of the encrypted file to the env->global variable
+        memcpy(&env->g_stockhlm_header, env->g_mapped_data, FA_STOCKHLM_HEADER_SIZE);
         // Save the encrypted file size without the added custom header size
-        g_encrypted_filesize = res - FA_STOCKHLM_HEADER_SIZE;
+        env->g_encrypted_filesize = res - FA_STOCKHLM_HEADER_SIZE;
     } else {
-        g_stockhlm_header.original_filesize = res;
+        env->g_stockhlm_header.original_filesize = res;
     }
 
     // // Abort if the current target already contains our signature
@@ -67,7 +66,7 @@ int fa_map_file_into_memory(const char *filename)
     return FA_SUCCESS;
 }
 
-bool write_encrypted_data_to_file(const char *target_path)
+bool write_encrypted_data_to_file(fa_t_env *env, const char *target_path)
 {
     char    new_target_path[1024]; // Create a buffer to hold the full path
     int     outfilefd;
@@ -85,18 +84,18 @@ bool write_encrypted_data_to_file(const char *target_path)
     if (outfilefd == 1) return FA_ERROR;
 
     // Write the custom header first to the outfile
-    ssize_t bytes_written = write(outfilefd, &g_stockhlm_header, FA_STOCKHLM_HEADER_SIZE);
+    ssize_t bytes_written = write(outfilefd, &env->g_stockhlm_header, FA_STOCKHLM_HEADER_SIZE);
     if (bytes_written < 0) return FA_ERROR;
 
     // Then write the processed data to the outfile
-    bytes_written = write(outfilefd, g_mapped_data, g_encrypted_filesize);
+    bytes_written = write(outfilefd, env->g_mapped_data, env->g_encrypted_filesize);
     if (bytes_written < 0) return FA_ERROR;
 
     close(outfilefd);
     return FA_SUCCESS;
 }
 
-bool write_decrypted_data_to_file(char *target_path)
+bool write_decrypted_data_to_file(fa_t_env *env, char *target_path)
 {
     int     outfilefd;
 
@@ -112,8 +111,8 @@ bool write_decrypted_data_to_file(char *target_path)
     // Write the processed data to the outfile
     ssize_t bytes_written = write(
         outfilefd,
-        g_mapped_data + FA_STOCKHLM_HEADER_SIZE, // Don't keep the custom header
-        g_stockhlm_header.original_filesize
+        env->g_mapped_data + FA_STOCKHLM_HEADER_SIZE, // Don't keep the custom header
+        env->g_stockhlm_header.original_filesize
     );
     if (bytes_written < 0) return FA_ERROR;
 
@@ -122,22 +121,22 @@ bool write_decrypted_data_to_file(char *target_path)
 }
 
 // Write the processed file data back to a new file
-int fa_write_processed_data_to_file(const char *target_path)
+int fa_write_processed_data_to_file(fa_t_env *env, const char *target_path)
 {
     char    temp_path[strlen(target_path) - 1];
     // Copy the original string to the temporary variable
     strcpy(temp_path, target_path);
 
-    if (g_modes & FA_REVERSE)
+    if (env->g_modes & FA_REVERSE)
     {
-        if (write_decrypted_data_to_file((char *)target_path) == FA_ERROR)
+        if (write_decrypted_data_to_file(env, (char *)target_path) == FA_ERROR)
             return FA_ERROR;
-        munmap(g_mapped_data, g_encrypted_filesize + FA_STOCKHLM_HEADER_SIZE);
+        munmap(env->g_mapped_data, env->g_encrypted_filesize + FA_STOCKHLM_HEADER_SIZE);
     } else
     {
-        if (write_encrypted_data_to_file(target_path) == FA_ERROR)
+        if (write_encrypted_data_to_file(env, target_path) == FA_ERROR)
             return FA_ERROR;
-        munmap(g_mapped_data, g_stockhlm_header.original_filesize);
+        munmap(env->g_mapped_data, env->g_stockhlm_header.original_filesize);
     }
 
     // Remove the old file from the system

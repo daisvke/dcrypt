@@ -31,13 +31,13 @@ const char* get_file_extension(const char *filepath) {
     return dot + 1; // +1 to skip the dot itself
 }
 
-bool is_extension_handled(char *filepath)
+bool is_extension_handled(fa_t_env *env, char *filepath)
 {
     // Find the last occurrence of the dot character
     const char *extension = get_file_extension(filepath);
 
 	// If reverse mode is on, file extension has to match our custom extension
-	if (g_modes & FA_REVERSE)
+	if (env->g_modes & FA_REVERSE)
 	{
 		if (strcmp(extension, FA_STOCKHLM_EXT) == 0)
 			return true;

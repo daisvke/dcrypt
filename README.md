@@ -37,13 +37,11 @@ When WannaCry encrypts a file, it modifies the original content by adding a **cu
 
 5. **Overwrite Original File**: The original file is replaced by the **WannaCry-encrypted** version.
 
-
 ### Data encryption
 * Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with the current time, and selects random characters from the character set to build the key.
 * We've enhanced our XOR-based encryption algorithm by incorporating an additive cipher. The additive cipher, also known as a Caesar cipher, shifts each character of the plaintext by a fixed amount (the key) before performing the XOR operation. This additional step adds another layer of complexity to the encryption process.
 
 ## Commands
-
 
 ## Useful Links
 [WannaCry Malware Profile](https://cloud.google.com/blog/topics/threat-intelligence/wannacry-malware-profile)
