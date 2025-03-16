@@ -1,16 +1,9 @@
 #include "stockholm.h"
 
-// Function to search for a substring in binary data
-bool search_binary(const char *data, size_t data_size, const char *substring)
+// Verify that the file header's magic number is ours
+bool is_magic_nbr_correct(const unsigned char *data)
 {
-    size_t substring_length = strlen(substring);
-
-    for (size_t i = 0; i <= data_size - substring_length; i++)
-    {
-        if (memcmp(data + i, substring, substring_length) == 0)
-            return 1; // Return 1 if found
-    }
-    return 0;
+    return strncmp((const char *)data, SH_SIGNATURE, SH_STOCKHLM_HEADER_SIZE) == 0;
 }
 
 int map_file_into_memory(t_env *env, const char *filename)
@@ -51,11 +44,22 @@ int map_file_into_memory(t_env *env, const char *filename)
 
     if (env->g_modes & SH_REVERSE)
     {
+        if (!is_magic_nbr_correct(env->g_mapped_data)) {
+            if (env->g_modes & SH_VERBOSE)
+                printf("Signature not found in the file header, abort decryption...\n");
+            return SH_ERROR;
+        }
+
         // Copy the custom header of the encrypted file to the env->global variable
         memcpy(&env->g_stockhlm_header, env->g_mapped_data, SH_STOCKHLM_HEADER_SIZE);
         // Save the encrypted file size without the added custom header size
         env->g_encrypted_filesize = res - SH_STOCKHLM_HEADER_SIZE;
     } else {
+        if (is_magic_nbr_correct(env->g_mapped_data)) {
+            if (env->g_modes & SH_VERBOSE)
+                printf("Signature found in the file header, abort encryption...\n");
+            return SH_ERROR;
+        }
         env->g_stockhlm_header.original_filesize = res;
     }
 

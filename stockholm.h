@@ -125,7 +125,7 @@ typedef struct s_stockhlm_header
     // 0x0110 Original file size
     uint64_t    original_filesize;
 
-    // 0x0118 Encrypted file contents  (AES-128 CBC)
+    // 0x0118 Encrypted file contents (AES-128 CBC)
 }               t_stockhlm_header;
 
 /*---------------------------- Global variables ---------------------------*/

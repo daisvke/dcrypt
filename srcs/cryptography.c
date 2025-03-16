@@ -4,6 +4,13 @@
  * Perform AES-128 CBC encryption
  * -------------------------------
  *
+ * Chaining:
+ * --------
+ * In CBC mode, each plaintext block is XORed with the previous ciphertext
+ *  block before being encrypted.
+ * This means that the encryption of each block depends on the previous
+ *  block's ciphertext, which enhances security.
+ * 
  * IV (Initialization Vector):
  * --------------------------
  * The IV is a random value used to ensure that identical plaintext blocks
