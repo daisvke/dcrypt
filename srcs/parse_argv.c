@@ -47,9 +47,12 @@ void fa_parse_argv(char *argv[])
 	{
 		if (fa_check_opt(argv[i], "--help") || fa_check_opt(argv[i], "-h"))
 			fa_print_help();
-		if (fa_check_opt(argv[i], "--verbose") || fa_check_opt(argv[i], "-v"))
-			g_modes |= FA_VERBOSE; // TODO --silent
+		if (!(fa_check_opt(argv[i], "--silent") && fa_check_opt(argv[i], "-s")))
+			g_modes |= FA_VERBOSE;
 		if (fa_check_opt(argv[i], "--reverse") || fa_check_opt(argv[i], "-r"))
+		{
 			g_modes |= FA_REVERSE;
+			if (g_modes & FA_VERBOSE) printf("In reverse mode...\n");
+		}
 	}
 }

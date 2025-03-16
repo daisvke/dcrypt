@@ -50,13 +50,13 @@ ASM_OBJS			= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
 TEMP_FOLDER1		= /tmp/test
 TEMP_FOLDER2		= /tmp/test2
 # Path for binaries to copy to the folders above (targets)
-SOURCE_BIN1 		= resources/sample
-SOURCE_BIN2 		=
-SOURCE_BIN3 		=
-SOURCE_BIN4 		=
+SOURCE_TEST_FILE1 		= resources/sample.txt
+SOURCE_TEST_FILE2 		=
+SOURCE_TEST_FILE3 		=
+SOURCE_TEST_FILE4 		=
 # Path for the binaries inside the target temporary folder
-TARGET_BIN1 		= $(TEMP_FOLDER1)/sample
-TARGET_BIN2 		= $(TEMP_FOLDER2)/sample
+TARGET_TEST_FILE1 		= $(TEMP_FOLDER1)/sample.txt
+TARGET_TEST_FILE2 		= $(TEMP_FOLDER2)/sample.txt
 
 # **************************************************************************** #
 #       RULES                                                                  #
@@ -82,30 +82,30 @@ clean_asm:
 
 # Setup for the tests
 setup:
-	rm -f $(TARGET_BIN1) $(TARGET_BIN2)
+	rm -f $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2)
 	mkdir -p $(TEMP_FOLDER1)
 	mkdir -p $(TEMP_FOLDER2)
-	cp $(SOURCE_BIN1) $(TEMP_FOLDER1)
-	cp $(SOURCE_BIN1) $(TEMP_FOLDER2)
+	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
+	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER2)
 
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind
 run: re setup
 	valgrind ./$(NAME)
 	@echo "\n-----------------------------test"
-	$(TARGET_BIN1)
+	$(TARGET_TEST_FILE1)
 	@echo "-----------------------------"
-	$(TARGET_BIN2)
+	$(TARGET_TEST_FILE2)
 	@echo "\n-----------------------------test2"
-	$(TARGET_BIN3)
+	$(TARGET_TEST_FILE3)
 	@echo "-----------------------------"
-	$(TARGET_BIN4)
+	$(TARGET_TEST_FILE4)
 
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
 
 clean:
-	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TARGET_BIN1) $(TARGET_BIN2) $(TARGET_BIN3) $(TARGET_BIN4)
+	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2) $(TARGET_TEST_FILE3) $(TARGET_TEST_FILE4)
 
 fclean: clean
 	rm -rf $(NAME) $(TEMP_FOLDER1) $(TEMP_FOLDER2)

