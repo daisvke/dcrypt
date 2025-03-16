@@ -40,9 +40,9 @@ int fa_process_mapped_data(void)
 	if (g_modes & FA_VERBOSE)
 		printf("\n > STARTING ENCRYPTION...\n\n");
 
-	bool		reverse = g_modes & FA_REVERSE;
+	bool				reverse = g_modes & FA_REVERSE;
 	// Only skip encrypting the custom header in reverse mode
-	const char	*data = reverse ?
+	const unsigned char	*data = reverse ?
 		g_mapped_data + FA_NEW_HEADER_SIZE : g_mapped_data;
 
 	/*
@@ -53,7 +53,7 @@ int fa_process_mapped_data(void)
 	xor_with_additive_cipher(
 		key,									// The randomly generated encryption key
 		FA_AES_ENCRYPT_KEY_LEN,					// The key width
-		data,		// The file data (starting after the header)
+		(void *)data,							// The file data (starting after the header)
 		g_stockhlm_header.original_filesize,	// The original file size
 		reverse								 	// Encryption/decryption mode
 	);

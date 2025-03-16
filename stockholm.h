@@ -131,5 +131,6 @@ void    fa_parse_argv(char *argv[]);
 int     pc_is_debugger_attached(void);
 int     pc_is_process_running(const char *process_name);
 bool    is_extension_handled(char *filepath);
+void    handle_dir(char *target_dir_path);
 
 #endif
