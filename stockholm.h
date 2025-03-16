@@ -80,7 +80,7 @@ enum e_stockhlm_header
 
     // Header offsets
     SH_HDR_OFF_SIGN             = 0x0,
-    SH_HDR_OFF_ENCRYPT_KEY_SIZE  = 0x8,
+    SH_HDR_OFF_ENCRYPT_KEY_SIZE = 0x8,
     SH_HDR_OFF_ENCRYPT_KEY      = 0xc,
     SH_HDR_OFF_FILETYPE         = 0x10c,
     SH_HDR_OFF_FILESIZE         = 0x110
