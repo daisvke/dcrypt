@@ -1,14 +1,12 @@
 #include "stockholm.h"
 
 void print_help() {
-    printf("Usage: ./ft_otp [OPTIONS] <key file>\n"
+    printf("Usage: ./stockholm [-h|-v|-s|-r <KEY>] \n"
            "Options:\n"
-           "  -g, --generate     Generate and save the encrypted key\n"
-           "  -k, --key          Generate password using the provided key\n"
-           "  -q, --qrcode       Generate a QR code containing the key (requires -g)\n"
-           "  -v, --verbose      Enable verbose output\n"
-           "  -h, --help         Show this help message and exit\n");
-	exit(EXIT_SUCCESS);
+           "  -v, --version          Show version information\n"
+           "  -s, --silent           Run in silent mode (non-verbose)\n"
+           "  -r, --reverse <KEY>    Decrypt using the provided decryption key\n"
+           "  -h, --help             Show this help message and exit\n");
 }
 
 void fa_print_version()
@@ -48,8 +46,10 @@ void fa_parse_argv(fa_t_env *env, int argc, char *argv[])
 				break;
 			case 'v':
 				fa_print_version();
+				break;
 			case 'h':
 				print_help();
+				exit(EXIT_SUCCESS);
 			default:
 				fprintf(stderr, "Invalid arguments. Use -h or --help for usage.\n");
 				exit(EXIT_FAILURE);
