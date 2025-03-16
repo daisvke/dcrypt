@@ -134,25 +134,28 @@ unsigned char *keygen(const char *charset, size_t strength)
 
 unsigned char *get_encryption_key(t_env *env)
 {
-	unsigned char *key;
+	unsigned char *key = NULL;
 
 	// In decryption mode, we use the key saved in the file header
 	if (env->g_modes & SH_REVERSE)
 	{
-		key = (unsigned char *)env->g_stockhlm_header.encryption_key;
+        if (env->g_decryption_key) return env->g_decryption_key;
+
+		// key = (unsigned char *)env->g_stockhlm_header.encryption_key;
 
 		if (env->g_modes & SH_VERBOSE)
 			printf("Using encryption key => " SH_YELLOW_COLOR "%s\n", key);
 	}
 	else // In encryption mode, we generate a new encryption key
 	{
+        if (env->g_encryption_key) return env->g_encryption_key;
 		// Generate the key that will be used for the encryption
 		key = keygen(SH_KEYCHARSET, SH_AES_KEY_SIZE);
 		if (!key)
 			return NULL;
 
 		// Save the key on the custom header
-		memcpy(env->g_stockhlm_header.encryption_key, key, SH_ENCRYPT_KEY_SIZE);
+		// memcpy(env->g_stockhlm_header.encryption_key, key, SH_ENCRYPT_KEY_SIZE);
 
 		if (env->g_modes & SH_VERBOSE)
 			printf("Generated random key => " SH_YELLOW_COLOR "%s\n", key);

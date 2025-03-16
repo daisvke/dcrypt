@@ -37,7 +37,7 @@
 
 // Paths of the target directories
 # define SH_TARGET_ARRAY_SIZE   1
-# define SH_TARGET_PATHS        { "/home/mint/infection/" }
+# define SH_TARGET_PATHS        { "/home/mint/infection" }
 
 // Unhandled paths
 # define SH_UNHANDLED_DIRS_ARRAY_SIZE   2
@@ -132,11 +132,12 @@ typedef struct s_stockhlm_header
 
 typedef struct s_env
 {
-    unsigned char        *g_mapped_data; // file is mapped in memory here
-    uint16_t             g_modes;        // options given from command line
-    t_stockhlm_header g_stockhlm_header;
-    size_t               g_encrypted_filesize;
-    char                 *g_decryption_key;
+    unsigned char       *g_mapped_data; // file is mapped in memory here
+    uint16_t            g_modes;        // options given from command line
+    t_stockhlm_header   g_stockhlm_header;
+    size_t              g_encrypted_filesize;
+    unsigned char       *g_encryption_key;
+    unsigned char       *g_decryption_key;
 }   t_env;
 
 /*---------------------------- Function prototypes ------------------------*/

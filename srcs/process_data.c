@@ -27,8 +27,8 @@ int process_mapped_data(t_env *env)
 
 		if (aes_decrypt_data(
 			data,									// The file data (starting after the header)
-			env->g_encrypted_filesize,					// The original file size
-			key,									// The randomly generated encryption key
+			env->g_encrypted_filesize,				// The original file size
+			env->g_decryption_key,					// The randomly generated encryption key
 			NULL									// Initialization vector
 		) == -1) return SH_ERROR;
 	}
@@ -50,7 +50,7 @@ int process_mapped_data(t_env *env)
 		printf("encrypted filesize: %zu bytes.\n", env->g_encrypted_filesize);
 	}
 
-	if (!reverse)
+	if (!reverse && !env->g_encryption_key)
 	{
 		free((void *)key);
 		key = NULL;

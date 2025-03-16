@@ -5,6 +5,7 @@ void print_help() {
            "Options:\n"
            "  -v, --version          Show version information\n"
            "  -s, --silent           Run in silent mode (non-verbose)\n"
+           "  -k, --key <KEY>    	 Provid an encryption key\n"
            "  -r, --reverse <KEY>    Decrypt using the provided decryption key\n"
            "  -h, --help             Show this help message and exit\n");
 }
@@ -19,11 +20,12 @@ void print_version()
 
 void parse_argv(t_env *env, int argc, char *argv[])
 {
-    const char			*short_opts = "hvsr";
+    const char			*short_opts = "hvsr:k:";
     const struct option	long_opts[] = {
         { "help",		no_argument,		NULL, 'h' },
         { "version",	no_argument,		NULL, 'v' },
         { "silent",		no_argument,		NULL, 's' },
+        { "key",		required_argument,	NULL, 'k' },
         { "reverse",	required_argument,	NULL, 'r' },
         { NULL, 0, NULL, 0 }
     };
@@ -32,16 +34,28 @@ void parse_argv(t_env *env, int argc, char *argv[])
 
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
-			case 'r':
-				env->g_modes |= SH_REVERSE;
-				if (optarg == NULL) { // Check if the argument is provided
+			case 'k':
+				// Check if the argument is provided and that the key has required length
+				if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)) {
 					fprintf(
 						stderr,
-						"The -r option requires the decryption key as an argument.\n"
+						"The -k option requires a 128 bits encryption key as an argument.\n"
 					);
 					exit(EXIT_FAILURE);
 				}
-				env->g_decryption_key = optarg;
+				env->g_encryption_key = (unsigned char*)optarg;
+				break;
+			case 'r':
+				env->g_modes |= SH_REVERSE;
+				// Check if the argument is provided and that the key has required length
+				if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)) {
+					fprintf(
+						stderr,
+						"The -r option requires a 128 bits decryption key as an argument.\n"
+					);
+					exit(EXIT_FAILURE);
+				}
+				env->g_decryption_key = (unsigned char*)optarg;
 				break;
 			case 's':
 				silent_mode = true;
