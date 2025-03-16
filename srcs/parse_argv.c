@@ -18,6 +18,19 @@ void print_version()
 	exit(EXIT_SUCCESS);
 }
 
+void check_arg_key(char opt)
+{
+	// Check if the argument is provided and that the key has required length
+	if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)) {
+		fprintf(
+			stderr,
+			"The -%c option requires a 128 bits encryption key as an argument.\n",
+			opt
+		);
+		exit(EXIT_FAILURE);
+	}
+}
+
 void parse_argv(t_env *env, int argc, char *argv[])
 {
     const char			*short_opts = "hvsr:k:";
@@ -35,26 +48,12 @@ void parse_argv(t_env *env, int argc, char *argv[])
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
 			case 'k':
-				// Check if the argument is provided and that the key has required length
-				if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)) {
-					fprintf(
-						stderr,
-						"The -k option requires a 128 bits encryption key as an argument.\n"
-					);
-					exit(EXIT_FAILURE);
-				}
+				check_arg_key('k');
 				env->g_encryption_key = (unsigned char*)optarg;
 				break;
 			case 'r':
 				env->g_modes |= SH_REVERSE;
-				// Check if the argument is provided and that the key has required length
-				if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)) {
-					fprintf(
-						stderr,
-						"The -r option requires a 128 bits decryption key as an argument.\n"
-					);
-					exit(EXIT_FAILURE);
-				}
+				check_arg_key('r');
 				env->g_decryption_key = (unsigned char*)optarg;
 				break;
 			case 's':

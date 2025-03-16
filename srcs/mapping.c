@@ -17,8 +17,6 @@ int map_file_into_memory(t_env *env, const char *filename)
     // Check that lseek didn't fail and not returning > int max
     if (res < 0 || res > 2147483647) return SH_ERROR;
 
-    printf("res: %ld\n", res);
-
     // Put back the cursor at the beginning of the file
     if (lseek(fd, 0, SEEK_SET) < 0) return SH_ERROR;
 

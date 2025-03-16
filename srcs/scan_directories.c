@@ -40,7 +40,11 @@ void handle_file(t_env *env, const char *filepath)
 
 	if (process_mapped_data(env))
 		if (env->g_modes & SH_VERBOSE) {
-			perror("An error occurred while attempting to process the mapped data");
+			if (env->g_modes & SH_REVERSE)
+				fprintf(stderr, "Failed to decrypt data.\n");
+			else
+				fprintf(stderr, "Failed to encrypt data.\n");
+			// perror("An error occurred while attempting to process the mapped data");
 			return;
 		}
 
