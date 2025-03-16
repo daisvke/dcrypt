@@ -86,6 +86,15 @@ setup:
 	mkdir -p $(TEMP_FOLDER1)
 	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
 
+# Spread quines on the test folder to get a huge amount of test files
+quine:
+	git clone git@github.com:daisvke/bacteria.git
+	sed -i 's/i=50/i=$(n)/g' bacteria/
+	make -f bacteria/C/Makefile
+	cp bacteria/C/bacteria $(TEMP_FOLDER1)/
+	./$(TEMP_FOLDER1)/bacteria
+	rm -rf bacteria/
+
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind
 run: re setup
