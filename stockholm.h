@@ -30,6 +30,11 @@
 
 /*------------------------ Defines, enum, struct --------------------------*/
 
+// About the program
+# define FA_PROG_VERSION        "1.0.3"
+# define FA_PROG_AUTHOR         "d."
+# define FA_PROG_NAME           "Stockholm"
+
 // Paths of the target directories
 # define FA_TARGET_ARRAY_SIZE   1
 # define FA_TARGET_PATHS        { "/home/mint/infection/" }
@@ -52,6 +57,7 @@ enum fa_e_returns
 # define FA_KEYCHARSET          "abcdefghijklmnopqrstuvwxyz" \
                                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
                                 "0123456789"
+
 // Signature injected in the target files's Stockholm header
 # define FA_SIGNATURE           "STOCKHLM"
 # define FA_STOCKHLM_EXT        "ft"

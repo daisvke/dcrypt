@@ -11,7 +11,9 @@ void print_help() {
 
 void fa_print_version()
 {
-	printf("Version 1.0.2\n");
+	printf(
+		FA_PROG_NAME " " FA_PROG_VERSION " | Copyright (c) " FA_PROG_AUTHOR "\n"
+	);
 	exit(EXIT_SUCCESS);
 }
 
