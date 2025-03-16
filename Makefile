@@ -14,7 +14,8 @@ ASFLAGS				= -f bin
 # **************************************************************************** #
 #       FLAGS                                                                  #
 # **************************************************************************** #
-CFLAGS				= -Wall -Wextra 
+CFLAGS				= -Wall -Wextra
+SSLFLAGS			= -lcrypto -lssl
 
 # **************************************************************************** #
 #       SOURCES                                                                #
@@ -47,16 +48,15 @@ ASM_OBJS			= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
 #       TEST FILES                                                             #
 # **************************************************************************** #
 # Temporary folders where binaries are copied to
-TEMP_FOLDER1		= /tmp/test
-TEMP_FOLDER2		= /tmp/test2
+TEMP_FOLDER1		= ~/infection
 # Path for binaries to copy to the folders above (targets)
-SOURCE_TEST_FILE1 		= resources/sample.txt
-SOURCE_TEST_FILE2 		=
-SOURCE_TEST_FILE3 		=
-SOURCE_TEST_FILE4 		=
+SOURCE_TEST_FILE1 	= resources/sample.txt
+SOURCE_TEST_FILE2 	=
+SOURCE_TEST_FILE3 	=
+SOURCE_TEST_FILE4 	=
 # Path for the binaries inside the target temporary folder
-TARGET_TEST_FILE1 		= $(TEMP_FOLDER1)/sample.txt
-TARGET_TEST_FILE2 		= $(TEMP_FOLDER2)/sample.txt
+TARGET_TEST_FILE1 	= $(TEMP_FOLDER1)/sample.txt
+TARGET_TEST_FILE2 	=
 
 # **************************************************************************** #
 #       RULES                                                                  #
@@ -75,7 +75,7 @@ $(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INCS)
 	$(CC) -I. -c $(CFLAGS) $< -o $@
 
 $(NAME): $(OBJS) $(ASM_OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
+	$(CC) $(CFLAGS) $(SSLFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
 
 clean_asm:
 	rm -rf asm
@@ -84,9 +84,7 @@ clean_asm:
 setup:
 	rm -f $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2)
 	mkdir -p $(TEMP_FOLDER1)
-	mkdir -p $(TEMP_FOLDER2)
 	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
-	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER2)
 
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind
@@ -108,6 +106,6 @@ clean:
 	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2) $(TARGET_TEST_FILE3) $(TARGET_TEST_FILE4)
 
 fclean: clean
-	rm -rf $(NAME) $(TEMP_FOLDER1) $(TEMP_FOLDER2)
+	rm -rf $(NAME) $(TEMP_FOLDER1)
 
 re: fclean all

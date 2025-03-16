@@ -1,73 +1,57 @@
 #include "stockholm.h"
 
-char *get_encryption_key(void)
-{
-	char *key;
-
-	// In decryption mode, we use the key saved in the file header
-	if (g_modes & FA_REVERSE)
-	{
-		key = (char *)g_stockhlm_header.encryption_key;
-
-		if (g_modes & FA_VERBOSE)
-			printf("Using encryption key => " FA_YELLOW_COLOR "%s\n", key);
-	}
-	else // In encryption mode, we generate a new encryption key
-	{
-		// Generate the key that will be used for the encryption
-		key = fa_keygen(FA_KEYCHARSET, FA_AES_ENCRYPT_KEY_LEN);
-		if (!key) return NULL;
-
-		memcpy(g_stockhlm_header.encryption_key, key, FA_AES_ENCRYPT_KEY_LEN);
-
-		if (g_modes & FA_VERBOSE)
-			printf("Generated random key => " FA_YELLOW_COLOR "%s\n", key);
-	}
-
-	return key;
-}
-
 /*
- * Encrypt .text section before injection as we want the final output file
- *  to have its main code obfuscated in case we are packing a virus
+ * Encrypt/decrypt the mapped data
  */
 
 int fa_process_mapped_data(void)
 {
-	char *key = get_encryption_key();
-	if (!key) return 1;
+	const unsigned char *key = get_encryption_key();
+	if (!key) return FA_ERROR;
 
-	if (g_modes & FA_VERBOSE)
-		printf("\n > STARTING ENCRYPTION...\n\n");
-
-	bool				reverse = g_modes & FA_REVERSE;
+	bool reverse = g_modes & FA_REVERSE;
 	// Only skip encrypting the custom header in reverse mode
-	const unsigned char	*data = reverse ?
-		g_mapped_data + FA_NEW_HEADER_SIZE : g_mapped_data;
+	unsigned char *data = reverse ? g_mapped_data + FA_STOCKHLM_HEADER_SIZE : g_mapped_data;
 
-	/*
-	 * Encrypt the .text section before inserting the parasite code.
-	 * The section will be decrypted by the latter during execution.
-	 */
+	// xor_with_additive_cipher(
+	// 	key,								 // The randomly generated encryption key
+	// 	FA_ENCRYPT_KEY_SIZE,				 // The key width
+	// 	(void *)data,						 // The file data (starting after the header)
+	// 	g_stockhlm_header.original_filesize, // The original file size
+	// 	reverse								 // Encryption/decryption mode
+	// );
 
-	xor_with_additive_cipher(
-		key,									// The randomly generated encryption key
-		FA_AES_ENCRYPT_KEY_LEN,					// The key width
-		(void *)data,							// The file data (starting after the header)
-		g_stockhlm_header.original_filesize,	// The original file size
-		reverse								 	// Encryption/decryption mode
-	);
-	printf("loaded mapped: %s\n",g_mapped_data+FA_NEW_HEADER_SIZE);
+	if (g_modes & FA_REVERSE) {
+		if (g_modes & FA_VERBOSE)
+			printf("\n > STARTING DECRYPTION...\n\n");
 
-	printf("encrypted size: %ld\n", g_stockhlm_header.original_filesize);
+		if (aes_decrypt_data(
+			data,									// The file data (starting after the header)
+			g_encrypted_filesize,					// The original file size
+			key,									// The randomly generated encryption key
+			NULL									// Initialization vector
+		) == -1) return FA_ERROR;
+	} else {
+		if (g_modes & FA_VERBOSE)
+			printf("\n > STARTING ENCRYPTION...\n\n");
+
+		if ((g_encrypted_filesize = aes_encrypt_data(
+			data,									// The file data (starting after the header)
+			g_stockhlm_header.original_filesize,	// The original file size
+			key,									// The randomly generated encryption key
+			NULL									// Initialization vector
+		)) == -1) return FA_ERROR;
+	}
+	printf("encrypted filesize: %d\n", g_encrypted_filesize);
 
 	if (g_modes & FA_VERBOSE)
-		printf(FA_GREEN_COLOR "\nDone!\n\n" FA_RESET_COLOR);
+		printf(FA_GREEN_COLOR "Done!\n\n" FA_RESET_COLOR);
 
-	if (!reverse) {
-		free(key);
+	if (!reverse)
+	{
+		free((void *)key);
 		key = NULL;
 	}
 
-	return 0;
+	return FA_SUCCESS;
 }

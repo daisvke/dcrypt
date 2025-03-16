@@ -1,15 +1,14 @@
 #include "stockholm.h"
 
-int pc_is_process_running(const char *process_name)
+bool pc_is_process_running(const char *process_name)
 {
-    DIR *dir;             // Directory stream type
-    struct dirent *entry; // Directory entry type
+    DIR             *dir;   // Directory stream type
+    struct dirent   *entry; // Directory entry type
 
     // Open the /proc directory
     dir = opendir("/proc");
     // Quit silently in case of error
-    if (!dir)
-        exit(0);
+    if (!dir) exit(0);
 
     // Iterate through the entries in /proc
     while ((entry = readdir(dir)) != NULL)
@@ -36,23 +35,23 @@ int pc_is_process_running(const char *process_name)
                 if (strstr(cmdline, process_name))
                 {
                     closedir(dir);
-                    return 1; // Process is running
+                    return true; // Process is running
                 }
             }
         }
     }
 
-    closedir(dir); // Close "/proc" directory
-    return 0;      // Process is not running
+    closedir(dir);  // Close "/proc" directory
+    return false;   // Process is not running
 }
 
-int pc_is_debugger_attached(void)
+bool pc_is_debugger_attached(void)
 {
     FILE *status_file = fopen("/proc/self/status", "r");
     if (!status_file)
     {
         perror("fopen");
-        return 0; // Assume no debugger if we can't open the file
+        return false; // Assume no debugger if we can't open the file
     }
 
     char line[256];
@@ -67,5 +66,5 @@ int pc_is_debugger_attached(void)
     }
 
     fclose(status_file);
-    return 0; // No debugger found
+    return false; // No debugger found
 }

@@ -1,12 +1,96 @@
 #include "stockholm.h"
 
-/* Generates an encryption key randomly.
-    - charset: a set of characters that can be used for the key
-    - strength: the width of the key
-*/
-char *fa_keygen(const char *charset, size_t strength)
+/*
+ * Perform AES-128 CBC encryption.
+ *
+ * The IV (Initialization Vector) is a random value used to ensure that
+ *  identical plaintext blocks produce different ciphertexts.
+ * This prevents patterns from appearing in the encrypted data.
+ * 
+ * Without IV (NULL IV): Faster, but less secure.
+ * Identical plaintexts will produce identical ciphertexts.
+ * 
+ * No PKCS#7 padding applied, only full blocks are encrypted.
+ */
+
+ int aes_encrypt_data(
+    unsigned char       *data,
+    size_t              data_len,
+    const unsigned char *key,
+    unsigned char       *iv
+) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        return -1; // Context creation error
+    }
+
+    // Initialize the encryption operation
+    if (EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
+        EVP_CIPHER_CTX_free(ctx);
+        return -1; // Initialization error
+    }
+
+    int out_len;
+    if (EVP_EncryptUpdate(ctx, data, &out_len, data, data_len) != 1) {
+        EVP_CIPHER_CTX_free(ctx);
+        return -1; // Encryption error
+    }
+
+    int final_len;
+    if (EVP_EncryptFinal_ex(ctx, data + out_len, &final_len) != 1) {
+        EVP_CIPHER_CTX_free(ctx);
+        return -1; // Finalization error
+    }
+
+    EVP_CIPHER_CTX_free(ctx);
+    return out_len + final_len; // Return the total length of the encrypted data
+}
+
+// Function to handle AES-128 CBC decryption
+int aes_decrypt_data(
+    unsigned char       *data,
+    size_t              data_len,
+    const unsigned char *key,
+    unsigned char       *iv
+) {
+    EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
+    if (!ctx) {
+        return -1; // Context creation error
+    }
+
+    // Initialize the decryption operation
+    if (EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
+        EVP_CIPHER_CTX_free(ctx);
+        return -1; // Initialization error
+    }
+    EVP_CIPHER_CTX_set_padding(ctx, 0);
+
+    int out_len;
+    if (EVP_DecryptUpdate(ctx, data, &out_len, data, data_len) != 1) {
+        EVP_CIPHER_CTX_free(ctx);
+        return -1; // Decryption error
+    }
+
+    int final_len;
+    if (EVP_DecryptFinal_ex(ctx, data + out_len, &final_len) != 1) {
+        EVP_CIPHER_CTX_free(ctx);
+        return -1; // Finalization error
+    }
+
+    EVP_CIPHER_CTX_free(ctx);
+    return out_len + final_len; // Return the total length of the decrypted data
+}
+
+/*
+ * Generates an encryption key randomly.
+ *
+ *  - charset: a set of characters that can be used for the key
+ *  - strength: the width of the key
+ */
+
+unsigned char *fa_keygen(const char *charset, size_t strength)
 {
-    char *key = malloc((strength + 1) * sizeof(char));
+    unsigned char *key = malloc((strength + 1) * sizeof(char));
     // Exit in case malloc fails
     if (key == NULL) return NULL;
 
@@ -27,4 +111,33 @@ char *fa_keygen(const char *charset, size_t strength)
     key[strength] = '\0'; // null-terminate the key
 
     return key;
+}
+
+unsigned char *get_encryption_key(void)
+{
+	unsigned char *key;
+
+	// In decryption mode, we use the key saved in the file header
+	if (g_modes & FA_REVERSE)
+	{
+		key = (unsigned char *)g_stockhlm_header.encryption_key;
+
+		if (g_modes & FA_VERBOSE)
+			printf("Using encryption key => " FA_YELLOW_COLOR "%s\n", key);
+	}
+	else // In encryption mode, we generate a new encryption key
+	{
+		// Generate the key that will be used for the encryption
+		key = fa_keygen(FA_KEYCHARSET, FA_AES_KEY_SIZE);
+		if (!key)
+			return NULL;
+
+		// Save the key on the custom header
+		memcpy(g_stockhlm_header.encryption_key, key, FA_ENCRYPT_KEY_SIZE);
+
+		if (g_modes & FA_VERBOSE)
+			printf("Generated random key => " FA_YELLOW_COLOR "%s\n", key);
+	}
+
+	return key;
 }
