@@ -13,21 +13,21 @@ bool search_binary(const char *data, size_t data_size, const char *substring)
     return 0;
 }
 
-int fa_map_file_into_memory(fa_t_env *env, const char *filename)
+int map_file_into_memory(t_env *env, const char *filename)
 {
     // Open the target binary file
     int fd = open(filename, O_RDONLY);
-    if (fd < 0) return FA_ERROR;
+    if (fd < 0) return SH_ERROR;
     
     // Determine the file size by moving the cursor till the end
     off_t res = lseek(fd, 0, SEEK_END);
     // Check that lseek didn't fail and not returning > int max
-    if (res < 0 || res > 2147483647) return FA_ERROR;
+    if (res < 0 || res > 2147483647) return SH_ERROR;
 
     printf("res: %ld\n", res);
 
     // Put back the cursor at the beginning of the file
-    if (lseek(fd, 0, SEEK_SET) < 0) return FA_ERROR;
+    if (lseek(fd, 0, SEEK_SET) < 0) return SH_ERROR;
 
     /* Map the file into memory
         - PROT_READ: read-only access
@@ -44,29 +44,29 @@ int fa_map_file_into_memory(fa_t_env *env, const char *filename)
     if (env->g_mapped_data == MAP_FAILED)
     {
         close(fd);
-        return FA_ERROR;
+        return SH_ERROR;
     }
 
     close(fd); // No need to keep the fd since the file is mapped
 
-    if (env->g_modes & FA_REVERSE)
+    if (env->g_modes & SH_REVERSE)
     {
         // Copy the custom header of the encrypted file to the env->global variable
-        memcpy(&env->g_stockhlm_header, env->g_mapped_data, FA_STOCKHLM_HEADER_SIZE);
+        memcpy(&env->g_stockhlm_header, env->g_mapped_data, SH_STOCKHLM_HEADER_SIZE);
         // Save the encrypted file size without the added custom header size
-        env->g_encrypted_filesize = res - FA_STOCKHLM_HEADER_SIZE;
+        env->g_encrypted_filesize = res - SH_STOCKHLM_HEADER_SIZE;
     } else {
         env->g_stockhlm_header.original_filesize = res;
     }
 
     // // Abort if the current target already contains our signature
-    // if (search_binary((char *)g_mapped_data, g_stockhlm_header.original_filesize, FA_SIGNATURE))
+    // if (search_binary((char *)g_mapped_data, g_stockhlm_header.original_filesize, SH_SIGNATURE))
     //     return 1;
 
-    return FA_SUCCESS;
+    return SH_SUCCESS;
 }
 
-bool write_encrypted_data_to_file(fa_t_env *env, const char *target_path)
+bool write_encrypted_data_to_file(t_env *env, const char *target_path)
 {
     char    new_target_path[1024]; // Create a buffer to hold the full path
     int     outfilefd;
@@ -75,72 +75,72 @@ bool write_encrypted_data_to_file(fa_t_env *env, const char *target_path)
     //  with our custom extension
     snprintf(
         new_target_path, sizeof(new_target_path),
-        "%s.%s", target_path, FA_STOCKHLM_EXT
+        "%s.%s", target_path, SH_STOCKHLM_EXT
     );
 
     outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);        
 
     // Check if open() has failed
-    if (outfilefd == 1) return FA_ERROR;
+    if (outfilefd == 1) return SH_ERROR;
 
     // Write the custom header first to the outfile
-    ssize_t bytes_written = write(outfilefd, &env->g_stockhlm_header, FA_STOCKHLM_HEADER_SIZE);
-    if (bytes_written < 0) return FA_ERROR;
+    ssize_t bytes_written = write(outfilefd, &env->g_stockhlm_header, SH_STOCKHLM_HEADER_SIZE);
+    if (bytes_written < 0) return SH_ERROR;
 
     // Then write the processed data to the outfile
     bytes_written = write(outfilefd, env->g_mapped_data, env->g_encrypted_filesize);
-    if (bytes_written < 0) return FA_ERROR;
+    if (bytes_written < 0) return SH_ERROR;
 
     close(outfilefd);
-    return FA_SUCCESS;
+    return SH_SUCCESS;
 }
 
-bool write_decrypted_data_to_file(fa_t_env *env, char *target_path)
+bool write_decrypted_data_to_file(t_env *env, char *target_path)
 {
     int     outfilefd;
 
     // We remove our custom extension by terminating the filename earlier.
-    target_path[strlen(target_path) - FA_STOCKHLM_EXT_SIZE] = '\0';
+    target_path[strlen(target_path) - SH_STOCKHLM_EXT_SIZE] = '\0';
 
     // 0755: rwx for owner, rx for group and others
     outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
 
     // Check if open() has failed
-    if (outfilefd == 1) return FA_ERROR;
+    if (outfilefd == 1) return SH_ERROR;
 
     // Write the processed data to the outfile
     ssize_t bytes_written = write(
         outfilefd,
-        env->g_mapped_data + FA_STOCKHLM_HEADER_SIZE, // Don't keep the custom header
+        env->g_mapped_data + SH_STOCKHLM_HEADER_SIZE, // Don't keep the custom header
         env->g_stockhlm_header.original_filesize
     );
-    if (bytes_written < 0) return FA_ERROR;
+    if (bytes_written < 0) return SH_ERROR;
 
     close(outfilefd);
-    return FA_SUCCESS;
+    return SH_SUCCESS;
 }
 
 // Write the processed file data back to a new file
-int fa_write_processed_data_to_file(fa_t_env *env, const char *target_path)
+int write_processed_data_to_file(t_env *env, const char *target_path)
 {
     char    temp_path[strlen(target_path) - 1];
     // Copy the original string to the temporary variable
     strcpy(temp_path, target_path);
 
-    if (env->g_modes & FA_REVERSE)
+    if (env->g_modes & SH_REVERSE)
     {
-        if (write_decrypted_data_to_file(env, (char *)target_path) == FA_ERROR)
-            return FA_ERROR;
-        munmap(env->g_mapped_data, env->g_encrypted_filesize + FA_STOCKHLM_HEADER_SIZE);
+        if (write_decrypted_data_to_file(env, (char *)target_path) == SH_ERROR)
+            return SH_ERROR;
+        munmap(env->g_mapped_data, env->g_encrypted_filesize + SH_STOCKHLM_HEADER_SIZE);
     } else
     {
-        if (write_encrypted_data_to_file(env, target_path) == FA_ERROR)
-            return FA_ERROR;
+        if (write_encrypted_data_to_file(env, target_path) == SH_ERROR)
+            return SH_ERROR;
         munmap(env->g_mapped_data, env->g_stockhlm_header.original_filesize);
     }
 
     // Remove the old file from the system
-    if (remove(temp_path) != 0) return FA_ERROR;
+    if (remove(temp_path) != 0) return SH_ERROR;
 
-    return FA_SUCCESS;
+    return SH_SUCCESS;
 }

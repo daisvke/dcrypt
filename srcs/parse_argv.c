@@ -9,15 +9,15 @@ void print_help() {
            "  -h, --help             Show this help message and exit\n");
 }
 
-void fa_print_version()
+void print_version()
 {
 	printf(
-		FA_PROG_NAME " " FA_PROG_VERSION " | Copyright (c) " FA_PROG_AUTHOR "\n"
+		SH_PROG_NAME " " SH_PROG_VERSION " | Copyright (c) " SH_PROG_AUTHOR "\n"
 	);
 	exit(EXIT_SUCCESS);
 }
 
-void fa_parse_argv(fa_t_env *env, int argc, char *argv[])
+void parse_argv(t_env *env, int argc, char *argv[])
 {
     const char			*short_opts = "hvsr";
     const struct option	long_opts[] = {
@@ -33,7 +33,7 @@ void fa_parse_argv(fa_t_env *env, int argc, char *argv[])
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
 			case 'r':
-				env->g_modes |= FA_REVERSE;
+				env->g_modes |= SH_REVERSE;
 				if (optarg == NULL) { // Check if the argument is provided
 					fprintf(
 						stderr,
@@ -47,7 +47,7 @@ void fa_parse_argv(fa_t_env *env, int argc, char *argv[])
 				silent_mode = true;
 				break;
 			case 'v':
-				fa_print_version();
+				print_version();
 				break;
 			case 'h':
 				print_help();
@@ -59,7 +59,7 @@ void fa_parse_argv(fa_t_env *env, int argc, char *argv[])
     }
 
 	if (!silent_mode) {
-		env->g_modes |= FA_VERBOSE;
+		env->g_modes |= SH_VERBOSE;
 		printf("In verbose mode...\n");
 	}
 }

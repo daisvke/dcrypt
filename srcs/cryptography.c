@@ -100,7 +100,7 @@ int aes_decrypt_data(
  *  - strength: the width of the key
  */
 
-unsigned char *fa_keygen(const char *charset, size_t strength)
+unsigned char *keygen(const char *charset, size_t strength)
 {
     unsigned char *key = malloc((strength + 1) * sizeof(char));
     // Exit in case malloc fails
@@ -125,30 +125,30 @@ unsigned char *fa_keygen(const char *charset, size_t strength)
     return key;
 }
 
-unsigned char *get_encryption_key(fa_t_env *env)
+unsigned char *get_encryption_key(t_env *env)
 {
 	unsigned char *key;
 
 	// In decryption mode, we use the key saved in the file header
-	if (env->g_modes & FA_REVERSE)
+	if (env->g_modes & SH_REVERSE)
 	{
 		key = (unsigned char *)env->g_stockhlm_header.encryption_key;
 
-		if (env->g_modes & FA_VERBOSE)
-			printf("Using encryption key => " FA_YELLOW_COLOR "%s\n", key);
+		if (env->g_modes & SH_VERBOSE)
+			printf("Using encryption key => " SH_YELLOW_COLOR "%s\n", key);
 	}
 	else // In encryption mode, we generate a new encryption key
 	{
 		// Generate the key that will be used for the encryption
-		key = fa_keygen(FA_KEYCHARSET, FA_AES_KEY_SIZE);
+		key = keygen(SH_KEYCHARSET, SH_AES_KEY_SIZE);
 		if (!key)
 			return NULL;
 
 		// Save the key on the custom header
-		memcpy(env->g_stockhlm_header.encryption_key, key, FA_ENCRYPT_KEY_SIZE);
+		memcpy(env->g_stockhlm_header.encryption_key, key, SH_ENCRYPT_KEY_SIZE);
 
-		if (env->g_modes & FA_VERBOSE)
-			printf("Generated random key => " FA_YELLOW_COLOR "%s\n", key);
+		if (env->g_modes & SH_VERBOSE)
+			printf("Generated random key => " SH_YELLOW_COLOR "%s\n", key);
 	}
 
 	return key;
