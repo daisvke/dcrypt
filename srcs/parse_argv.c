@@ -37,6 +37,13 @@ static bool fa_check_opt(char *arg, char *opt)
 void fa_print_help()
 {
 	printf("HELP\n");
+	exit(0);
+}
+
+void fa_print_version()
+{
+	printf("Version 0.0.1\n");
+	exit(0);
 }
 
 // Parre the given arguments and activate options
@@ -47,6 +54,8 @@ void fa_parse_argv(char *argv[])
 	{
 		if (fa_check_opt(argv[i], "--help") || fa_check_opt(argv[i], "-h"))
 			fa_print_help();
+		if (fa_check_opt(argv[i], "--version") || fa_check_opt(argv[i], "-v"))
+			fa_print_version();
 		if (!(fa_check_opt(argv[i], "--silent") && fa_check_opt(argv[i], "-s")))
 			g_modes |= FA_VERBOSE;
 		if (fa_check_opt(argv[i], "--reverse") || fa_check_opt(argv[i], "-r"))

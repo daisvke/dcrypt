@@ -21,7 +21,7 @@ int fa_process_mapped_data(void)
 	// 	reverse								 // Encryption/decryption mode
 	// );
 
-	if (g_modes & FA_REVERSE) {
+	if (g_modes & FA_REVERSE) { // Decryption mode
 		if (g_modes & FA_VERBOSE)
 			printf("\n > STARTING DECRYPTION...\n\n");
 
@@ -31,7 +31,9 @@ int fa_process_mapped_data(void)
 			key,									// The randomly generated encryption key
 			NULL									// Initialization vector
 		) == -1) return FA_ERROR;
-	} else {
+	}
+	else // Encryption mode
+	{
 		if (g_modes & FA_VERBOSE)
 			printf("\n > STARTING ENCRYPTION...\n\n");
 
