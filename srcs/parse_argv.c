@@ -11,7 +11,7 @@ void print_help() {
 
 void fa_print_version()
 {
-	printf("Version 0.0.1\n");
+	printf("Version 1.0.2\n");
 	exit(EXIT_SUCCESS);
 }
 
