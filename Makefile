@@ -1,6 +1,10 @@
-# **************************************************************************** #
-#       TITLE                                                                  #
-# **************************************************************************** #
+#  ▗▄▄▗▄▄▄▗▄▖ ▗▄▄▗▖ ▗▗▖ ▗▖▗▄▖▗▖  ▗▖  ▗▖
+# ▐▌    █▐▌ ▐▐▌  ▐▌▗▞▐▌ ▐▐▌ ▐▐▌  ▐▛▚▞▜▌
+#  ▝▀▚▖ █▐▌ ▐▐▌  ▐▛▚▖▐▛▀▜▐▌ ▐▐▌  ▐▌  ▐▌
+# ▗▄▄▞▘ █▝▚▄▞▝▚▄▄▐▌ ▐▐▌ ▐▝▚▄▞▐▙▄▄▐▌  ▐▌
+                                     
+
+
 NAME				= stockholm
 
 
@@ -114,14 +118,13 @@ setup:
 	mkdir -p $(TEMP_FOLDER1)
 	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
 
-# Spread quines on the test folder to get a huge amount of test files
-
 # Set default values for arguments (can be given from command line)
 i	?= 10
 ext	?= txt vob pdf crt gif
 
 .PHONY: quine
 
+# Spread quines on the test folder to get a huge amount of test files
 quine:
 	mkdir -p $(TEMP_FOLDER1)
 	rm -rf $(QUINE_NAME)/
