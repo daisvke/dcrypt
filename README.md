@@ -43,6 +43,10 @@ When WannaCry encrypts a file, it modifies the original content by adding a **cu
 
 ## Commands
 
+```
+make quine n=100
+```
+
 ## Useful Links
 [WannaCry Malware Profile](https://cloud.google.com/blog/topics/threat-intelligence/wannacry-malware-profile)
 [WannaCry Handled File Extensions](https://gist.githubusercontent.com/xpn/facb5692980c14df272b16a4ee6a29d5/raw/57232fe6b3014c5562f878dd8aab74af3d74c24f/wannacry_file_extensions.txt)

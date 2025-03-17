@@ -88,12 +88,24 @@ setup:
 
 # Spread quines on the test folder to get a huge amount of test files
 quine:
-	git clone git@github.com:daisvke/bacteria.git
-	sed -i 's/i=50/i=$(n)/g' bacteria/
-	make -f bacteria/C/Makefile
-	cp bacteria/C/bacteria $(TEMP_FOLDER1)/
-	./$(TEMP_FOLDER1)/bacteria
 	rm -rf bacteria/
+	git clone git@github.com:daisvke/bacteria.git
+	$(MAKE) run_one_quine n=3 ext=txt
+	$(MAKE) run_one_quine n=3 ext=pdf
+	$(MAKE) run_one_quine n=3 ext=iso
+	$(MAKE) run_one_quine n=3 ext=xls
+	$(MAKE) run_one_quine n=3 ext=cpp
+	rm -rf bacteria/
+
+run_one_quine:
+	@if [ -z "$(n)" ] || [ -z "$(ext)" ]; then \
+		echo "Error: Arguments 'n' and 'ext' must be provided."; \
+		exit 1; \
+	fi
+	find bacteria/C/ -type f -exec sed -i 's/i = [0-9]\+/i = $(n)/g; s/EXT ".*/EXT ".$(ext)"/g' {} \;
+	make -C bacteria/C/
+	cp bacteria/C/bacteria $(TEMP_FOLDER1)/
+	cd $(TEMP_FOLDER1) && ./bacteria
 
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind

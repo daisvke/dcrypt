@@ -35,6 +35,7 @@ bool is_extension_handled(t_env *env, char *filepath)
 {
     // Find the last occurrence of the dot character
     const char *extension = get_file_extension(filepath);
+    if (!extension) return false;
 
 	// If reverse mode is on, file extension has to match our custom extension
 	if (env->g_modes & SH_REVERSE)
