@@ -3,6 +3,7 @@
 # **************************************************************************** #
 NAME				= stockholm
 
+
 # **************************************************************************** #
 #       COMMANDS                                                               #
 # **************************************************************************** #
@@ -11,11 +12,13 @@ ASM					= nasm
 ASOBJS_FLAGS		= -f elf64
 ASFLAGS				= -f bin
 
+
 # **************************************************************************** #
 #       FLAGS                                                                  #
 # **************************************************************************** #
 CFLAGS				= -Wall -Wextra
 SSLFLAGS			= -lcrypto -lssl
+
 
 # **************************************************************************** #
 #       SOURCES                                                                #
@@ -30,10 +33,12 @@ ASM_SRCS			= $(addprefix $(ASM_SRCS_DIR), $(ASM_SRCS_FILES))
 STUB_SRCS_DIR		= $(SRCS_DIR)unpacker/
 STUB_SRCS_FILES		= $(notdir $(wildcard $(STUB_SRCS_DIR)*.s))
 
+
 # **************************************************************************** #
 #       INCLUDES                                                               #
 # **************************************************************************** #
 INCS 				= stockholm.h $(STUB_HDRS)
+
 
 # **************************************************************************** #
 #       OBJ                                                                    #
@@ -43,6 +48,7 @@ OBJS				= $(addprefix $(OBJS_DIR), $(SRCS_FILES:.c=.o))
 
 ASM_OBJS_DIR		= $(OBJS_DIR)
 ASM_OBJS			= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
+
 
 # **************************************************************************** #
 #       TEST FILES                                                             #
@@ -58,11 +64,12 @@ SOURCE_TEST_FILE4 	=
 TARGET_TEST_FILE1 	= $(TEMP_FOLDER1)/sample.txt
 TARGET_TEST_FILE2 	=
 
+
 # **************************************************************************** #
-#       RULES                                                                  #
+#       BUILDING                                                               #
 # **************************************************************************** #
 
-.PHONY: all run debug clean fclean re debug
+.PHONY: all
 
 all: $(NAME)
 
@@ -77,11 +84,16 @@ $(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INCS)
 $(NAME): $(OBJS) $(ASM_OBJS)
 	$(CC) $(CFLAGS) $(SSLFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
 
-clean_asm:
-	rm -rf asm
+
+# **************************************************************************** #
+#       TESTING                                                                #
+# **************************************************************************** #
+
+.PHONY: setup
 
 # Setup for the tests
 setup:
+	mkdir -p $(TEMP_FOLDER1)
 	rm -f $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2)
 	mkdir -p $(TEMP_FOLDER1)
 	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
@@ -93,12 +105,17 @@ QUINE_NAME = bacteria
 i	?= 10
 ext	?= txt vob pdf crt gif
 
+.PHONY: quine
+
 quine:
+	mkdir -p $(TEMP_FOLDER1)
 	rm -rf $(QUINE_NAME)/
 	git clone https://github.com/daisvke/$(QUINE_NAME)
 	@make -C $(QUINE_NAME)/C/ collection i=$(i) ext="$(ext)"
 	cp $(QUINE_NAME)/C/$(QUINE_NAME)_* $(TEMP_FOLDER1)/
 	rm -rf $(QUINE_NAME)/
+
+.PHONY: run
 
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind
@@ -113,8 +130,17 @@ run: re setup
 	@echo "-----------------------------"
 	$(TARGET_TEST_FILE4)
 
+.PHONY: debug
+
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
+
+
+# **************************************************************************** #
+#       CLEANING                                                               #
+# **************************************************************************** #
+
+.PHONY: clean fclean re
 
 clean:
 	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR)
