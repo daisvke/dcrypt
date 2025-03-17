@@ -13,15 +13,15 @@ NAME				= stockholm
 # **************************************************************************** #
 
 # ANSI escape codes for stylized output
-RESET 		= \033[0m
-GREEN		= \033[32m
-YELLOW		= \033[33m
-RED			= \033[31m
+RESET 				= \033[0m
+GREEN				= \033[32m
+YELLOW				= \033[33m
+RED					= \033[31m
 
 # Logs levels
-INFO 		= $(YELLOW)[INFO]$(RESET)
-ERROR		= $(RED)[ERROR]$(RESET)
-DONE		= $(GREEN)[DONE]$(RESET)
+INFO 				= $(YELLOW)[INFO]$(RESET)
+ERROR				= $(RED)[ERROR]$(RESET)
+DONE				= $(GREEN)[DONE]$(RESET)
 
 
 # **************************************************************************** #
