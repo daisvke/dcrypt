@@ -1,11 +1,11 @@
 #include "stockholm.h"
 
 void print_help() {
-    printf("Usage: ./stockholm [-h|-v|-s|-r <KEY>] \n"
+    printf("Usage: ./stockholm [-h|-v|-s|-k <KEY>|-r <KEY>] \n\n"
            "Options:\n"
            "  -v, --version          Show version information\n"
            "  -s, --silent           Run in silent mode (non-verbose)\n"
-           "  -k, --key <KEY>    	 Provid an encryption key\n"
+           "  -k, --key <KEY>    	 Provide an encryption key\n"
            "  -r, --reverse <KEY>    Decrypt using the provided decryption key\n"
            "  -h, --help             Show this help message and exit\n");
 }

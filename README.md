@@ -43,7 +43,23 @@ When WannaCry encrypts a file, it modifies the original content by adding a **cu
 
 ## Commands
 
+```sh
+# Encryption
+make && ./stockholm
+
+# Decryption
+make && ./stockholm -r <KEY>
 ```
+
+### Testing
+```sh
+# Cleans, create test folder with test files, compiles, then runs the program
+make run
+
+# Creates test files to the test folder
+make quine
+
+# Or if you want 30 files for each given extension
 make quine n=30 ext="txt vob cpp crt"
 ```
 
