@@ -87,25 +87,18 @@ setup:
 	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
 
 # Spread quines on the test folder to get a huge amount of test files
-quine:
-	rm -rf bacteria/
-	git clone git@github.com:daisvke/bacteria.git
-	$(MAKE) run_one_quine n=3 ext=txt
-	$(MAKE) run_one_quine n=3 ext=pdf
-	$(MAKE) run_one_quine n=3 ext=iso
-	$(MAKE) run_one_quine n=3 ext=xls
-	$(MAKE) run_one_quine n=3 ext=cpp
-	rm -rf bacteria/
+QUINE_NAME = bacteria
 
-run_one_quine:
-	@if [ -z "$(n)" ] || [ -z "$(ext)" ]; then \
-		echo "Error: Arguments 'n' and 'ext' must be provided."; \
-		exit 1; \
-	fi
-	find bacteria/C/ -type f -exec sed -i 's/i = [0-9]\+/i = $(n)/g; s/EXT ".*/EXT ".$(ext)"/g' {} \;
-	make -C bacteria/C/
-	cp bacteria/C/bacteria $(TEMP_FOLDER1)/
-	cd $(TEMP_FOLDER1) && ./bacteria
+# 
+i	?= 10
+ext	?= txt vob pdf crt gif
+
+quine:
+	rm -rf $(QUINE_NAME)/
+	git clone https://github.com/daisvke/$(QUINE_NAME)
+	@make -C $(QUINE_NAME)/C/ collection i=$(i) ext="$(ext)"
+	cp $(QUINE_NAME)/C/$(QUINE_NAME)_* $(TEMP_FOLDER1)/
+	rm -rf $(QUINE_NAME)/
 
 # A quick test that copies the target binaries to the temporary folder
 #	and runs the compilation + packer + packed file wirh valgrind
@@ -124,7 +117,9 @@ debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
 
 clean:
-	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2) $(TARGET_TEST_FILE3) $(TARGET_TEST_FILE4)
+	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR)
+	rm -f $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2) $(TARGET_TEST_FILE3) $(TARGET_TEST_FILE4)
+	rm -f $(TEMP_FOLDER1)/$(QUINE_NAME)_*
 
 fclean: clean
 	rm -rf $(NAME) $(TEMP_FOLDER1)
