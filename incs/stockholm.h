@@ -15,18 +15,10 @@
 # include <sys/stat.h>      // For checking if directory
 # include <openssl/aes.h>   // For AES key generation
 # include <openssl/rand.h>
-#include <getopt.h>         // For argv parsing
+# include <getopt.h>        // For argv parsing
 
-/*-------------------------------- Colors ---------------------------------*/
+# include "ascii_format.h"
 
-/* Text colors */
-# define SH_RED_COLOR           "\033[31m"
-# define SH_GREEN_COLOR         "\033[32m"
-# define SH_YELLOW_COLOR        "\033[33m"
-# define SH_RESET_COLOR         "\033[0m"
-
-/* Background colors */
-# define SH_RESET_BG_COLOR      "\033[49m"
 
 /*------------------------ Defines, enum, struct --------------------------*/
 

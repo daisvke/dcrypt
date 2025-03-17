@@ -144,7 +144,11 @@ unsigned char *get_encryption_key(t_env *env)
 		// key = (unsigned char *)env->g_stockhlm_header.encryption_key;
 
 		if (env->g_modes & SH_VERBOSE)
-			printf("Using encryption key => " SH_YELLOW_COLOR "%s\n", key);
+			printf(
+                FMT_INFO
+                " Using encryption key => " FMT_YELLOW "%s\n" FMT_RESET,
+                key
+            );
 	}
 	else // In encryption mode, we generate a new encryption key
 	{
@@ -158,7 +162,11 @@ unsigned char *get_encryption_key(t_env *env)
 		// memcpy(env->g_stockhlm_header.encryption_key, key, SH_ENCRYPT_KEY_SIZE);
 
 		if (env->g_modes & SH_VERBOSE)
-			printf("Generated random key => " SH_YELLOW_COLOR "%s\n", key);
+			printf(
+                FMT_INFO
+                " Generated random key => " FMT_YELLOW "%s\n" FMT_RESET,
+                key
+            );
 	}
 
 	return key;

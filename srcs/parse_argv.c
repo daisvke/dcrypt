@@ -1,8 +1,8 @@
 #include "stockholm.h"
 
 void print_help() {
-    printf("Usage: ./stockholm [-h|-v|-s|-k <KEY>|-r <KEY>] \n\n"
-           "Options:\n"
+    printf(FMT_INFO " Usage: ./stockholm [-h|-v|-s|-k <KEY>|-r <KEY>] \n\n"
+           FMT_INFO " Options:\n"
            "  -v, --version          Show version information\n"
            "  -s, --silent           Run in silent mode (non-verbose)\n"
            "  -k, --key <KEY>    	 Provide an encryption key\n"
@@ -24,7 +24,8 @@ void check_arg_key(char opt)
 	if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)) {
 		fprintf(
 			stderr,
-			"The -%c option requires a 128 bits encryption key as an argument.\n",
+			FMT_ERROR
+			" The -%c option requires a 128 bits encryption key as an argument.\n",
 			opt
 		);
 		exit(EXIT_FAILURE);
@@ -55,7 +56,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
 				env->g_modes |= SH_REVERSE;
 				check_arg_key('r');
 				env->g_decryption_key = (unsigned char*)optarg;
-				printf("In <REVERSE> mode...\n");
+				printf(FMT_MODE_ON " REVERSE mode enabled\n");
 				break;
 			case 's':
 				silent_mode = true;
@@ -67,13 +68,17 @@ void parse_argv(t_env *env, int argc, char *argv[])
 				print_help();
 				exit(EXIT_SUCCESS);
 			default:
-				fprintf(stderr, "Invalid arguments. Use -h or --help for usage.\n");
+				fprintf(
+					stderr,
+					FMT_ERROR " Invalid arguments. Use -h or --help for usage.\n"
+				);
 				exit(EXIT_FAILURE);
         }
     }
 
 	if (!silent_mode) {
 		env->g_modes |= SH_VERBOSE;
-		printf("In verbose mode...\n");
-	}
+		printf(FMT_MODE_ON " VERBOSE mode enabled\n");
+	} else
+		printf(FMT_MODE_OFF " VERBOSE mode disabled\n");
 }

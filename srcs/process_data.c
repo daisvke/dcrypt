@@ -23,7 +23,7 @@ int process_mapped_data(t_env *env)
 
 	if (env->g_modes & SH_REVERSE) { // Decryption mode
 		if (env->g_modes & SH_VERBOSE)
-			printf("\n > STARTING DECRYPTION...\n\n");
+			printf(FMT_INFO " Starting decryption...\n");
 
 		if (aes_decrypt_data(
 			data,									// The file data (starting after the header)
@@ -31,11 +31,16 @@ int process_mapped_data(t_env *env)
 			env->g_decryption_key,					// The randomly generated encryption key
 			NULL									// Initialization vector
 		) == -1) return SH_ERROR;
+
+		if (env->g_modes & SH_VERBOSE) {
+			printf(FMT_INFO " Decrypted %zu bytes.\n", env->g_encrypted_filesize);
+			printf(FMT_DONE "Decryption complete.");
+		}	
 	}
 	else // Encryption mode
 	{
 		if (env->g_modes & SH_VERBOSE)
-			printf("\n > STARTING ENCRYPTION...\n\n");
+			printf(FMT_INFO " Starting encryption...\n");
 
 		if ((env->g_encrypted_filesize = aes_encrypt_data(
 			data,									// The file data (starting after the header)
@@ -43,11 +48,15 @@ int process_mapped_data(t_env *env)
 			key,									// The randomly generated encryption key
 			NULL									// Initialization vector
 		)) == -1) return SH_ERROR;
-	}
 
-	if (env->g_modes & SH_VERBOSE) {
-		printf(SH_GREEN_COLOR "Done!\n\n" SH_RESET_COLOR);
-		printf("encrypted filesize: %zu bytes.\n", env->g_encrypted_filesize);
+		if (env->g_modes & SH_VERBOSE) {
+			printf(
+				FMT_INFO
+				" Data size after encryption (custom header excluded): %zu bytes.\n",
+				env->g_stockhlm_header.original_filesize
+			);
+			printf(FMT_DONE "Encryption complete.\n");
+		}	
 	}
 
 	if (!reverse && !env->g_encryption_key)

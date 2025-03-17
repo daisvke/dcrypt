@@ -44,7 +44,10 @@ int map_file_into_memory(t_env *env, const char *filename)
     {
         if (!is_magic_nbr_correct(env->g_mapped_data)) {
             if (env->g_modes & SH_VERBOSE)
-                printf("Signature not found in the file header, abort decryption...\n");
+                fprintf(
+                    stderr,
+                    FMT_ERROR " Signature not found in the file header, abort decryption...\n"
+                );
             return SH_ERROR;
         }
 
@@ -55,7 +58,10 @@ int map_file_into_memory(t_env *env, const char *filename)
     } else {
         if (is_magic_nbr_correct(env->g_mapped_data)) {
             if (env->g_modes & SH_VERBOSE)
-                printf("Signature found in the file header, abort encryption...\n");
+                fprintf(
+                    stderr,
+                    FMT_ERROR " Signature found in the file header, abort encryption...\n"
+                );
             return SH_ERROR;
         }
         env->g_stockhlm_header.original_filesize = res;

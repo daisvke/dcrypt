@@ -50,7 +50,7 @@ bool is_extension_handled(t_env *env, char *filepath)
 				return true;
 	}
 
-	printf("not handled extension\n");
+	fprintf(stderr, FMT_ERROR " Unhandled extension.\n");
 
 	return false;
 }

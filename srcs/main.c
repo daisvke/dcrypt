@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
 	if (pc_is_debugger_attached())
 	{
-		printf("Debugger detected. Exiting...\n");
+		fprintf(stderr, FMT_ERROR " Debugger detected. Exiting...\n");
 		return 0; // Exit if a debugger is detected
 	}
 
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 
 	// const char *process_name = "zsh";
 	// if (pc_is_process_running(process_name)) {
-	// 	printf("The process '%s' is running. Exiting...\n", process_name);
+	// 	fprintf(stderr, FMT_ERROR " The process '%s' is running. Exiting...\n", process_name);
 	// 	return 0;
 	// }
 
