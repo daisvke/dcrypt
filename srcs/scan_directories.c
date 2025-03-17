@@ -79,13 +79,12 @@ void handle_dir(t_env *env, char *target_dir_path)
 
 			// Use snprintf() to safely concatenate the strings
 			snprintf(path, sizeof(path), "%s/%s", target_dir_path, entry->d_name);
-			write(STDOUT_FILENO, "\n", 1);
 
 			// Check if it's a directory
 			if (stat(path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode))
 			{
 				if (env->modes & SH_VERBOSE)
-					printf(FMT_INFO "Reading `%s`, type=DIR...\n", path);
+					printf("\n" FMT_INFO "Reading `%s`, type=DIR...\n", path);
 
 				// Recursive call for subdirectories
 				handle_dir(env, path);
@@ -93,7 +92,7 @@ void handle_dir(t_env *env, char *target_dir_path)
 			else
 			{
 				if (env->modes & SH_VERBOSE)
-					printf(FMT_INFO "Reading `%s`, type=FILE...\n", path);
+					printf("\n" FMT_INFO "Reading `%s`, type=FILE...\n", path);
 
 				if (created_files_count < SH_MAX_FILES &&
 					is_extension_handled(env, path) &&
