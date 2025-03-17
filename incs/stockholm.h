@@ -124,12 +124,12 @@ typedef struct s_stockhlm_header
 
 typedef struct s_env
 {
-    unsigned char       *g_mapped_data; // file is mapped in memory here
-    uint16_t            g_modes;        // options given from command line
-    t_stockhlm_header   g_stockhlm_header;
-    size_t              g_encrypted_filesize;
-    unsigned char       *g_encryption_key;
-    unsigned char       *g_decryption_key;
+    unsigned char       *mapped_data; // file is mapped in memory here
+    uint16_t            modes;        // options given from command line
+    t_stockhlm_header   stockhlm_header;
+    size_t              encrypted_filesize;
+    unsigned char       *encryption_key;
+    unsigned char       *decryption_key;
 }   t_env;
 
 /*---------------------------- Function prototypes ------------------------*/

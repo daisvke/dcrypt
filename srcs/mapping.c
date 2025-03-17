@@ -30,9 +30,9 @@ int map_file_into_memory(t_env *env, const char *filename)
         to other processes mapping the same file
     */
 
-    env->g_mapped_data =
+    env->mapped_data =
         mmap(NULL, res, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-    if (env->g_mapped_data == MAP_FAILED)
+    if (env->mapped_data == MAP_FAILED)
     {
         close(fd);
         return SH_ERROR;
@@ -40,10 +40,10 @@ int map_file_into_memory(t_env *env, const char *filename)
 
     close(fd); // No need to keep the fd since the file is mapped
 
-    if (env->g_modes & SH_REVERSE)
+    if (env->modes & SH_REVERSE)
     {
-        if (!is_magic_nbr_correct(env->g_mapped_data)) {
-            if (env->g_modes & SH_VERBOSE)
+        if (!is_magic_nbr_correct(env->mapped_data)) {
+            if (env->modes & SH_VERBOSE)
                 fprintf(
                     stderr,
                     FMT_ERROR " Signature not found in the file header, abort decryption...\n"
@@ -52,23 +52,23 @@ int map_file_into_memory(t_env *env, const char *filename)
         }
 
         // Copy the custom header of the encrypted file to the env->global variable
-        memcpy(&env->g_stockhlm_header, env->g_mapped_data, SH_STOCKHLM_HEADER_SIZE);
+        memcpy(&env->stockhlm_header, env->mapped_data, SH_STOCKHLM_HEADER_SIZE);
         // Save the encrypted file size without the added custom header size
-        env->g_encrypted_filesize = res - SH_STOCKHLM_HEADER_SIZE;
+        env->encrypted_filesize = res - SH_STOCKHLM_HEADER_SIZE;
     } else {
-        if (is_magic_nbr_correct(env->g_mapped_data)) {
-            if (env->g_modes & SH_VERBOSE)
+        if (is_magic_nbr_correct(env->mapped_data)) {
+            if (env->modes & SH_VERBOSE)
                 fprintf(
                     stderr,
                     FMT_ERROR " Signature found in the file header, abort encryption...\n"
                 );
             return SH_ERROR;
         }
-        env->g_stockhlm_header.original_filesize = res;
+        env->stockhlm_header.original_filesize = res;
     }
 
     // // Abort if the current target already contains our signature
-    // if (search_binary((char *)g_mapped_data, g_stockhlm_header.original_filesize, SH_SIGNATURE))
+    // if (search_binary((char *)mapped_data, stockhlm_header.original_filesize, SH_SIGNATURE))
     //     return 1;
 
     return SH_SUCCESS;
@@ -92,11 +92,11 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
     if (outfilefd == 1) return SH_ERROR;
 
     // Write the custom header first to the outfile
-    ssize_t bytes_written = write(outfilefd, &env->g_stockhlm_header, SH_STOCKHLM_HEADER_SIZE);
+    ssize_t bytes_written = write(outfilefd, &env->stockhlm_header, SH_STOCKHLM_HEADER_SIZE);
     if (bytes_written < 0) return SH_ERROR;
 
     // Then write the processed data to the outfile
-    bytes_written = write(outfilefd, env->g_mapped_data, env->g_encrypted_filesize);
+    bytes_written = write(outfilefd, env->mapped_data, env->encrypted_filesize);
     if (bytes_written < 0) return SH_ERROR;
 
     close(outfilefd);
@@ -119,8 +119,8 @@ bool write_decrypted_data_to_file(t_env *env, char *target_path)
     // Write the processed data to the outfile
     ssize_t bytes_written = write(
         outfilefd,
-        env->g_mapped_data + SH_STOCKHLM_HEADER_SIZE, // Don't keep the custom header
-        env->g_stockhlm_header.original_filesize
+        env->mapped_data + SH_STOCKHLM_HEADER_SIZE, // Don't keep the custom header
+        env->stockhlm_header.original_filesize
     );
     if (bytes_written < 0) return SH_ERROR;
 
@@ -135,16 +135,16 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
     // Copy the original string to the temporary variable
     strcpy(temp_path, target_path);
 
-    if (env->g_modes & SH_REVERSE)
+    if (env->modes & SH_REVERSE)
     {
         if (write_decrypted_data_to_file(env, (char *)target_path) == SH_ERROR)
             return SH_ERROR;
-        munmap(env->g_mapped_data, env->g_encrypted_filesize + SH_STOCKHLM_HEADER_SIZE);
+        munmap(env->mapped_data, env->encrypted_filesize + SH_STOCKHLM_HEADER_SIZE);
     } else
     {
         if (write_encrypted_data_to_file(env, target_path) == SH_ERROR)
             return SH_ERROR;
-        munmap(env->g_mapped_data, env->g_stockhlm_header.original_filesize);
+        munmap(env->mapped_data, env->stockhlm_header.original_filesize);
     }
 
     // Remove the old file from the system

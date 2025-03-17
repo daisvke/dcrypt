@@ -35,10 +35,13 @@ bool is_extension_handled(t_env *env, char *filepath)
 {
     // Find the last occurrence of the dot character
     const char *extension = get_file_extension(filepath);
-    if (!extension) return false;
+    if (!extension) {
+        fprintf(stderr, FMT_ERROR " No extension found.\n");
+        return false;
+    }
 
 	// If reverse mode is on, file extension has to match our custom extension
-	if (env->g_modes & SH_REVERSE)
+	if (env->modes & SH_REVERSE)
 	{
 		if (strcmp(extension, SH_STOCKHLM_EXT) == 0)
 			return true;

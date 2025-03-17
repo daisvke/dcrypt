@@ -3,9 +3,9 @@
 void init_stockholm_header(t_env *env)
 {
 	// Set the file signature
-	memcpy(env->g_stockhlm_header.signature, SH_SIGNATURE, SH_MAGICNBR_SIZE);
+	memcpy(env->stockhlm_header.signature, SH_SIGNATURE, SH_MAGICNBR_SIZE);
 	// Set the size of the encrypted AES key
-	env->g_stockhlm_header.encrypted_key_len = SH_ENCRYPT_KEY_SIZE;
+	env->stockhlm_header.encrypted_key_len = SH_ENCRYPT_KEY_SIZE;
 }
 
 int main(int argc, char *argv[])

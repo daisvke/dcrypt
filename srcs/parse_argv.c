@@ -45,18 +45,18 @@ void parse_argv(t_env *env, int argc, char *argv[])
     };
     int					opt;
 	bool				silent_mode = false;
+	bool				invalid_opt = false;
 
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
 			case 'k':
 				check_arg_key('k');
-				env->g_encryption_key = (unsigned char*)optarg;
+				env->encryption_key = (unsigned char*)optarg;
 				break;
 			case 'r':
-				env->g_modes |= SH_REVERSE;
+				env->modes |= SH_REVERSE;
 				check_arg_key('r');
-				env->g_decryption_key = (unsigned char*)optarg;
-				printf(FMT_MODE_ON " REVERSE mode enabled\n");
+				env->decryption_key = (unsigned char*)optarg;
 				break;
 			case 's':
 				silent_mode = true;
@@ -68,17 +68,25 @@ void parse_argv(t_env *env, int argc, char *argv[])
 				print_help();
 				exit(EXIT_SUCCESS);
 			default:
-				fprintf(
-					stderr,
-					FMT_ERROR " Invalid arguments. Use -h or --help for usage.\n"
-				);
-				exit(EXIT_FAILURE);
+				invalid_opt = true;
         }
     }
 
 	if (!silent_mode) {
-		env->g_modes |= SH_VERBOSE;
+		env->modes |= SH_VERBOSE;
 		printf(FMT_MODE_ON " VERBOSE mode enabled\n");
-	} else
-		printf(FMT_MODE_OFF " VERBOSE mode disabled\n");
+
+		if (env->modes & SH_REVERSE)
+			printf(FMT_MODE_ON " REVERSE mode enabled\n");
+
+		if (invalid_opt) {
+			fprintf(
+				stderr,
+				FMT_ERROR " Invalid arguments. Use -h or --help for usage.\n"
+			);
+		}
+
+	}
+
+	if (invalid_opt) exit(EXIT_FAILURE);
 }

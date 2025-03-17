@@ -33,14 +33,14 @@ void handle_file(t_env *env, const char *filepath)
 	 */
 
 	if (map_file_into_memory(env, filepath))
-		if (env->g_modes & SH_VERBOSE) {
+		if (env->modes & SH_VERBOSE) {
 			perror("An error occurred while attempting to map the file into memory");
 			return;
 		}
 
 	if (process_mapped_data(env))
-		if (env->g_modes & SH_VERBOSE) {
-			if (env->g_modes & SH_REVERSE)
+		if (env->modes & SH_VERBOSE) {
+			if (env->modes & SH_REVERSE)
 				fprintf(stderr, "Failed to decrypt data.\n");
 			else
 				fprintf(stderr, "Failed to encrypt data.\n");
@@ -50,7 +50,7 @@ void handle_file(t_env *env, const char *filepath)
 
 	// Write the final file data in the target path
 	if (write_processed_data_to_file(env, filepath))
-		if (env->g_modes & SH_VERBOSE)
+		if (env->modes & SH_VERBOSE)
 			perror("An error occurred while attempting to write the mapped data into the file");
 }
 
@@ -84,7 +84,7 @@ void handle_dir(t_env *env, char *target_dir_path)
 			// Check if it's a directory
 			if (stat(path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode))
 			{
-				if (env->g_modes & SH_VERBOSE)
+				if (env->modes & SH_VERBOSE)
 					printf(FMT_INFO "Reading `%s`, type=DIR...\n", path);
 
 				// Recursive call for subdirectories
@@ -92,7 +92,7 @@ void handle_dir(t_env *env, char *target_dir_path)
 			}
 			else
 			{
-				if (env->g_modes & SH_VERBOSE)
+				if (env->modes & SH_VERBOSE)
 					printf(FMT_INFO "Reading `%s`, type=FILE...\n", path);
 
 				if (created_files_count < SH_MAX_FILES &&
