@@ -5,6 +5,22 @@ NAME				= stockholm
 
 
 # **************************************************************************** #
+#       ANSI ESCAPE CODES                                                      #
+# **************************************************************************** #
+
+# ANSI escape codes for stylized output
+RESET 		= \033[0m
+GREEN		= \033[32m
+YELLOW		= \033[33m
+RED			= \033[31m
+
+# Logs levels
+INFO 		= $(YELLOW)[INFO]$(RESET)
+ERROR		= $(RED)[ERROR]$(RESET)
+DONE		= $(GREEN)[DONE]$(RESET)
+
+
+# **************************************************************************** #
 #       COMMANDS                                                               #
 # **************************************************************************** #
 CC					= clang
@@ -55,14 +71,16 @@ ASM_OBJS			= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
 # **************************************************************************** #
 # Temporary folders where binaries are copied to
 TEMP_FOLDER1		= ~/infection
-# Path for binaries to copy to the folders above (targets)
-SOURCE_TEST_FILE1 	= resources/sample.txt
-SOURCE_TEST_FILE2 	=
-SOURCE_TEST_FILE3 	=
-SOURCE_TEST_FILE4 	=
-# Path for the binaries inside the target temporary folder
-TARGET_TEST_FILE1 	= $(TEMP_FOLDER1)/sample.txt
-TARGET_TEST_FILE2 	=
+
+QUINE_NAME			= bacteria
+
+# Path for a test file to copy to the folders above
+SOURCE_TEST_NAME1 	= sample.txt
+SOURCE_TEST_FILE1 	= resources/$(SOURCE_TEST_NAME1)
+
+# Path for the files inside the target temporary folder
+TARGET_TEST_FILE1 	= $(TEMP_FOLDER1)/$(QUINE_NAME).txt
+TARGET_TEST_FILE2 	= $(TEMP_FOLDER1)/$(SOURCE_TEST_NAME1)
 
 
 # **************************************************************************** #
@@ -94,14 +112,11 @@ $(NAME): $(OBJS) $(ASM_OBJS)
 # Setup for the tests
 setup:
 	mkdir -p $(TEMP_FOLDER1)
-	rm -f $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2)
-	mkdir -p $(TEMP_FOLDER1)
 	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
 
 # Spread quines on the test folder to get a huge amount of test files
-QUINE_NAME = bacteria
 
-# 
+# Set default values for arguments (can be given from command line)
 i	?= 10
 ext	?= txt vob pdf crt gif
 
@@ -117,18 +132,13 @@ quine:
 
 .PHONY: run
 
-# A quick test that copies the target binaries to the temporary folder
-#	and runs the compilation + packer + packed file wirh valgrind
-run: re setup
+# A quick test that copies/creates test files on the temporary folder,
+#	compiles the project and runs the binary with valgrind
+run: re setup quine
 	valgrind ./$(NAME)
-	@echo "\n-----------------------------test"
-	$(TARGET_TEST_FILE1)
-	@echo "-----------------------------"
-	$(TARGET_TEST_FILE2)
-	@echo "\n-----------------------------test2"
-	$(TARGET_TEST_FILE3)
-	@echo "-----------------------------"
-	$(TARGET_TEST_FILE4)
+	@echo "\n$(DONE) Now you can reverse the encryption with:"
+	@echo "\t\t./$(NAME) -r <KEY>"
+	@echo "\tand check if the files are back to their original states."
 
 .PHONY: debug
 
@@ -143,11 +153,9 @@ debug: $(NAME)
 .PHONY: clean fclean re
 
 clean:
-	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR)
-	rm -f $(TARGET_TEST_FILE1) $(TARGET_TEST_FILE2) $(TARGET_TEST_FILE3) $(TARGET_TEST_FILE4)
-	rm -f $(TEMP_FOLDER1)/$(QUINE_NAME)_*
+	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TEMP_FOLDER1)
 
 fclean: clean
-	rm -rf $(NAME) $(TEMP_FOLDER1)
+	rm -rf $(NAME)
 
 re: fclean all

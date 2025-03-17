@@ -44,7 +44,7 @@ When WannaCry encrypts a file, it modifies the original content by adding a **cu
 ## Commands
 
 ```
-make quine n=100
+make quine n=30 ext="txt vob cpp crt"
 ```
 
 ## Useful Links
