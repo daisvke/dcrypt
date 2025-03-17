@@ -55,6 +55,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
 				env->g_modes |= SH_REVERSE;
 				check_arg_key('r');
 				env->g_decryption_key = (unsigned char*)optarg;
+				printf("In <REVERSE> mode...\n");
 				break;
 			case 's':
 				silent_mode = true;

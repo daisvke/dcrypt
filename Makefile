@@ -57,7 +57,9 @@ STUB_SRCS_FILES		= $(notdir $(wildcard $(STUB_SRCS_DIR)*.s))
 # **************************************************************************** #
 #       INCLUDES                                                               #
 # **************************************************************************** #
-INCS 				= stockholm.h $(STUB_HDRS)
+INCS_DIR			= incs/
+INCS_FILES			= $(notdir $(wildcard $(INCS_DIR)*.h))
+INCS 				= $(addprefix $(INCS_DIR), $(INCS_FILES))
 
 
 # **************************************************************************** #
@@ -101,7 +103,7 @@ $(ASM_OBJS_DIR)%.o: $(ASM_SRCS_DIR)%.s
 
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INCS)
 	mkdir -p $(OBJS_DIR)
-	$(CC) -I. -c $(CFLAGS) $< -o $@
+	$(CC) -I$(INCS_DIR) -c $(CFLAGS) $< -o $@
 
 $(NAME): $(OBJS) $(ASM_OBJS)
 	$(CC) $(CFLAGS) $(SSLFLAGS) $(OBJS) $(ASM_OBJS) -o $(NAME)
