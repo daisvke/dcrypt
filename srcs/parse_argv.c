@@ -18,18 +18,21 @@ void print_version()
 	exit(EXIT_SUCCESS);
 }
 
-void check_arg_key(char opt)
+void print_arg_key_error_msg(void)
+{
+	fprintf(
+		stderr,
+		FMT_ERROR
+		" The -k/-r options require a 128 bits encryption key as an argument.\n"
+	);
+}
+
+bool check_arg_key(void)
 {
 	// Check if the argument is provided and that the key has required length
-	if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)) {
-		fprintf(
-			stderr,
-			FMT_ERROR
-			" The -%c option requires a 128 bits encryption key as an argument.\n",
-			opt
-		);
-		exit(EXIT_FAILURE);
-	}
+	if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE))
+		return SH_ERROR;
+	return SH_SUCCESS;
 }
 
 void parse_argv(t_env *env, int argc, char *argv[])
@@ -46,16 +49,17 @@ void parse_argv(t_env *env, int argc, char *argv[])
     int					opt;
 	bool				silent_mode = false;
 	bool				invalid_opt = false;
+	bool				key_missing = false;
 
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
 			case 'k':
-				check_arg_key('k');
+				key_missing = key_missing == true ? true : check_arg_key();
 				env->encryption_key = (unsigned char*)optarg;
 				break;
 			case 'r':
 				env->modes |= SH_REVERSE;
-				check_arg_key('r');
+				key_missing = key_missing == true ? true : check_arg_key();
 				env->decryption_key = (unsigned char*)optarg;
 				break;
 			case 's':
@@ -85,7 +89,11 @@ void parse_argv(t_env *env, int argc, char *argv[])
 				FMT_ERROR " Invalid arguments. Use -h or --help for usage.\n"
 			);
 		}
+	}
 
+	if (key_missing) {
+		if (!silent_mode) print_arg_key_error_msg();
+		exit(EXIT_FAILURE);
 	}
 
 	if (invalid_opt) exit(EXIT_FAILURE);

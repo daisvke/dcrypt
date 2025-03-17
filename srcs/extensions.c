@@ -36,7 +36,8 @@ bool is_extension_handled(t_env *env, char *filepath)
     // Find the last occurrence of the dot character
     const char *extension = get_file_extension(filepath);
     if (!extension) {
-        fprintf(stderr, FMT_ERROR " No extension found.\n");
+        if (env->modes & SH_VERBOSE)
+            fprintf(stderr, FMT_ERROR " No extension found.\n");
         return false;
     }
 
@@ -53,7 +54,8 @@ bool is_extension_handled(t_env *env, char *filepath)
 				return true;
 	}
 
-	fprintf(stderr, FMT_ERROR " Unhandled extension.\n");
+    if (env->modes & SH_VERBOSE)
+	    fprintf(stderr, FMT_ERROR " Unhandled extension.\n");
 
 	return false;
 }

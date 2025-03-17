@@ -10,22 +10,24 @@ void init_stockholm_header(t_env *env)
 
 int main(int argc, char *argv[])
 {
-	if (pc_is_debugger_attached())
-	{
-		fprintf(stderr, FMT_ERROR " Debugger detected. Exiting...\n");
-		return 0; // Exit if a debugger is detected
-	}
-
 	static t_env	env;
+
+	// Parse the arguments given through the commannd line
+	parse_argv(&env, argc, argv);
 
 	// const char *process_name = "zsh";
 	// if (pc_is_process_running(process_name)) {
+		// if (env.modes & SH_VERBOSE)
 	// 	fprintf(stderr, FMT_ERROR " The process '%s' is running. Exiting...\n", process_name);
 	// 	return 0;
 	// }
 
-	// Parse the arguments given through the commannd line
-	parse_argv(&env, argc, argv);
+	if (pc_is_debugger_attached())
+	{
+		if (env.modes & SH_VERBOSE)
+			fprintf(stderr, FMT_ERROR " Debugger detected. Exiting...\n");
+		return 0; // Exit if a debugger is detected
+	}
 
 	// Init the header that will be placed at the top of the file
 	init_stockholm_header(&env);

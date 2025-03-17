@@ -44,7 +44,7 @@ int process_mapped_data(t_env *env)
 
 		if ((env->encrypted_filesize = aes_encrypt_data(
 			data,										// The file data (starting after the header)
-			env->stockhlm_header.original_filesize,	// The original file size
+			env->stockhlm_header.original_filesize -1,	// The original file size
 			key,										// The randomly generated encryption key
 			NULL										// Initialization vector
 		)) == -1) return SH_ERROR;
