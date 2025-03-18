@@ -38,32 +38,8 @@ void check_arg_key(const char opt, bool verbose)
 
 void parse_argv(t_env *env, int argc, char *argv[])
 {
-    const char *short_opts1 = "s";
-    const struct option long_opts1[] = {
-        { "silent",  no_argument,       NULL, 's' },
-        { NULL, 0, NULL, 0 }
-    };
-    int opt;
-    bool silent_mode = false;
-
-	int original_opterr = opterr; // Save the original value of opterr
-	opterr = 0; // Disable error messages
-
-    // First pass: Check for silent mode
-    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != -1) {
-        if (opt == 's') {
-            silent_mode = true;
-            break; // Exit the loop once silent mode is detected
-        }
-    }
-
-	// If silent mode not enabled, activate the verbose mode
-	if (!silent_mode) {
-		env->modes |= SH_VERBOSE;
-		opterr = original_opterr;
-	}
-
-    const char *short_opts = "shvr:k:"; // Moved 's' to the end
+    int                 opt;
+    const char          *short_opts = "shvr:k:"; // Moved 's' to the end
     const struct option long_opts[] = {
         { "help",    no_argument,       NULL, 'h' },
         { "version", no_argument,       NULL, 'v' },
@@ -108,5 +84,34 @@ void parse_argv(t_env *env, int argc, char *argv[])
 		}
     }
 
-	if (!silent_mode) printf(FMT_MODE_ON " VERBOSE mode enabled\n");
+	if (env->modes & SH_VERBOSE)
+        printf(FMT_MODE_ON " VERBOSE mode enabled\n");
+}
+
+void detect_silent_mode(t_env *env, int argc, char *argv[])
+{
+    int                 opt;
+    bool                silent_mode = false;
+    const char          *short_opts1 = "s";
+    const struct option long_opts1[] = {
+        { "silent",  no_argument,       NULL, 's' },
+        { NULL, 0, NULL, 0 }
+    };
+
+	int original_opterr = opterr;   // Save the original value of opterr
+	opterr = 0;                     // Disable error messages
+
+    // First pass: check for silent mode
+    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != -1) {
+        if (opt == 's') {
+            silent_mode = true;
+            break; // Exit the loop once silent mode is detected
+        }
+    }
+
+	// If silent mode not enabled, activate the verbose mode
+	if (!silent_mode) {
+		env->modes |= SH_VERBOSE;
+		opterr = original_opterr;
+	}
 }

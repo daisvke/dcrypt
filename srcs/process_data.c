@@ -34,7 +34,7 @@ int process_mapped_data(t_env *env)
 
 		if (env->modes & SH_VERBOSE) {
 			printf(FMT_INFO " Decrypted %zu bytes.\n", env->encrypted_filesize);
-			printf(FMT_DONE "Decryption complete.");
+			printf(FMT_DONE "Decryption complete.\n");
 		}	
 	}
 	else // Encryption mode
