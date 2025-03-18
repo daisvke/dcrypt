@@ -29,7 +29,7 @@
 
 // Paths of the target directories
 # define SH_TARGET_ARRAY_SIZE   1
-# define SH_TARGET_PATHS        { "/home/mint/infection/.f" }
+# define SH_TARGET_PATHS        { "/home/mint/infection/" }
 
 // Unhandled paths
 # define SH_UNHANDLED_DIRS_ARRAY_SIZE   2
@@ -135,6 +135,7 @@ typedef struct s_env
 /*---------------------------- Function prototypes ------------------------*/
 
 void    parse_argv(t_env *env, int argc, char *argv[]);
+void    detect_silent_mode(t_env *env, int argc, char *argv[]);
 
 char    *get_filename(char *argv[]);
 int     map_file_into_memory(t_env *env, const char *filename);
