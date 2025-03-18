@@ -12,9 +12,8 @@ int main(int argc, char *argv[])
 {
 	static t_env	env;
 
+	// Detect first silent mode
 	detect_silent_mode(&env, argc, argv);
-	// Parse the arguments given through the commannd line
-	parse_argv(&env, argc, argv);
 
 	// const char *process_name = "zsh";
 	// if (pc_is_process_running(process_name)) {
@@ -23,12 +22,15 @@ int main(int argc, char *argv[])
 	// 	return 0;
 	// }
 
-	if (pc_is_debugger_attached())
-	{
-		if (env.modes & SH_VERBOSE)
-			fprintf(stderr, FMT_ERROR " Debugger detected. Exiting...\n");
-		return 0; // Exit if a debugger is detected
-	}
+	// if (pc_is_debugger_attached())
+	// {
+	// 	if (env.modes & SH_VERBOSE)
+	// 		fprintf(stderr, FMT_ERROR " Debugger detected. Exiting...\n");
+	// 	return 0; // Exit if a debugger is detected
+	// }
+
+	// Parse the arguments given through the commannd line
+	parse_argv(&env, argc, argv);
 
 	// Init the header that will be placed at the top of the file
 	init_stockholm_header(&env);
