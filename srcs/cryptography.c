@@ -1,4 +1,4 @@
-#include "stockholm.h"
+#include "dcrypt.h"
 
 /*
  * Perform AES-128 CBC encryption
@@ -137,13 +137,13 @@ unsigned char *get_encryption_key(t_env *env)
 	unsigned char *key = NULL;
 
 	// In decryption mode, we use the key saved in the file header
-	if (env->modes & SH_REVERSE)
+	if (env->modes & DCREVERSE)
 	{
         if (env->decryption_key) return env->decryption_key;
 
-		// key = (unsigned char *)env->stockhlm_header.encryption_key;
+		// key = (unsigned char *)env->dcrypt_header.encryption_key;
 
-		if (env->modes & SH_VERBOSE)
+		if (env->modes & DCVERBOSE)
 			printf(
                 FMT_INFO
                 " Using encryption key => " FMT_YELLOW "%s\n" FMT_RESET,
@@ -154,14 +154,14 @@ unsigned char *get_encryption_key(t_env *env)
 	{
         if (env->encryption_key) return env->encryption_key;
 		// Generate the key that will be used for the encryption
-		key = keygen(SH_KEYCHARSET, SH_AES_KEY_SIZE);
+		key = keygen(DCKEYCHARSET, DCAES_KEY_SIZE);
 		if (!key)
 			return NULL;
 
 		// Save the key on the custom header
-		// memcpy(env->stockhlm_header.encryption_key, key, SH_ENCRYPT_KEY_SIZE);
+		// memcpy(env->dcrypt_header.encryption_key, key, DCENCRYPT_KEY_SIZE);
 
-		if (env->modes & SH_VERBOSE)
+		if (env->modes & DCVERBOSE)
 			printf(
                 FMT_INFO
                 " Generated random key => " FMT_YELLOW "%s\n" FMT_RESET,

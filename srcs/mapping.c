@@ -1,24 +1,24 @@
-#include "stockholm.h"
+#include "dcrypt.h"
 
 // Verify that the file header's magic number is ours
 bool is_magic_nbr_correct(const unsigned char *data)
 {
-    return strncmp((const char *)data, SH_SIGNATURE, SH_STOCKHLM_HEADER_SIZE) == 0;
+    return strncmp((const char *)data, DCSIGNATURE, DCDCRYPT_HEADER_SIZE) == 0;
 }
 
 int map_file_into_memory(t_env *env, const char *filename)
 {
     // Open the target binary file
     int fd = open(filename, O_RDONLY);
-    if (fd < 0) return SH_ERROR;
+    if (fd < 0) return DCERROR;
     
     // Determine the file size by moving the cursor till the end
     off_t res = lseek(fd, 0, SEEK_END);
     // Check that lseek didn't fail and not returning > int max
-    if (res < 0 || res > 2147483647) return SH_ERROR;
+    if (res < 0 || res > 2147483647) return DCERROR;
 
     // Put back the cursor at the beginning of the file
-    if (lseek(fd, 0, SEEK_SET) < 0) return SH_ERROR;
+    if (lseek(fd, 0, SEEK_SET) < 0) return DCERROR;
 
     /* Map the file into memory
         - PROT_READ: read-only access
@@ -35,43 +35,43 @@ int map_file_into_memory(t_env *env, const char *filename)
     if (env->mapped_data == MAP_FAILED)
     {
         close(fd);
-        return SH_ERROR;
+        return DCERROR;
     }
 
     close(fd); // No need to keep the fd since the file is mapped
 
-    if (env->modes & SH_REVERSE)
+    if (env->modes & DCREVERSE)
     {
         if (!is_magic_nbr_correct(env->mapped_data)) {
-            if (env->modes & SH_VERBOSE)
+            if (env->modes & DCVERBOSE)
                 fprintf(
                     stderr,
                     FMT_ERROR " Signature not found in the file header, abort decryption...\n"
                 );
-            return SH_ERROR;
+            return DCERROR;
         }
 
         // Copy the custom header of the encrypted file to the env->global variable
-        memcpy(&env->stockhlm_header, env->mapped_data, SH_STOCKHLM_HEADER_SIZE);
+        memcpy(&env->dcrypt_header, env->mapped_data, DCDCRYPT_HEADER_SIZE);
         // Save the encrypted file size without the added custom header size
-        env->encrypted_filesize = res - SH_STOCKHLM_HEADER_SIZE;
+        env->encrypted_filesize = res - DCDCRYPT_HEADER_SIZE;
     } else {
         if (is_magic_nbr_correct(env->mapped_data)) {
-            if (env->modes & SH_VERBOSE)
+            if (env->modes & DCVERBOSE)
                 fprintf(
                     stderr,
                     FMT_ERROR " Signature found in the file header, abort encryption...\n"
                 );
-            return SH_ERROR;
+            return DCERROR;
         }
-        env->stockhlm_header.original_filesize = res;
+        env->dcrypt_header.original_filesize = res;
     }
 
     // // Abort if the current target already contains our signature
-    // if (search_binary((char *)mapped_data, stockhlm_header.original_filesize, SH_SIGNATURE))
+    // if (search_binary((char *)mapped_data, dcrypt_header.original_filesize, DCSIGNATURE))
     //     return 1;
 
-    return SH_SUCCESS;
+    return DCSUCCESS;
 }
 
 bool write_encrypted_data_to_file(t_env *env, const char *target_path)
@@ -83,24 +83,24 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
     //  with our custom extension
     snprintf(
         new_target_path, sizeof(new_target_path),
-        "%s.%s", target_path, SH_STOCKHLM_EXT
+        "%s.%s", target_path, DCDCRYPT_EXT
     );
 
     outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);        
 
     // Check if open() has failed
-    if (outfilefd == 1) return SH_ERROR;
+    if (outfilefd == 1) return DCERROR;
 
     // Write the custom header first to the outfile
-    ssize_t bytes_written = write(outfilefd, &env->stockhlm_header, SH_STOCKHLM_HEADER_SIZE);
-    if (bytes_written < 0) return SH_ERROR;
+    ssize_t bytes_written = write(outfilefd, &env->dcrypt_header, DCDCRYPT_HEADER_SIZE);
+    if (bytes_written < 0) return DCERROR;
 
     // Then write the processed data to the outfile
     bytes_written = write(outfilefd, env->mapped_data, env->encrypted_filesize);
-    if (bytes_written < 0) return SH_ERROR;
+    if (bytes_written < 0) return DCERROR;
 
     close(outfilefd);
-    return SH_SUCCESS;
+    return DCSUCCESS;
 }
 
 bool write_decrypted_data_to_file(t_env *env, char *target_path)
@@ -108,24 +108,24 @@ bool write_decrypted_data_to_file(t_env *env, char *target_path)
     int     outfilefd;
 
     // We remove our custom extension by terminating the filename earlier.
-    target_path[strlen(target_path) - SH_STOCKHLM_EXT_SIZE] = '\0';
+    target_path[strlen(target_path) - DCDCRYPT_EXT_SIZE] = '\0';
 
     // 0755: rwx for owner, rx for group and others
     outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
 
     // Check if open() has failed
-    if (outfilefd == 1) return SH_ERROR;
+    if (outfilefd == 1) return DCERROR;
 
     // Write the processed data to the outfile
     ssize_t bytes_written = write(
         outfilefd,
-        env->mapped_data + SH_STOCKHLM_HEADER_SIZE, // Don't keep the custom header
-        env->stockhlm_header.original_filesize
+        env->mapped_data + DCDCRYPT_HEADER_SIZE, // Don't keep the custom header
+        env->dcrypt_header.original_filesize
     );
-    if (bytes_written < 0) return SH_ERROR;
+    if (bytes_written < 0) return DCERROR;
 
     close(outfilefd);
-    return SH_SUCCESS;
+    return DCSUCCESS;
 }
 
 // Write the processed file data back to a new file
@@ -135,20 +135,20 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
     // Copy the original string to the temporary variable
     strcpy(temp_path, target_path);
 
-    if (env->modes & SH_REVERSE)
+    if (env->modes & DCREVERSE)
     {
-        if (write_decrypted_data_to_file(env, (char *)target_path) == SH_ERROR)
-            return SH_ERROR;
-        munmap(env->mapped_data, env->encrypted_filesize + SH_STOCKHLM_HEADER_SIZE);
+        if (write_decrypted_data_to_file(env, (char *)target_path) == DCERROR)
+            return DCERROR;
+        munmap(env->mapped_data, env->encrypted_filesize + DCDCRYPT_HEADER_SIZE);
     } else
     {
-        if (write_encrypted_data_to_file(env, target_path) == SH_ERROR)
-            return SH_ERROR;
-        munmap(env->mapped_data, env->stockhlm_header.original_filesize);
+        if (write_encrypted_data_to_file(env, target_path) == DCERROR)
+            return DCERROR;
+        munmap(env->mapped_data, env->dcrypt_header.original_filesize);
     }
 
     // Remove the old file from the system
-    if (remove(temp_path) != 0) return SH_ERROR;
+    if (remove(temp_path) != 0) return DCERROR;
 
-    return SH_SUCCESS;
+    return DCSUCCESS;
 }

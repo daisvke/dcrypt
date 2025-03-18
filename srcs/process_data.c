@@ -1,4 +1,4 @@
-#include "stockholm.h"
+#include "dcrypt.h"
 
 /*
  * Encrypt/decrypt the mapped data
@@ -7,22 +7,22 @@
 int process_mapped_data(t_env *env)
 {
 	const unsigned char *key = get_encryption_key(env);
-	if (!key) return SH_ERROR;
+	if (!key) return DCERROR;
 
-	bool reverse = env->modes & SH_REVERSE;
+	bool reverse = env->modes & DCREVERSE;
 	// Only skip encrypting the custom header in reverse mode
-	unsigned char *data = reverse ? env->mapped_data + SH_STOCKHLM_HEADER_SIZE : env->mapped_data;
+	unsigned char *data = reverse ? env->mapped_data + DCDCRYPT_HEADER_SIZE : env->mapped_data;
 
 	// xor_with_additive_cipher(
 	// 	key,								 // The randomly generated encryption key
-	// 	SH_ENCRYPT_KEY_SIZE,				 // The key width
+	// 	DCENCRYPT_KEY_SIZE,				 // The key width
 	// 	(void *)data,						 // The file data (starting after the header)
-	// 	env->stockhlm_header.original_filesize, // The original file size
+	// 	env->dcrypt_header.original_filesize, // The original file size
 	// 	reverse								 // Encryption/decryption mode
 	// );
 
-	if (env->modes & SH_REVERSE) { // Decryption mode
-		if (env->modes & SH_VERBOSE)
+	if (env->modes & DCREVERSE) { // Decryption mode
+		if (env->modes & DCVERBOSE)
 			printf(FMT_INFO " Starting decryption...\n");
 
 		if (aes_decrypt_data(
@@ -30,30 +30,30 @@ int process_mapped_data(t_env *env)
 			env->encrypted_filesize,				// The original file size
 			env->decryption_key,					// The randomly generated encryption key
 			NULL									// Initialization vector
-		) == -1) return SH_ERROR;
+		) == -1) return DCERROR;
 
-		if (env->modes & SH_VERBOSE) {
+		if (env->modes & DCVERBOSE) {
 			printf(FMT_INFO " Decrypted %zu bytes.\n", env->encrypted_filesize);
 			printf(FMT_DONE "Decryption complete.\n");
 		}	
 	}
 	else // Encryption mode
 	{
-		if (env->modes & SH_VERBOSE)
+		if (env->modes & DCVERBOSE)
 			printf(FMT_INFO " Starting encryption...\n");
 
 		if ((env->encrypted_filesize = aes_encrypt_data(
 			data,										// The file data (starting after the header)
-			env->stockhlm_header.original_filesize -1,	// The original file size
+			env->dcrypt_header.original_filesize -1,	// The original file size
 			key,										// The randomly generated encryption key
 			NULL										// Initialization vector
-		)) == -1) return SH_ERROR;
+		)) == -1) return DCERROR;
 
-		if (env->modes & SH_VERBOSE) {
+		if (env->modes & DCVERBOSE) {
 			printf(
 				FMT_INFO
 				" Data size after encryption (custom header excluded): %zu bytes.\n",
-				env->stockhlm_header.original_filesize
+				env->dcrypt_header.original_filesize
 			);
 			printf(FMT_DONE "Encryption complete.\n");
 		}	
@@ -65,5 +65,5 @@ int process_mapped_data(t_env *env)
 		key = NULL;
 	}
 
-	return SH_SUCCESS;
+	return DCSUCCESS;
 }

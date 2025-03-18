@@ -1,10 +1,10 @@
-#include "stockholm.h"
+#include "dcrypt.h"
 
 bool is_entry_handled(const char *foldername)
 {
-	char *dir_paths[SH_UNHANDLED_DIRS_ARRAY_SIZE] = SH_UNHANDLED_DIRS;
+	char *dir_paths[DCUNHANDLED_DIRS_ARRAY_SIZE] = DCUNHANDLED_DIRS;
 
-	for (size_t i = 0; i < SH_UNHANDLED_DIRS_ARRAY_SIZE; ++i)
+	for (size_t i = 0; i < DCUNHANDLED_DIRS_ARRAY_SIZE; ++i)
 		if (strcmp(foldername, dir_paths[i]) == 0)
 			return false;
 
@@ -33,14 +33,14 @@ void handle_file(t_env *env, const char *filepath)
 	 */
 
 	if (map_file_into_memory(env, filepath))
-		if (env->modes & SH_VERBOSE) {
+		if (env->modes & DCVERBOSE) {
 			perror("An error occurred while attempting to map the file into memory");
 			return;
 		}
 
 	if (process_mapped_data(env))
-		if (env->modes & SH_VERBOSE) {
-			if (env->modes & SH_REVERSE)
+		if (env->modes & DCVERBOSE) {
+			if (env->modes & DCREVERSE)
 				fprintf(stderr, FMT_ERROR "Failed to decrypt data.\n");
 			else
 				fprintf(stderr, FMT_ERROR "Failed to encrypt data.\n");
@@ -50,14 +50,14 @@ void handle_file(t_env *env, const char *filepath)
 
 	// Write the final file data in the target path
 	if (write_processed_data_to_file(env, filepath))
-		if (env->modes & SH_VERBOSE)
+		if (env->modes & DCVERBOSE)
 			perror("An error occurred while attempting to write the mapped data into the file");
 }
 
 void handle_dir(t_env *env, char *target_dir_path)
 {
 	// A list of the created files during the process
-	char			*created_files[SH_MAX_FILES];
+	char			*created_files[DCMAX_FILES];
 	size_t			created_files_count = 0;
 	// Pointer to hold directory entry information
 	struct dirent	*entry;
@@ -82,7 +82,7 @@ void handle_dir(t_env *env, char *target_dir_path)
 			// Check if it's a directory
 			if (stat(path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode))
 			{
-				if (env->modes & SH_VERBOSE)
+				if (env->modes & DCVERBOSE)
 					printf("\n" FMT_INFO "Reading `%s`, type=DIR...\n", path);
 
 				// Recursive call for subdirectories
@@ -90,10 +90,10 @@ void handle_dir(t_env *env, char *target_dir_path)
 			}
 			else
 			{
-				if (env->modes & SH_VERBOSE)
+				if (env->modes & DCVERBOSE)
 					printf("\n" FMT_INFO "Reading `%s`, type=FILE...\n", path);
 
-				if (created_files_count < SH_MAX_FILES &&
+				if (created_files_count < DCMAX_FILES &&
 					is_extension_handled(env, path) &&
 					!is_created_file(created_files, created_files_count, path))
 				{

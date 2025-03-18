@@ -1,5 +1,5 @@
-#include "stockholm.h"
-
+#include "dcrypt.h"
+//TODO del file
 bool pc_is_process_running(const char *process_name)
 {
     DIR             *dir;   // Directory stream type

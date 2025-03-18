@@ -1,7 +1,7 @@
-#include "stockholm.h"
+#include "dcrypt.h"
 
 void print_help() {
-    printf(" Usage: ./stockholm [-h|-v|-s|-k <KEY>|-r <KEY>] \n\n"
+    printf(" Usage: ./dcrypt [-h|-v|-s|-k <KEY>|-r <KEY>] \n\n"
            " Options:\n"
            "  -v, --version          Show version information\n"
            "  -s, --silent           Run in silent mode (non-verbose)\n"
@@ -13,7 +13,7 @@ void print_help() {
 void print_version()
 {
 	printf(
-		SH_PROG_NAME " " SH_PROG_VERSION " | Copyright (c) " SH_PROG_AUTHOR "\n"
+		DCPROG_NAME " " DCPROG_VERSION " | Copyright (c) " DCPROG_AUTHOR "\n"
 	);
 	exit(EXIT_SUCCESS);
 }
@@ -21,7 +21,7 @@ void print_version()
 void check_arg_key(const char opt, bool verbose)
 {
 	// Check if the argument is provided and that the key has required length
-	if ((!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)))
+	if ((!optarg || (strlen(optarg) != DCAES_KEY_SIZE)))
 	{
         if (verbose)
         {
@@ -56,14 +56,14 @@ void parse_argv(t_env *env, int argc, char *argv[])
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
             case 'k':
-                check_arg_key(opt, env->modes & SH_VERBOSE);
+                check_arg_key(opt, env->modes & DCVERBOSE);
                 env->encryption_key = (unsigned char*)optarg;
                 break;
             case 'r':
-                env->modes |= SH_REVERSE;
-                check_arg_key(opt, env->modes & SH_VERBOSE);
+                env->modes |= DCREVERSE;
+                check_arg_key(opt, env->modes & DCVERBOSE);
                 env->decryption_key = (unsigned char*)optarg;
-				if (env->modes & SH_VERBOSE)
+				if (env->modes & DCVERBOSE)
 					printf(FMT_MODE_ON " REVERSE mode enabled\n");
                 break;
             case 'v':
@@ -75,7 +75,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
             case 's':
                 break;
             default:
-				if (env->modes & SH_VERBOSE)
+				if (env->modes & DCVERBOSE)
 					fprintf(
 						stderr,
 						FMT_ERROR "Invalid arguments. Use -h or --help for usage.\n"
@@ -84,7 +84,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
 		}
     }
 
-	if (env->modes & SH_VERBOSE)
+	if (env->modes & DCVERBOSE)
         printf(FMT_MODE_ON " VERBOSE mode enabled\n");
 }
 
@@ -111,7 +111,7 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 
 	// If silent mode not enabled, activate the verbose mode
 	if (!silent_mode) {
-		env->modes |= SH_VERBOSE;
+		env->modes |= DCVERBOSE;
 		opterr = original_opterr;
 	}
 }
