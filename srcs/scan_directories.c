@@ -41,9 +41,9 @@ void handle_file(t_env *env, const char *filepath)
 	if (process_mapped_data(env))
 		if (env->modes & SH_VERBOSE) {
 			if (env->modes & SH_REVERSE)
-				fprintf(stderr, "Failed to decrypt data.\n");
+				fprintf(stderr, FMT_ERROR "Failed to decrypt data.\n");
 			else
-				fprintf(stderr, "Failed to encrypt data.\n");
+				fprintf(stderr, FMT_ERROR "Failed to encrypt data.\n");
 			// perror("An error occurred while attempting to process the mapped data");
 			return;
 		}
@@ -57,14 +57,13 @@ void handle_file(t_env *env, const char *filepath)
 void handle_dir(t_env *env, char *target_dir_path)
 {
 	// A list of the created files during the process
-	char *created_files[SH_MAX_FILES];
-	size_t created_files_count = 0;
+	char			*created_files[SH_MAX_FILES];
+	size_t			created_files_count = 0;
 	// Pointer to hold directory entry information
-	struct dirent *entry;
+	struct dirent	*entry;
 	// Open the directory stream
-	DIR *dir = opendir(target_dir_path);
-	if (!dir)
-		return;
+	DIR				*dir = opendir(target_dir_path);
+	if (!dir) return;
 
 	// Loop through each entry in the directory
 	while ((entry = readdir(dir)) != NULL)
@@ -74,8 +73,8 @@ void handle_dir(t_env *env, char *target_dir_path)
 		if (is_entry_handled(entry->d_name))
 		{
 			// Create a buffer to hold the full path
-			char path[1024];
-			struct stat statbuf;
+			char		path[1024];
+			struct stat	statbuf;
 
 			// Use snprintf() to safely concatenate the strings
 			snprintf(path, sizeof(path), "%s/%s", target_dir_path, entry->d_name);

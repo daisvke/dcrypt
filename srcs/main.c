@@ -12,6 +12,7 @@ int main(int argc, char *argv[])
 {
 	static t_env	env;
 
+	// parse_argv_for_silent_mode(&env, argc, argv);
 	// Parse the arguments given through the commannd line
 	parse_argv(&env, argc, argv);
 

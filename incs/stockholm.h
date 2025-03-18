@@ -29,7 +29,7 @@
 
 // Paths of the target directories
 # define SH_TARGET_ARRAY_SIZE   1
-# define SH_TARGET_PATHS        { "/home/mint/infection" }
+# define SH_TARGET_PATHS        { "/home/mint/infection/.f" }
 
 // Unhandled paths
 # define SH_UNHANDLED_DIRS_ARRAY_SIZE   2

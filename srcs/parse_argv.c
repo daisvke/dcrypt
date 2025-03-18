@@ -18,83 +18,95 @@ void print_version()
 	exit(EXIT_SUCCESS);
 }
 
-void print_arg_key_error_msg(void)
-{
-	fprintf(
-		stderr,
-		FMT_ERROR
-		" The -k/-r options require a 128 bits encryption key as an argument.\n"
-	);
-}
-
-bool check_arg_key(void)
+void check_arg_key(const char opt, bool verbose)
 {
 	// Check if the argument is provided and that the key has required length
-	if (!optarg || (strlen(optarg) != SH_AES_KEY_SIZE))
-		return SH_ERROR;
-	return SH_SUCCESS;
+	if ((!optarg || (strlen(optarg) != SH_AES_KEY_SIZE)))
+	{
+        if (verbose)
+        {
+            fprintf(
+                stderr,
+                FMT_ERROR
+                " The -%c option require a 128 bits encryption key as an argument.\n",
+                opt
+            );
+        }
+		exit(EXIT_FAILURE);
+	}
 }
 
 void parse_argv(t_env *env, int argc, char *argv[])
 {
-    const char			*short_opts = "hvsr:k:";
-    const struct option	long_opts[] = {
-        { "help",		no_argument,		NULL, 'h' },
-        { "version",	no_argument,		NULL, 'v' },
-        { "silent",		no_argument,		NULL, 's' },
-        { "key",		required_argument,	NULL, 'k' },
-        { "reverse",	required_argument,	NULL, 'r' },
+    const char *short_opts1 = "s";
+    const struct option long_opts1[] = {
+        { "silent",  no_argument,       NULL, 's' },
         { NULL, 0, NULL, 0 }
     };
-    int					opt;
-	bool				silent_mode = false;
-	bool				invalid_opt = false;
-	bool				key_missing = false;
+    int opt;
+    bool silent_mode = false;
 
-    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
-        switch (opt) {
-			case 'k':
-				key_missing = key_missing == true ? true : check_arg_key();
-				env->encryption_key = (unsigned char*)optarg;
-				break;
-			case 'r':
-				env->modes |= SH_REVERSE;
-				key_missing = key_missing == true ? true : check_arg_key();
-				env->decryption_key = (unsigned char*)optarg;
-				break;
-			case 's':
-				silent_mode = true;
-				break;
-			case 'v':
-				print_version();
-				break;
-			case 'h':
-				print_help();
-				exit(EXIT_SUCCESS);
-			default:
-				invalid_opt = true;
+	int original_opterr = opterr; // Save the original value of opterr
+	opterr = 0; // Disable error messages
+
+    // First pass: Check for silent mode
+    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != -1) {
+        if (opt == 's') {
+            silent_mode = true;
+            break; // Exit the loop once silent mode is detected
         }
     }
 
+	// If silent mode not enabled, activate the verbose mode
 	if (!silent_mode) {
 		env->modes |= SH_VERBOSE;
-		printf(FMT_MODE_ON " VERBOSE mode enabled\n");
+		opterr = original_opterr;
+	}
 
-		if (env->modes & SH_REVERSE)
-			printf(FMT_MODE_ON " REVERSE mode enabled\n");
+    const char *short_opts = "shvr:k:"; // Moved 's' to the end
+    const struct option long_opts[] = {
+        { "help",    no_argument,       NULL, 'h' },
+        { "version", no_argument,       NULL, 'v' },
+        { "silent",  no_argument,       NULL, 's' },
+        { "key",     required_argument, NULL, 'k' },
+        { "reverse", required_argument, NULL, 'r' },
+        { NULL, 0, NULL, 0 }
+    };
 
-		if (invalid_opt) {
-			fprintf(
-				stderr,
-				FMT_ERROR " Invalid arguments. Use -h or --help for usage.\n"
-			);
+    // Reset optind to re-parse the arguments
+    optind = 1;
+
+    // Second pass: Process other options
+    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
+        switch (opt) {
+            case 'k':
+                check_arg_key(opt, env->modes & SH_VERBOSE);
+                env->encryption_key = (unsigned char*)optarg;
+                break;
+            case 'r':
+                env->modes |= SH_REVERSE;
+                check_arg_key(opt, env->modes & SH_VERBOSE);
+                env->decryption_key = (unsigned char*)optarg;
+				if (env->modes & SH_VERBOSE)
+					printf(FMT_MODE_ON " REVERSE mode enabled\n");
+                break;
+            case 'v':
+                print_version();
+                break;
+            case 'h':
+                print_help();
+                exit(EXIT_SUCCESS);
+            case 's':
+                break;
+            default:
+				if (env->modes & SH_VERBOSE)
+					fprintf(
+						stderr,
+						FMT_ERROR "Invalid arguments. Use -h or --help for usage.\n"
+					);
+				exit(EXIT_FAILURE);
 		}
-	}
+    }
 
-	if (key_missing) {
-		if (!silent_mode) print_arg_key_error_msg();
-		exit(EXIT_FAILURE);
-	}
-
-	if (invalid_opt) exit(EXIT_FAILURE);
+	if (!silent_mode) printf(FMT_MODE_ON " VERBOSE mode enabled\n");
 }
