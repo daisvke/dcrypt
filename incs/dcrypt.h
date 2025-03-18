@@ -29,7 +29,7 @@
 
 // Paths of the target directories
 # define DC_TARGET_ARRAY_SIZE   1
-# define DC_TARGET_PATHS        { "/home/mint/infection/" }
+# define DC_TARGET_PATHS        { "/home/mint/infection" } // No '/' at the end
 
 // Unhandled paths
 # define DC_UNHANDLED_DIRS_ARRAY_SIZE   2
@@ -130,6 +130,7 @@ typedef struct s_env
     size_t              encrypted_filesize;
     unsigned char       *encryption_key;
     unsigned char       *decryption_key;
+    bool                key_allocated;
 }   t_env;
 
 /*---------------------------- Function prototypes ------------------------*/

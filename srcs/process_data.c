@@ -9,7 +9,7 @@ int process_mapped_data(t_env *env)
 	bool reverse = env->modes & DC_REVERSE;
 	// Only skip encrypting the custom header in reverse mode
 	unsigned char *data = reverse ?
-		env->mapped_data + DC_DCRYPT_HEADER_SIZE - 1 : env->mapped_data;
+		env->mapped_data + DC_DCRYPT_HEADER_SIZE : env->mapped_data;
 
 	if (env->modes & DC_REVERSE) { // Decryption mode
 		if (env->modes & DC_VERBOSE)
@@ -47,12 +47,6 @@ int process_mapped_data(t_env *env)
 			);
 			printf(FMT_DONE "Encryption complete.\n");
 		}	
-	}
-
-	if (!reverse && !env->encryption_key)
-	{
-		free((void *)env->encryption_key);
-		env->encryption_key = NULL;
 	}
 
 	return DC_SUCCESS;

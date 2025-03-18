@@ -38,9 +38,8 @@
 ) {
     // A structure that holds the context for the encryption operation
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    if (!ctx) {
+    if (!ctx)
         return -1; // Context creation error
-    }
 
     // Initialize the encryption operation
     if (EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
@@ -74,9 +73,8 @@ int aes_decrypt_data(
     unsigned char       *iv
 ) {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    if (!ctx) {
+    if (!ctx)
         return -1; // Context creation error
-    }
 
     // Initialize the decryption operation
     if (EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
@@ -154,6 +152,7 @@ unsigned char *get_encryption_key(t_env *env)
         if (env->encryption_key) return env->encryption_key;
 		// Generate the key that will be used for the encryption
 		env->encryption_key = keygen(DC_KEYCHARSET, DC_AES_KEY_SIZE);
+        env->key_allocated = true;
 		if (!env->encryption_key) return NULL;
 
 		// Save the key on the custom header
