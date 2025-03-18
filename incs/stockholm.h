@@ -23,7 +23,7 @@
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // About the program
-# define SH_PROG_VERSION        "1.0.3"
+# define SH_PROG_VERSION        "1.1.3"
 # define SH_PROG_AUTHOR         "d."
 # define SH_PROG_NAME           "Stockholm"
 

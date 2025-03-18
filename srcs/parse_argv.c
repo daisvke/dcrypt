@@ -1,8 +1,8 @@
 #include "stockholm.h"
 
 void print_help() {
-    printf(FMT_INFO " Usage: ./stockholm [-h|-v|-s|-k <KEY>|-r <KEY>] \n\n"
-           FMT_INFO " Options:\n"
+    printf(" Usage: ./stockholm [-h|-v|-s|-k <KEY>|-r <KEY>] \n\n"
+           " Options:\n"
            "  -v, --version          Show version information\n"
            "  -s, --silent           Run in silent mode (non-verbose)\n"
            "  -k, --key <KEY>    	 Provide an encryption key\n"
