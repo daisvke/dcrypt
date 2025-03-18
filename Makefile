@@ -1,7 +1,7 @@
-#  ▗▄▄▗▄▄▄▗▄▖ ▗▄▄▗▖ ▗▗▖ ▗▖▗▄▖▗▖  ▗▖  ▗▖
-# ▐▌    █▐▌ ▐▐▌  ▐▌▗▞▐▌ ▐▐▌ ▐▐▌  ▐▛▚▞▜▌
-#  ▝▀▚▖ █▐▌ ▐▐▌  ▐▛▚▖▐▛▀▜▐▌ ▐▐▌  ▐▌  ▐▌
-# ▗▄▄▞▘ █▝▚▄▞▝▚▄▄▐▌ ▐▐▌ ▐▝▚▄▞▐▙▄▄▐▌  ▐▌
+# ▗▄▄▄  ▗▄▄▖▗▄▄▖▗▖  ▗▖▗▄▄▖▗▄▄▄▖
+# ▐▌  █▐▌   ▐▌ ▐▌▝▚▞▘ ▐▌ ▐▌ █  
+# ▐▌  █▐▌   ▐▛▀▚▖ ▐▌  ▐▛▀▘  █  
+# ▐▙▄▄▀▝▚▄▄▖▐▌ ▐▌ ▐▌  ▐▌    █  
                                      
 
 
@@ -25,59 +25,39 @@ DONE				= $(GREEN)[DONE]$(RESET)
 
 
 # **************************************************************************** #
-#       COMMANDS                                                               #
+#       BUILD COMMANDS                                                         #
 # **************************************************************************** #
+
 CC					= clang
-ASM					= nasm
-ASOBJS_FLAGS		= -f elf64
-ASFLAGS				= -f bin
 
-
-# **************************************************************************** #
-#       FLAGS                                                                  #
-# **************************************************************************** #
 CFLAGS				= -Wall -Wextra
 SSLFLAGS			= -lcrypto -lssl
 
 
 # **************************************************************************** #
-#       SOURCES                                                                #
+#       BUILD FILES                                                            #
 # **************************************************************************** #
+
+# Source files
+
 SRCS_DIR			= srcs/
 SRCS_FILES			= $(notdir $(wildcard $(SRCS_DIR)*.c))
 
-ASM_SRCS_DIR		= srcs/
-ASM_SRCS_FILES		= $(notdir $(wildcard $(ASM_SRCS_DIR)*.s))
-ASM_SRCS			= $(addprefix $(ASM_SRCS_DIR), $(ASM_SRCS_FILES))
+# Include files
 
-STUB_SRCS_DIR		= $(SRCS_DIR)unpacker/
-STUB_SRCS_FILES		= $(notdir $(wildcard $(STUB_SRCS_DIR)*.s))
-
-
-# **************************************************************************** #
-#       INCLUDES                                                               #
-# **************************************************************************** #
 INCS_DIR			= incs/
 INCS_FILES			= $(notdir $(wildcard $(INCS_DIR)*.h))
 INCS 				= $(addprefix $(INCS_DIR), $(INCS_FILES))
 
+# Obj files
 
-# **************************************************************************** #
-#       OBJ                                                                    #
-# **************************************************************************** #
 OBJS_DIR			= objs/
 OBJS				= $(addprefix $(OBJS_DIR), $(SRCS_FILES:.c=.o))
 
-ASM_OBJS_DIR		= $(OBJS_DIR)
-ASM_OBJS			= $(addprefix $(ASM_OBJS_DIR), $(ASM_SRCS_FILES:.s=.o))
+# Test files
 
-
-# **************************************************************************** #
-#       TEST FILES                                                             #
-# **************************************************************************** #
 # Temporary folders where binaries are copied to
 TEMP_FOLDER1		= ~/infection
-
 QUINE_NAME			= bacteria
 
 # Path for a test file to copy to the folders above
