@@ -6,12 +6,10 @@
 
 int process_mapped_data(t_env *env)
 {
-	const unsigned char *key = get_encryption_key(env);
-	if (!key) return DC_ERROR;
-
 	bool reverse = env->modes & DC_REVERSE;
 	// Only skip encrypting the custom header in reverse mode
-	unsigned char *data = reverse ? env->mapped_data + DC_DCRYPT_HEADER_SIZE : env->mapped_data;
+	unsigned char *data = reverse ?
+		env->mapped_data + DC_DCRYPT_HEADER_SIZE - 1 : env->mapped_data;
 
 	if (env->modes & DC_REVERSE) { // Decryption mode
 		if (env->modes & DC_VERBOSE)
@@ -19,7 +17,7 @@ int process_mapped_data(t_env *env)
 
 		if (aes_decrypt_data(
 			data,									// The file data (starting after the header)
-			env->encrypted_filesize,				// The original file size
+			env->encrypted_filesize,				// The encrypted file size (without the custom header size)
 			env->decryption_key,					// The randomly generated encryption key
 			NULL									// Initialization vector
 		) == -1) return DC_ERROR;
@@ -36,8 +34,8 @@ int process_mapped_data(t_env *env)
 
 		if ((env->encrypted_filesize = aes_encrypt_data(
 			data,										// The file data (starting after the header)
-			env->dcrypt_header.original_filesize -1,	// The original file size
-			key,										// The randomly generated encryption key
+			env->dcrypt_header.original_filesize,		// The original file size
+			env->encryption_key,						// The randomly generated encryption key
 			NULL										// Initialization vector
 		)) == -1) return DC_ERROR;
 
@@ -53,8 +51,8 @@ int process_mapped_data(t_env *env)
 
 	if (!reverse && !env->encryption_key)
 	{
-		free((void *)key);
-		key = NULL;
+		free((void *)env->encryption_key);
+		env->encryption_key = NULL;
 	}
 
 	return DC_SUCCESS;

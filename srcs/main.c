@@ -6,6 +6,16 @@ void init_dcrypt_header(t_env *env)
 	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
 	// Set the size of the encrypted AES key
 	env->dcrypt_header.encrypted_key_len = DC_ENCRYPT_KEY_SIZE;
+	// Get the encryption key that will be used to encrypt/decrypt
+	const unsigned char *key = get_encryption_key(env);
+	if (!key) {
+		if (env->modes & DC_VERBOSE)
+			fprintf(
+				stderr,
+				FMT_ERROR "Failed to get the encryption key. Aborting...\n"
+			);
+		exit(EXIT_FAILURE);
+	}
 }
 
 int main(int argc, char *argv[])

@@ -23,7 +23,7 @@
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // About the program
-# define DC_PROG_VERSION        "1.1.3"
+# define DC_PROG_VERSION        "1.1.4"
 # define DC_PROG_AUTHOR         "d."
 # define DC_PROG_NAME           "dcrypt"
 
@@ -53,7 +53,7 @@ enum e_returns
 // Signature injected in the target files's dcrypt header
 # define DC_SIGNATURE           "TODCRYPT"
 # define DC_DCRYPT_EXT          "dcrypt"
-# define DC_DCRYPT_EXT_SIZE     3
+# define DC_DCRYPT_EXT_SIZE     7
 # define DC_AES_KEY_SIZE        16
 # define DC_AES_BLOCK_SIZE      16
 
