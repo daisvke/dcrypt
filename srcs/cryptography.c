@@ -108,7 +108,6 @@ int aes_decrypt_data(
 unsigned char *keygen(const char *charset, size_t strength)
 {
     unsigned char *key = malloc((strength + 1) * sizeof(char));
-    // Exit in case malloc fails
     if (key == NULL) return NULL;
 
     int charset_length = strlen(charset);

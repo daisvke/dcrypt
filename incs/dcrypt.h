@@ -95,15 +95,22 @@ typedef struct s_dcrypt_header
 
     uint32_t    encrypted_key_len;
 
+    // /* TODO del
+    //  * 0x000C RSA encrypted AES file encryption key.
+    //  * AES-128 key (16 bytes) is encrypted using RSA-2048 and stored here.
+    //  *
+    //  * If the asymmetric encryption mode is disabled, an unencrypted
+    //  * AES-128 key is stored.
+    //  */
+
+    // uint8_t     encryption_key[DC_ENCRYPT_KEY_SIZE];
+
     /*
-     * 0x000C RSA encrypted AES file encryption key.
-     * AES-128 key (16 bytes) is encrypted using RSA-2048 and stored here.
-     *
-     * If the asymmetric encryption mode is disabled, a unencrypted
-     * AES-128 key is stored.
+     * 0x000C AES-128 encryption's Initialization Vector (IV).
+     * A 16 bytes key is stored here.
      */
 
-    uint8_t     encryption_key[DC_ENCRYPT_KEY_SIZE];
+     uint8_t     iv_key[DC_ENCRYPT_KEY_SIZE];
 
     /*
      * 0x010C File type internal to this program.

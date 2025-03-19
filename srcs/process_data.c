@@ -19,7 +19,7 @@ int process_mapped_data(t_env *env)
 			data,									// The file data (starting after the header)
 			env->encrypted_filesize,				// The encrypted file size (without the custom header size)
 			env->decryption_key,					// The randomly generated encryption key
-			NULL									// Initialization vector
+			env->dcrypt_header.iv_key				// Initialization vector
 		) == -1) return DC_ERROR;
 
 		if (env->modes & DC_VERBOSE) {
@@ -36,7 +36,7 @@ int process_mapped_data(t_env *env)
 			data,										// The file data (starting after the header)
 			env->dcrypt_header.original_filesize,		// The original file size
 			env->encryption_key,						// The randomly generated encryption key
-			NULL										// Initialization vector
+			env->dcrypt_header.iv_key					// Initialization vector
 		)) == -1) return DC_ERROR;
 
 		if (env->modes & DC_VERBOSE) {

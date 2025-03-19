@@ -16,6 +16,16 @@ void init_dcrypt_header(t_env *env)
 			);
 		exit(EXIT_FAILURE);
 	}
+
+	/*
+	 * In encryption mode, generate the IV used by AES encryption.
+	 * The IV will be saved inside the custom header on the encrypted file.
+	 */
+
+	if (!(env->modes & DC_REVERSE)) {
+		unsigned char	*key = keygen(DC_KEYCHARSET, DC_AES_KEY_SIZE);
+		memcpy(env->dcrypt_header.iv_key, key, DC_AES_KEY_SIZE);
+	}
 }
 
 int main(int argc, char *argv[])
