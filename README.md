@@ -2,6 +2,7 @@
 
 ## **Description**
 
+dcrypt is a file encryption/decryption tool that adds a custom header to encrypted files, storing essential metadata for decryption and management of the encrypted content.
 
 ### **Explanation of the dcrypt Header Structure:**
 
