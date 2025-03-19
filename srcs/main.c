@@ -34,13 +34,15 @@ void print_results(t_env *env)
 	printf(
 		"\n========================================================\n"
 		FMT_INFO
-		"Handled " FMT_BG_BLUE " %ld " FMT_RESET " files.\n",
+		"Successfully processed " FMT_BG_BLUE
+		 " %ld " FMT_RESET " files.\n",
 		env->handled_file_count
 	);
 
 	printf(
 		FMT_INFO
-		"Used key: " FMT_BG_BLUE " %s " FMT_RESET "\n",
+		"Used key: " FMT_BG_BLUE
+		 " %s " FMT_RESET "\n",
 		env->modes & DC_REVERSE ? env->decryption_key : env->encryption_key
 	);
 }

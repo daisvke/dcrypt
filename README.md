@@ -76,5 +76,4 @@ make quine n=30 ext="txt vob cpp crt"
 
 ## TODO
 - encrypted folders list (encrypt)
-- report: encrypted x files with key xxxxx
 - cross platform
