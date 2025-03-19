@@ -76,5 +76,4 @@ make quine n=30 ext="txt vob cpp crt"
 
 ## TODO
 - encrypted folders list
-- iv to header
 - report: encrypted x files with key xxxxx

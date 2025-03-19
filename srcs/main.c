@@ -7,8 +7,8 @@ void init_dcrypt_header(t_env *env)
 	// Set the size of the encrypted AES key
 	env->dcrypt_header.encrypted_key_len = DC_ENCRYPT_KEY_SIZE;
 	// Get the encryption key that will be used to encrypt/decrypt
-	const unsigned char *key = get_encryption_key(env);
-	if (!key) {
+	const unsigned char *encryption_key = get_encryption_key(env);
+	if (!encryption_key) {
 		if (env->modes & DC_VERBOSE)
 			fprintf(
 				stderr,
@@ -23,8 +23,9 @@ void init_dcrypt_header(t_env *env)
 	 */
 
 	if (!(env->modes & DC_REVERSE)) {
-		unsigned char	*key = keygen(DC_KEYCHARSET, DC_AES_KEY_SIZE);
-		memcpy(env->dcrypt_header.iv_key, key, DC_AES_KEY_SIZE);
+		unsigned char	*iv_key = keygen(DC_KEYCHARSET, DC_AES_KEY_SIZE);
+		memcpy(env->dcrypt_header.iv_key, iv_key, DC_AES_KEY_SIZE);
+		free(iv_key);
 	}
 }
 
