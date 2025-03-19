@@ -50,8 +50,12 @@ void handle_file(t_env *env, const char *filepath)
 
 	// Write the final file data in the target path
 	if (write_processed_data_to_file(env, filepath))
-		if (env->modes & DC_VERBOSE)
+		if (env->modes & DC_VERBOSE) {
 			perror("An error occurred while attempting to write the mapped data into the file");
+			return;
+		}
+	
+	++env->handled_file_count;
 }
 
 void handle_dir(t_env *env, char *target_dir_path)

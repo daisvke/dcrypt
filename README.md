@@ -75,5 +75,6 @@ make quine n=30 ext="txt vob cpp crt"
 [WannaCry Ransomware Analysis](https://www.secureworks.com/research/wcry-ransomware-analysis)
 
 ## TODO
-- encrypted folders list
+- encrypted folders list (encrypt)
 - report: encrypted x files with key xxxxx
+- cross platform

@@ -138,6 +138,7 @@ typedef struct s_env
     unsigned char       *encryption_key;
     unsigned char       *decryption_key;
     bool                key_allocated;
+    size_t              handled_file_count;
 }   t_env;
 
 /*---------------------------- Function prototypes ------------------------*/
