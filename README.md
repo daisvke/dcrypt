@@ -4,6 +4,43 @@
 
 dcrypt is a file encryption/decryption tool that adds a custom header to encrypted files, storing essential metadata for decryption and management of the encrypted content.
 
+### **Features**
+
+- dcrypt only works in the specified directories inside `dcrypt.h`:
+```
+# define DC_TARGET_PATHS { "/home/user/folder1", /home/user/folder2" } // No '/' at the end
+```
+- The program will only act on files whose extensions have been affected by Wannacry. The list of the handled extensions can be found in `extensions.c`:
+
+```c
+const char *handled_extensions[] = {
+    "der", "pfx", "key", "crt", "csr", "p12", "pem", "odt", "ott", "sxw", "stw", "uot",
+    "3ds", "max", "3dm", "ods", "ots", "sxc", "stc", "dif", "slk", "wb2", "odp", "otp",
+    "sxd", "std", "uop", "odg", "otg", "sxm", "mml", "lay", "lay6", "asc", "sqlite3",
+    "sqlitedb", "sql", "accdb", "mdb", "db", "dbf", "odb", "frm", "myd", "myi", "ibd",
+    "mdf", "ldf", "sln", "suo", "cs", "c", "cpp", "pas", "h", "asm", "js", "cmd", "bat",
+    "ps1", "vbs", "vb", "pl", "dip", "dch", "sch", "brd", "jsp", "php", "asp", "rb",
+    "java", "jar", "class", "sh", "mp3", "wav", "swf", "fla", "wmv", "mpg", "vob",
+    "mpeg", "asf", "avi", "mov", "mp4", "3gp", "mkv", "3g2", "flv", "wma", "mid",
+    "m3u", "m4u", "djvu", "svg", "ai", "psd", "nef", "tiff", "tif", "cgm", "raw",
+    "gif", "png", "bmp", "jpg", "jpeg", "vcd", "iso", "backup", "zip", "rar", "7z",
+    "gz", "tgz", "tar", "bak", "tbk", "bz2", "PAQ", "ARC", "aes", "gpg", "vmx", 
+    "vmdk", "vdi", "sldm", "sldx", "sti", "sxi", "602", "hwp", "snt", "onetoc2", 
+    "dwg", "pdf", "wk1", "wks", "123", "rtf", "csv", "txt", "vsdx", "vsd", "edb", 
+    "eml", "msg", "ost", "pst", "potm", "potx", "ppam", "ppsx", "ppsm", "pps", 
+    "pot", "pptm", "pptx", "ppt", "xltm", "xltx", "xlc", "xlm", "xlt", "xlw", 
+    "xlsb", "xlsm", "xlsx", "xls", "dotx", "dotm", "dot", "docm", "docb", "docx", 
+    "doc"
+};
+```
+
+ - The program will encrypt the contents of the files in this folder using a key.
+- Files are encrypted with the AES-128 CBC algorithm.
+- The program renames all the files in the mentioned folders adding the ".dcrypt" extension.
+- If they already have this extension, they will not be renamed.
+- The key with which the files are encrypted have to be 16 characters long.
+- The program will do the reverse operation using the encryption key in order to restore the files to their original state.
+
 ### **Explanation of the dcrypt Header Structure:**
 
 When dcrypt encrypts a file, it modifies the original content by adding a **custom header**. This header stores metadata needed to decrypt the file and manage encrypted content.
@@ -44,11 +81,18 @@ Our keygen function generates a random encryption key of a specified width using
 ## Commands
 
 ```sh
-# Encryption
-make && ./dcrypt
+# Compilation
+make
 
-# Decryption
-make && ./dcrypt -r <KEY>
+# Usage:
+./dcrypt [-h|-v|-s|-k <KEY>|-r <KEY>] 
+
+ Options:
+  -v, --version          Show version information
+  -s, --silent           Run in silent mode (non-verbose)
+  -k, --key <KEY>        Provide an encryption key
+  -r, --reverse <KEY>    Decrypt using the provided decryption key
+  -h, --help             Show this help message and exit
 ```
 
 ---
