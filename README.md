@@ -12,10 +12,9 @@ When dcrypt encrypts a file, it modifies the original content by adding a **cust
 |-------------|---------------------------------------|-------------------------------------------|
 | **0x0000**  | `"TODCRYPT"`                           | Magic value/signature to identify encrypted files. |
 | **0x0008**  | **Length of RSA encrypted data**       | Size (in bytes) of the encrypted AES key. Typically **256 bytes** for a 2048-bit RSA key. |
-| **0x000C**  | **RSA encrypted AES file encryption key** | AES-128 key (16 bytes) is encrypted using **RSA-2048** and stored here. |
-| **0x010C**  | **Initialization Vector used during AES encryption**     | Random IV is used during AES encryption and stored here. |
-| **0x0110**  | **Original file size**                 | The size of the original unencrypted file. Helps verify successful decryption. |
-| **0x0118**  | **Encrypted file contents (AES-128 CBC)** | The actual **AES-128 CBC** encrypted content of the original file.
+| **0x000C**  | **Initialization Vector used during AES encryption**     | Random IV is used during AES encryption and stored here. |
+| **0x010C**  | **Original file size**                 | The size of the original unencrypted file. Helps verify successful decryption. |
+| **0x0114**  | **Encrypted file contents (AES-128 CBC)** | The actual **AES-128 CBC** encrypted content of the original file.
 
 ### **Data encryption**
 dcrypt performs AES-128 CBC encryption in order to encrypt the data.
@@ -67,13 +66,6 @@ make quine
 # Or if you want 30 files for each given extension
 make quine n=30 ext="txt vob cpp crt"
 ```
-
-
-## Useful Links
-[WannaCry Malware Profile](https://cloud.google.com/blog/topics/threat-intelligence/wannacry-malware-profile)
-[WannaCry Handled File Extensions](https://gist.githubusercontent.com/xpn/facb5692980c14df272b16a4ee6a29d5/raw/57232fe6b3014c5562f878dd8aab74af3d74c24f/wannacry_file_extensions.txt)
-(END)
-[WannaCry Ransomware Analysis](https://www.secureworks.com/research/wcry-ransomware-analysis)
 
 ## TODO
 - encrypted folders list (encrypt)

@@ -134,10 +134,6 @@ unsigned char *get_encryption_key(t_env *env)
 	// In decryption mode, we use the key saved in the file header
 	if (env->modes & DC_REVERSE)
 	{
-        // if (env->decryption_key) return env->decryption_key;
-
-		// key = (unsigned char *)env->dcrypt_header.encryption_key;
-
 		if (env->modes & DC_VERBOSE)
 			printf(
                 FMT_INFO
@@ -153,9 +149,6 @@ unsigned char *get_encryption_key(t_env *env)
 		env->encryption_key = keygen(DC_KEYCHARSET, DC_AES_KEY_SIZE);
         env->key_allocated = true;
 		if (!env->encryption_key) return NULL;
-
-		// Save the key on the custom header
-		// memcpy(env->dcrypt_header.encryption_key, key, DC_ENCRYPT_KEY_SIZE);
 
 		if (env->modes & DC_VERBOSE)
 			printf(
