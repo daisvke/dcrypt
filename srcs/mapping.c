@@ -3,7 +3,7 @@
 // Verify that the file header's magic number is ours
 bool is_magic_nbr_correct(const unsigned char *data)
 {
-    return strncmp((const char *)data, DC_SIGNATURE, DC_DCRYPT_HEADER_SIZE) == 0;
+    return strncmp((const char *)data, DC_SIGNATURE, DC_MAGICNBR_SIZE) == 0;
 }
 
 int map_file_into_memory(t_env *env, const char *filename)

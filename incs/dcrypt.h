@@ -24,7 +24,7 @@
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // About the program
-# define DC_PROG_VERSION        "2.0.1"
+# define DC_PROG_VERSION        "2.1.0"
 # define DC_PROG_AUTHOR         "d."
 # define DC_PROG_NAME           "dcrypt"
 
@@ -67,14 +67,14 @@ enum e_modes
 
 enum e_dcrypt_header
 {
-    DC_DCRYPT_HEADER_SIZE       = 0x0114,
+    DC_DCRYPT_HEADER_SIZE       = 0x0026,
     DC_MAGICNBR_SIZE            = 8,
-    DC_ENCRYPTED_IV_SIZE        = 256,
+    DC_IV_SIZE                  = 16,
 };
 
 /*
  * This is the dcrypt header that is written before the original header.
- * It has a size of 0x0114 (= 276) bytes.
+ * It has a size of 0x0026 (= 38) bytes.
  */
 
 typedef struct s_dcrypt_header
@@ -83,22 +83,16 @@ typedef struct s_dcrypt_header
     uint8_t     signature[DC_MAGICNBR_SIZE];
 
     /*
-     * 0x0008 Size (in bytes) of the encrypted AES key.
+     * 0x0008 AES-128 encryption's Initialization Vector (IV).
+     * A 16 bytes key is stored here in plaintext.
      */
 
-    uint32_t    encrypted_iv_len;
+    uint8_t     iv_key[DC_IV_SIZE];
 
-    /*
-     * 0x000C AES-128 encryption's Initialization Vector (IV).
-     * A 16 bytes key is stored here.
-     */
-
-    uint8_t     iv_key[DC_ENCRYPTED_IV_SIZE];
-
-    // 0x010C Original file size
+    // 0x001e Original file size
     uint64_t    original_filesize;
 
-    // 0x0114 Encrypted file contents (AES-128 CBC)
+    // 0x0026 Encrypted file contents (AES-128 CBC)
 }               t_dcrypt_header;
 
 /*---------------------------- Global variables ---------------------------*/

@@ -4,8 +4,6 @@ void init_dcrypt_header(t_env *env)
 {
 	// Set the file signature
 	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
-	// Set the size of the encrypted AES key
-	env->dcrypt_header.encrypted_iv_len = DC_ENCRYPTED_IV_SIZE;
 	// Get the encryption key that will be used to encrypt/decrypt
 	const unsigned char *encryption_key = get_encryption_key(env);
 	if (!encryption_key) {

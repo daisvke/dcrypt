@@ -11,10 +11,9 @@ When dcrypt encrypts a file, it modifies the original content by adding a **cust
 | **Offset**  | **Value**                              | **Description**                           |
 |-------------|---------------------------------------|-------------------------------------------|
 | **0x0000**  | `"TODCRYPT"`                           | Magic value/signature to identify encrypted files. |
-| **0x0008**  | **Length of RSA encrypted data**       | Size (in bytes) of the encrypted AES key. Typically **256 bytes** for a 2048-bit RSA key. |
-| **0x000C**  | **Initialization Vector used during AES encryption**     | Random IV is used during AES encryption and stored here. |
-| **0x010C**  | **Original file size**                 | The size of the original unencrypted file. Helps verify successful decryption. |
-| **0x0114**  | **Encrypted file contents (AES-128 CBC)** | The actual **AES-128 CBC** encrypted content of the original file.
+| **0x0008**  | **Initialization Vector used during AES encryption**     | Random IV is used during AES encryption and stored here in plaintext. |
+| **0x001e**  | **Original file size**                 | The size of the original unencrypted file. Helps verify successful decryption. |
+| **0x0026**  | **Encrypted file contents (AES-128 CBC)** | The actual **AES-128 CBC** encrypted content of the original file.
 
 ### **Data encryption**
 dcrypt performs AES-128 CBC encryption in order to encrypt the data.
@@ -68,5 +67,4 @@ make quine n=30 ext="txt vob cpp crt"
 ```
 
 ## TODO
-- encrypted folders list (encrypt)
 - cross platform
