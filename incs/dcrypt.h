@@ -52,7 +52,7 @@ enum e_returns
                                 "0123456789"
 
 // Signature injected in the target files's dcrypt header
-# define DC_SIGNATURE           "TODCRYPT"
+# define DC_SIGNATURE           "2DCRYPT!"
 # define DC_DCRYPT_EXT          "dcrypt"
 # define DC_DCRYPT_EXT_SIZE     7
 # define DC_AES_KEY_SIZE        16
@@ -128,7 +128,10 @@ int     aes_encrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
 int     aes_decrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
-unsigned char    *keygen(const char *_charset, size_t strength);
+unsigned char    *generate_time_based_rand_key_nanosec(const char *_charset, \
+    size_t strength);
+unsigned char    *generate_random_based_key(const char *_charset, \
+    size_t strength, bool blocking);
 unsigned char    *get_encryption_key(t_env *env);
 
 /*---------------------------- File handling ------------------------*/

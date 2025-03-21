@@ -21,7 +21,9 @@ void init_dcrypt_header(t_env *env)
 	 */
 
 	if (!(env->modes & DC_REVERSE)) {
-		unsigned char	*iv_key = keygen(DC_KEYCHARSET, DC_AES_KEY_SIZE);
+		unsigned char	*iv_key = generate_time_based_rand_key_nanosec(
+			DC_KEYCHARSET, DC_AES_KEY_SIZE
+		);
 
 		// Copy the IV key to the custom header
 		memcpy(env->dcrypt_header.iv_key, iv_key, DC_AES_KEY_SIZE);
