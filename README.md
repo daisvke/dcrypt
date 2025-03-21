@@ -34,7 +34,7 @@ const char *handled_extensions[] = {
 };
 ```
 
- - The program will encrypt the contents of the files in this folder using a key.
+- The program will encrypt the contents of the files in these folders using a key.
 - Files are encrypted with the AES-128 CBC algorithm.
 - The program renames all the files in the mentioned folders adding the ".dcrypt" extension.
 - If they already have this extension, they will not be renamed.
