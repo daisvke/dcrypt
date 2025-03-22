@@ -114,12 +114,12 @@ Our keygen function generates a random encryption key of a specified width using
 - The seed is set according to the current time, which makes it unique, but
 	not perfectly:
 
-	- Using srand(time(NULL)) (like in the first function) seeds the random
+	- Using srand(time(NULL)) seeds the random
 		number generator with the current time in seconds.
 	- This means that if you call srand(time(NULL)) multiple times within
    	the same second, you will get the same sequence of random numbers
  	because the seed value does not change.
- - Using clock_gettime(): This function (used in the second function) can
+ - Using clock_gettime(): This function can
 		provide nanosecond precision, depending on the clock used. This will
  	improve the randomness of the key.
 
