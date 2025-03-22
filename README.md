@@ -7,7 +7,7 @@ dcrypt is a file encryption/decryption tool that adds a custom header to encrypt
 ### **Features**
 
 - dcrypt only works in the specified directories inside `dcrypt.h`:
-```
+```c
 # define DC_TARGET_PATHS { "/home/user/folder1", /home/user/folder2" } // No '/' at the end
 ```
 - The program will only act on files whose extensions have been affected by Wannacry. The list of the handled extensions can be found in `extensions.c`:
