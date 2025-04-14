@@ -219,7 +219,7 @@ unsigned char *generate_time_based_rand_key_nanosec(
 
 unsigned char *get_encryption_key(t_env *env)
 {
-	// In decryption mode, we use the key saved in the file header
+	// In decryption mode, we use the IV saved in the file header
 	if (env->modes & DC_REVERSE)
 	{
 		if (env->modes & DC_VERBOSE)
@@ -232,6 +232,7 @@ unsigned char *get_encryption_key(t_env *env)
 	}
 	else // In encryption mode, we generate a new encryption key
 	{
+        // If the key has already been generated, we stop here
         if (env->encryption_key) return env->encryption_key;
 		// Generate the key that will be used for the encryption
 		env->encryption_key = generate_random_based_key(

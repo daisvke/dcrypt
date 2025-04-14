@@ -10,7 +10,7 @@ dcrypt is a file encryption/decryption tool that adds a custom header to encrypt
 ```c
 # define DC_TARGET_PATHS { "/home/user/folder1", /home/user/folder2" } // No '/' at the end
 ```
-- The program will only act on files whose extensions have been affected by Wannacry. The list of the handled extensions can be found in `extensions.c`:
+- By default the program will only act on files whose extensions have been affected by Wannacry. The list of the handled extensions can be found in `extensions.c`:
 
 ```c
 const char *handled_extensions[] = {
@@ -34,8 +34,9 @@ const char *handled_extensions[] = {
 };
 ```
 
-- The program will encrypt the contents of the files in these folders using a key.
+- The program will encrypt the contents of the files in these folders using an encryption key + a unique IV generated for each file.
 - Files are encrypted with the AES-128 CBC algorithm.
+- IVs are stored inside the headers of the encrypted files.
 - The program renames all the files in the mentioned folders adding the ".dcrypt" extension.
 - If they already have this extension, they will not be renamed.
 - The key with which the files are encrypted have to be 16 characters long.
@@ -65,7 +66,7 @@ This prevents patterns from appearing in the encrypted data.
 <br /><br />
 - Without IV (= NULL IV) the process will be faster, but less secure.
 - Identical plaintexts will produce identical ciphertexts.
-- dcrypt uses the keygen mentionned below to create a unique IV.
+- dcrypt uses the keygen mentionned below to create a unique IV for each fileg.
 - The used IV is then saved on the custom header and is retrieved during decryption.
 
 #### **Padding**

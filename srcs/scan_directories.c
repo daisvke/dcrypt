@@ -23,8 +23,43 @@ bool is_created_file(
 	return false; // File is not in the created files list
 }
 
+void init_dcrypt_header(t_env *env)
+{
+	// Set the file signature
+	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
+	// Get the encryption key that will be used to encrypt/decrypt the file
+	// During decryption, this key will be the IV key
+	if (!get_encryption_key(env)) {
+		if (env->modes & DC_VERBOSE)
+			fprintf(
+				stderr,
+				FMT_ERROR "Failed to get the encryption key. Aborting...\n"
+			);
+		exit(EXIT_FAILURE);
+	}
+
+	/*
+	 * In encryption mode, generate the IV used by AES encryption.
+	 * The IV will be saved inside the custom header on the encrypted file.
+	 */
+
+	if (!(env->modes & DC_REVERSE)) {
+		unsigned char	*iv_key = generate_time_based_rand_key_nanosec(
+			DC_KEYCHARSET, DC_AES_KEY_SIZE
+		);
+
+		// Copy the IV key to the custom header
+		memcpy(env->dcrypt_header.iv_key, iv_key, DC_AES_KEY_SIZE);
+
+		free(iv_key);
+	}
+}
+
 void handle_file(t_env *env, const char *filepath)
 {
+	// Init the header that will be placed at the top of the file
+	init_dcrypt_header(env);
+
 	/* Create a mapping between the target file and the memory region occupied
 	 * by the program. This is to facilitate the memory handling to manipulate
 	 * the file data.
