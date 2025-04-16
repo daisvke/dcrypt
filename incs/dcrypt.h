@@ -4,19 +4,13 @@
 # include <stdio.h>
 # include <stdlib.h>
 # include <fcntl.h>
-# include <unistd.h>
 # include <stdint.h>
-# include <sys/mman.h>      // For mapping
-# include <elf.h>           // For ELF header
 # include <string.h>
 # include <time.h>          // For rand & srand (encryption key generation)
 # include <dirent.h>        // For looping through directory
 # include <stdbool.h>
 # include <sys/stat.h>      // For checking if directory
 # include <getopt.h>        // For argv parsing
-
-# include <openssl/aes.h>   // For AES key generation
-# include <openssl/rand.h>
 
 # include "ascii_format.h"
 

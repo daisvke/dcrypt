@@ -168,5 +168,6 @@ After the encryption, all files get the `.dcrypt` extension and the custom heade
 
 ![encryption](screenshots/encryption.png)
 
-## TODO
-- cross platform
+## Windows
+- gcc : need MSYS2 + add C:\msys64\ucrt64\bin in env
+- make : need GNUWin32 + add C:\Program Files (x86)\GnuWin32\bin

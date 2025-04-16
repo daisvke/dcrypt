@@ -1,5 +1,9 @@
 #include "dcrypt.h"
 
+#ifndef _WIN32
+# include <openssl/aes.h>   // For AES key generation
+# include <openssl/rand.h>
+
 /*
  * Perform AES-128 CBC encryption
  * -------------------------------
@@ -250,3 +254,4 @@ unsigned char *get_encryption_key(t_env *env)
         return env->encryption_key;
 	}
 }
+#endif

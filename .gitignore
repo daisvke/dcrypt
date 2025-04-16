@@ -1,5 +1,6 @@
 dcrypt
 resources_old/
+.vscode
 
 # Prerequisites
 *.d

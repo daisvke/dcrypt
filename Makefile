@@ -7,7 +7,6 @@
 
 NAME				= dcrypt
 
-
 # ****************************
 #       ANSI ESCAPE CODES
 # ****************************
@@ -28,9 +27,12 @@ DONE				= $(GREEN)[DONE]$(RESET)
 #       BUILD COMMANDS
 # ****************************
 
-CC					= clang
+WCC					= x86_64-w64-mingw32-gcc
+WLIBS				= -lws2_32
+WCFLAGS				= -Wall -Wextra $(LIBS) -O2
 
-CFLAGS				= -Wall -Wextra
+CC					= clang
+CFLAGS				= -Wall -Wextra -O2
 SSLFLAGS			= -lcrypto -lssl
 
 
@@ -43,6 +45,9 @@ SSLFLAGS			= -lcrypto -lssl
 SRCS_DIR			= srcs/
 SRCS_FILES			= $(notdir $(wildcard $(SRCS_DIR)*.c))
 
+WSRCS_DIR			= srcs/
+WSRCS_FILES			= $(notdir $(wildcard $(WSRCS_DIR)*.c))
+
 # Include files
 
 INCS_DIR			= incs/
@@ -54,6 +59,8 @@ INCS 				= $(addprefix $(INCS_DIR), $(INCS_FILES))
 OBJS_DIR			= objs/
 OBJS				= $(addprefix $(OBJS_DIR), $(SRCS_FILES:.c=.o))
 
+WOBJS_DIR			= objs/
+WOBJS				= $(addprefix $(WOBJS_DIR), $(WSRCS_FILES:.c=.o))
 # Test files
 
 # Temporary folders where binaries are copied to
@@ -83,6 +90,13 @@ $(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INCS)
 
 $(NAME): $(OBJS)
 	$(CC) $(CFLAGS) $(SSLFLAGS) $(OBJS) -o $(NAME)
+
+$(WOBJS_DIR)%.o: $(WSRCS_DIR)%.c $(INCS)
+	@if not exist $(OBJS_DIR) ( mkdir -p $(OBJS_DIR) )
+	$(WCC) -I$(INCS_DIR) -c $(WCFLAGS) $< -o $@
+
+windows: $(WOBJS)
+	$(WCC) $(WCFLAGS) $(WOBJS) -o $(NAME)
 
 
 # ****************************

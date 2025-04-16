@@ -1,5 +1,80 @@
 #include "dcrypt.h"
 
+#ifdef _WIN32
+    #include <windows.h>
+
+    void* map_file(const char* filename, size_t* size_out, HANDLE* hFile_out, HANDLE* hMap_out) {
+        HANDLE hFile = CreateFileA(
+            filename, GENERIC_READ, FILE_SHARE_READ, NULL,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
+        );
+
+        if (hFile == INVALID_HANDLE_VALUE) {
+            return NULL;
+        }
+
+        DWORD fileSize = GetFileSize(hFile, NULL);
+        if (size_out) *size_out = (size_t)fileSize;
+
+        HANDLE hMap = CreateFileMappingA(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
+        if (!hMap) {
+            CloseHandle(hFile);
+            return NULL;
+        }
+
+        void* data = MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
+        if (!data) {
+            CloseHandle(hMap);
+            CloseHandle(hFile);
+            return NULL;
+        }
+
+        if (hFile_out) *hFile_out = hFile;
+        if (hMap_out) *hMap_out = hMap;
+        return data;
+    }
+
+    void unmap_file(void* addr, HANDLE hMap, HANDLE hFile) {
+        UnmapViewOfFile(addr);
+        CloseHandle(hMap);
+        CloseHandle(hFile);
+    }
+
+#else
+    #include <fcntl.h>
+    #include <sys/mman.h>
+    #include <sys/stat.h>
+    #include <unistd.h>
+
+    void* map_file(const char* filename, size_t* size_out, int* fd_out) {
+        int fd = open(filename, O_RDONLY);
+        if (fd < 0) return NULL;
+
+        struct stat st;
+        if (fstat(fd, &st) < 0) {
+            close(fd);
+            return NULL;
+        }
+
+        size_t size = st.st_size;
+        if (size_out) *size_out = size;
+
+        void* data = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
+        if (data == MAP_FAILED) {
+            close(fd);
+            return NULL;
+        }
+
+        if (fd_out) *fd_out = fd;
+        return data;
+    }
+
+    void unmap_file(void* addr, size_t size, int fd) {
+        munmap(addr, size);
+        close(fd);
+    }
+#endif
+
 // Verify that the file header's magic number is ours
 bool is_magic_nbr_correct(const unsigned char *data)
 {
