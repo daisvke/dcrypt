@@ -1,78 +1,92 @@
 #include "dcrypt.h"
 
 #ifdef _WIN32
-    #include <windows.h>
+# include <windows.h>
 
-    void* map_file(const char* filename, size_t* size_out, HANDLE* hFile_out, HANDLE* hMap_out) {
-        HANDLE hFile = CreateFileA(
-            filename, GENERIC_READ, FILE_SHARE_READ, NULL,
-            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
-        );
+void* map_file(const char* filename) {
+    HANDLE hFile = CreateFileA(
+        filename, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+        OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
+    );
 
-        if (hFile == INVALID_HANDLE_VALUE) {
-            return NULL;
-        }
-
-        DWORD fileSize = GetFileSize(hFile, NULL);
-        if (size_out) *size_out = (size_t)fileSize;
-
-        HANDLE hMap = CreateFileMappingA(hFile, NULL, PAGE_READONLY, 0, 0, NULL);
-        if (!hMap) {
-            CloseHandle(hFile);
-            return NULL;
-        }
-
-        void* data = MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
-        if (!data) {
-            CloseHandle(hMap);
-            CloseHandle(hFile);
-            return NULL;
-        }
-
-        if (hFile_out) *hFile_out = hFile;
-        if (hMap_out) *hMap_out = hMap;
-        return data;
+    if (hFile == INVALID_HANDLE_VALUE) {
+        return NULL;
     }
 
-    void unmap_file(void* addr, HANDLE hMap, HANDLE hFile) {
-        UnmapViewOfFile(addr);
+    // DWORD fileSize = GetFileSize(hFile, NULL);
+    // if (size_out) *size_out = (size_t)fileSize;
+
+    HANDLE hMap = CreateFileMappingA(hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
+    if (!hMap) {
+        CloseHandle(hFile);
+        return NULL;
+    }
+
+    void* data = MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
+    if (!data) {
         CloseHandle(hMap);
         CloseHandle(hFile);
+        return NULL;
     }
 
-#else
-    #include <fcntl.h>
-    #include <sys/mman.h>
-    #include <sys/stat.h>
-    #include <unistd.h>
+    // Hold the data needed for unmaping the file data 
+    win_env.hFile_out = hFile;
+    win_env.hMap_out = hMap;
 
-    void* map_file(const char* filename, size_t* size_out, int* fd_out) {
-        int fd = open(filename, O_RDONLY);
-        if (fd < 0) return NULL;
+    CloseHandle(hMap);
+    CloseHandle(hFile);
 
-        struct stat st;
-        if (fstat(fd, &st) < 0) {
-            close(fd);
-            return NULL;
-        }
+    return data;
+}
 
-        size_t size = st.st_size;
-        if (size_out) *size_out = size;
+void unmap_file(void* addr, HANDLE hMap, HANDLE hFile) {
+    UnmapViewOfFile(addr);
+    CloseHandle(hMap);
+    CloseHandle(hFile);
+}
 
-        void* data = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-        if (data == MAP_FAILED) {
-            close(fd);
-            return NULL;
-        }
+# else
 
-        if (fd_out) *fd_out = fd;
-        return data;
-    }
+# include <fcntl.h>
+# include <sys/mman.h>
+# include <sys/stat.h>
 
-    void unmap_file(void* addr, size_t size, int fd) {
-        munmap(addr, size);
+void* map_file(const char* filename) {
+    int fd = open(filename, O_RDONLY);
+    if (fd < 0) return NULL;
+
+    struct stat st;
+    if (fstat(fd, &st) < 0) {
         close(fd);
+        return NULL;
     }
+
+    size_t size = st.st_size;
+
+    /* Map the file into memory
+        - PROT_READ: read-only access
+        - PROT_WRITE: write-only access
+            We use both READ and WRITE since we are going to encrypt the
+            mapped region directly.
+        - MAP_PRIVATE: creates a private copy of the mapped data, so any
+        modifications made to the mapped memory will not be visible
+        to other processes mapping the same file
+    */
+
+    void* data = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
+    if (data == MAP_FAILED) {
+        close(fd);
+        return NULL;
+    }
+    close(fd); // No need to keep the fd since the file is mapped
+
+    return data;
+}
+
+void unmap_file(void* addr, size_t size, int fd) {
+    munmap(addr, size);
+    close(fd);
+}
 #endif
 
 // Verify that the file header's magic number is ours
@@ -95,25 +109,8 @@ int map_file_into_memory(t_env *env, const char *filename)
     // Put back the cursor at the beginning of the file
     if (lseek(fd, 0, SEEK_SET) < 0) return DC_ERROR;
 
-    /* Map the file into memory
-        - PROT_READ: read-only access
-        - PROT_WRITE: write-only access
-            We use both READ and WRITE since we are going to encrypt the
-            mapped region directly.
-        - MAP_PRIVATE: creates a private copy of the mapped data, so any
-        modifications made to the mapped memory will not be visible
-        to other processes mapping the same file
-    */
-
-    env->mapped_data =
-        mmap(NULL, res, PROT_READ | PROT_WRITE, MAP_PRIVATE, fd, 0);
-    if (env->mapped_data == MAP_FAILED)
-    {
-        close(fd);
-        return DC_ERROR;
-    }
-
-    close(fd); // No need to keep the fd since the file is mapped
+    env->mapped_data = map_file(filename);
+    if (!env->mapped_data) return DC_ERROR;
 
     if (env->modes & DC_REVERSE)
     {

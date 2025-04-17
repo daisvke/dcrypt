@@ -3,6 +3,7 @@
 #ifndef _WIN32
 # include <openssl/aes.h>   // For AES key generation
 # include <openssl/rand.h>
+# include <openssl/evp.h>
 
 /*
  * Perform AES-128 CBC encryption

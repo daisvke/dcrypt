@@ -27,13 +27,17 @@ DONE				= $(GREEN)[DONE]$(RESET)
 #       BUILD COMMANDS
 # ****************************
 
-WCC					= x86_64-w64-mingw32-gcc
-WLIBS				= -lws2_32
-WCFLAGS				= -Wall -Wextra $(LIBS) -O2
+TARGET				?= unix
 
-CC					= clang
-CFLAGS				= -Wall -Wextra -O2
-SSLFLAGS			= -lcrypto -lssl
+# Compiler selection based on TARGET
+ifeq ($(TARGET), win)  # Windows
+    CC				= x86_64-w64-mingw32-gcc
+    CFLAGS			= -Wall -Wextra -O2
+else
+    CC				= clang
+    CFLAGS			= -Wall -Wextra -O2
+	SSLFLAGS		= -lcrypto -lssl
+endif
 
 
 # ****************************
@@ -44,9 +48,6 @@ SSLFLAGS			= -lcrypto -lssl
 
 SRCS_DIR			= srcs/
 SRCS_FILES			= $(notdir $(wildcard $(SRCS_DIR)*.c))
-
-WSRCS_DIR			= srcs/
-WSRCS_FILES			= $(notdir $(wildcard $(WSRCS_DIR)*.c))
 
 # Include files
 
@@ -59,8 +60,6 @@ INCS 				= $(addprefix $(INCS_DIR), $(INCS_FILES))
 OBJS_DIR			= objs/
 OBJS				= $(addprefix $(OBJS_DIR), $(SRCS_FILES:.c=.o))
 
-WOBJS_DIR			= objs/
-WOBJS				= $(addprefix $(WOBJS_DIR), $(WSRCS_FILES:.c=.o))
 # Test files
 
 # Temporary folders where binaries are copied to
@@ -80,23 +79,17 @@ TARGET_TEST_FILE2 	= $(TEMP_FOLDER1)/$(SOURCE_TEST_NAME1)
 #       BUILDING
 # ****************************
 
-.PHONY: all
-
-all: $(NAME)
-
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INCS)
-	mkdir -p $(OBJS_DIR)
+	@mkdir -p $(OBJS_DIR) || echo "Directory already exists"
 	$(CC) -I$(INCS_DIR) -c $(CFLAGS) $< -o $@
 
-$(NAME): $(OBJS)
+.PHONY: unix
+unix: $(OBJS)
 	$(CC) $(CFLAGS) $(SSLFLAGS) $(OBJS) -o $(NAME)
 
-$(WOBJS_DIR)%.o: $(WSRCS_DIR)%.c $(INCS)
-	@if not exist $(OBJS_DIR) ( mkdir -p $(OBJS_DIR) )
-	$(WCC) -I$(INCS_DIR) -c $(WCFLAGS) $< -o $@
-
-windows: $(WOBJS)
-	$(WCC) $(WCFLAGS) $(WOBJS) -o $(NAME)
+.PHONY: win
+win: $(OBJS)
+	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 
 # ****************************
@@ -104,7 +97,6 @@ windows: $(WOBJS)
 # ****************************
 
 .PHONY: setup
-
 # Setup for the tests
 setup:
 	mkdir -p $(TEMP_FOLDER1)
@@ -115,7 +107,6 @@ i	?= 10
 ext	?= txt vob pdf crt gif
 
 .PHONY: quine
-
 # Spread quines on the test folder to get a huge amount of test files
 quine:
 	mkdir -p $(TEMP_FOLDER1)
@@ -126,17 +117,15 @@ quine:
 	rm -rf $(QUINE_NAME)/
 
 .PHONY: run
-
 # A quick test that copies/creates test files on the temporary folder,
 #	compiles the project and runs the binary with valgrind
-run: re setup quine
+run: setup quine
 	valgrind ./$(NAME)
-	@echo "\n$(DONE) Now you can reverse the encryption with:"
+	@echo "\n$(DONE) After a successful encryption you can reverse the process with:"
 	@echo "\t\t./$(NAME) -r <KEY>"
 	@echo "\tand check if the files are back to their original states."
 
 .PHONY: debug
-
 debug: CFLAGS += -g3 -DDEBUG
 debug: $(NAME)
 
@@ -145,12 +134,10 @@ debug: $(NAME)
 #       CLEANING
 # ****************************
 
-.PHONY: clean fclean re
+.PHONY: clean fclean
 
 clean:
 	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TEMP_FOLDER1)
 
 fclean: clean
 	rm -rf $(NAME)
-
-re: fclean all

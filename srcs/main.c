@@ -1,5 +1,9 @@
 #include "dcrypt.h"
 
+#ifdef _WIN32
+t_windows	win_env = {0};
+#endif
+
 void print_results(t_env *env)
 {
 	printf(

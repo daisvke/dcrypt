@@ -14,6 +14,21 @@
 
 # include "ascii_format.h"
 
+/*------------------------ Cross-platform --------------------------*/
+
+#ifdef _WIN32
+# include <windows.h>
+// Hold the data needed for unmaping the file data
+typedef struct s_windows
+{
+    HANDLE* hFile_out;
+    HANDLE* hMap_out;
+}   t_windows;
+
+extern t_windows win_env;
+# else
+# include <unistd.h>
+#endif
 
 /*------------------------ Defines, enum, struct --------------------------*/
 
@@ -24,7 +39,7 @@
 
 // Paths of the target directories
 # define DC_TARGET_ARRAY_SIZE   1
-# define DC_TARGET_PATHS        { "/home/mint/infection" } // No '/' at the end
+# define DC_TARGET_PATHS        { "/home/alien/infection" } // No '/' at the end
 
 // Unhandled paths
 # define DC_UNHANDLED_DIRS_ARRAY_SIZE   2
