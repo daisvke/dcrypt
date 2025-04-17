@@ -6,6 +6,30 @@
 # include <wincrypt.h>
 # include <stdio.h>
 
+// Import raw AES key to to get a key handle
+HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
+    struct {
+        BLOBHEADER hdr;
+        DWORD key_size;
+        BYTE key[16]; // max 16 bytes for AES-128
+    } blob;
+
+    blob.hdr.bType = PLAINTEXTKEYBLOB;
+    blob.hdr.bVersion = CUR_BLOB_VERSION;
+    blob.hdr.reserved = 0;
+    blob.hdr.aiKeyAlg = CALG_AES_128;
+    blob.key_size = key_len;
+    memcpy(blob.key, raw_key, key_len);
+
+    HCRYPTKEY hKey;
+    if (!CryptImportKey(hProv, (BYTE *)&blob, sizeof(blob), 0, 0, &hKey)) {
+        printf("CryptImportKey (PLAINTEXTKEYBLOB) failed: %lu\n", GetLastError());
+        return 0;
+    }
+
+    return hKey;
+}
+
 void print_hex(const char *label, BYTE *data, DWORD len) {
     printf("%s: ", label);
     for (DWORD i = 0; i < len; ++i) {

@@ -57,12 +57,12 @@ void parse_argv(t_env *env, int argc, char *argv[])
         switch (opt) {
             case 'k':
                 check_arg_key(opt, env->modes & DC_VERBOSE);
-                env->encryption_key = (unsigned char*)optarg;
+                env->encryption_key = (unsigned char *)optarg;
                 break;
             case 'r':
                 env->modes |= DC_REVERSE;
                 check_arg_key(opt, env->modes & DC_VERBOSE);
-                env->decryption_key = (unsigned char*)optarg;
+                env->decryption_key = (unsigned char *)optarg;
 				if (env->modes & DC_VERBOSE)
 					printf(FMT_MODE_ON " REVERSE mode enabled\n");
                 break;

