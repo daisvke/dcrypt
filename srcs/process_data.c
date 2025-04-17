@@ -18,7 +18,11 @@ int process_mapped_data(t_env *env)
 		if (aes_decrypt_data(
 			data,									// The file data (starting after the header)
 			env->encrypted_filesize,				// The encrypted file size (without the custom header size)
+			#ifdef _WIN32
+			win_env.hKey,
+			# else
 			env->decryption_key,					// The randomly generated encryption key
+			#endif
 			env->dcrypt_header.iv_key				// Initialization vector
 		) == -1) return DC_ERROR;
 
@@ -35,7 +39,11 @@ int process_mapped_data(t_env *env)
 		if ((env->encrypted_filesize = aes_encrypt_data(
 			data,										// The file data (starting after the header)
 			env->dcrypt_header.original_filesize,		// The original file size
+			#ifdef _WIN32
+			win_env.hKey,
+			# else
 			env->encryption_key,						// The randomly generated encryption key
+			#endif
 			env->dcrypt_header.iv_key					// Initialization vector
 		)) == -1) return DC_ERROR;
 

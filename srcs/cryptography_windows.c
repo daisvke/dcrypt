@@ -1,8 +1,10 @@
-#include <windows.h>
-#include <wincrypt.h>
-#include <stdio.h>
+#include "dcrypt.h"
 
-#define AES_BLOCK_SIZE 16
+#ifdef _WIN32
+
+# include <windows.h>
+# include <wincrypt.h>
+# include <stdio.h>
 
 void print_hex(const char *label, BYTE *data, DWORD len) {
     printf("%s: ", label);
@@ -12,71 +14,83 @@ void print_hex(const char *label, BYTE *data, DWORD len) {
     printf("\n");
 }
 
-int main() {
-    HCRYPTPROV hProv = 0;
-    HCRYPTKEY hKey = 0;
-    BYTE iv[AES_BLOCK_SIZE] = {0}; // Initialization vector (can be random)
-    DWORD ivLen = AES_BLOCK_SIZE;
+HCRYPTKEY generate_encryption_key(void)
+{
+	HCRYPTKEY	hKey = 0;
+	DWORD		mode = CRYPT_MODE_CBC; // Set AES key to use CBC mode
 
-    // Acquire a crypto context
-    if (!CryptAcquireContext(&hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT)) {
-        printf("CryptAcquireContext failed: %lu\n", GetLastError());
-        return 1;
-    }
+	// Acquire a crypto context
+	if (!CryptAcquireContext(&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) ||
+		!CryptGenKey(win_env.hProv, CALG_AES_128, CRYPT_EXPORTABLE, &hKey) ||
+		!CryptSetKeyParam(hKey, KP_MODE, (BYTE *)&mode, 0))
+	{
+		if (win_env.hProv)
+			CryptReleaseContext(win_env.hProv, 0);
+	}
 
-    // Generate AES-128 key
-    if (!CryptGenKey(hProv, CALG_AES_128, CRYPT_EXPORTABLE, &hKey)) {
-        printf("CryptGenKey failed: %lu\n", GetLastError());
-        CryptReleaseContext(hProv, 0);
-        return 1;
-    }
+	return hKey;
+}
 
-    // Set AES key to use CBC mode
-    DWORD mode = CRYPT_MODE_CBC;
-    if (!CryptSetKeyParam(hKey, KP_MODE, (BYTE *)&mode, 0)) {
-        printf("CryptSetKeyParam (mode) failed: %lu\n", GetLastError());
-    }
-
+int aes_encrypt_data(
+    unsigned char       *data,
+    DWORD				data_len,
+    HCRYPTKEY			key,
+    unsigned char       *iv
+) {
     // Set Initialization Vector
-    if (!CryptSetKeyParam(hKey, KP_IV, iv, 0)) {
-        printf("CryptSetKeyParam (IV) failed: %lu\n", GetLastError());
-    }
+    if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
 
-    // Data to encrypt
-    BYTE data[64] = "Sensitive data goes here. Needs to be encrypted securely!";
-    DWORD dataLen = strlen((char *)data) + 1;  // Include null terminator
+    data_len = data_len + 1;  // Include null terminator
 
     // Padding to make space for encryption (CBC needs padding)
-    DWORD bufLen = dataLen + AES_BLOCK_SIZE; // Ensure buffer is large enough
-    BYTE *buffer = malloc(bufLen);
-    memcpy(buffer, data, dataLen);
+    DWORD	buf_len = data_len + DC_AES_BLOCK_SIZE; // Ensure buffer is large enough
+    BYTE	*buffer = malloc(buf_len);
+    memcpy(buffer, data, data_len);
 
     // Encrypt
-    if (!CryptEncrypt(hKey, 0, TRUE, 0, buffer, &dataLen, bufLen)) {
+    if (!CryptEncrypt(key, 0, TRUE, 0, buffer, &data_len, buf_len)) {
         printf("CryptEncrypt failed: %lu\n", GetLastError());
         free(buffer);
-        CryptDestroyKey(hKey);
-        CryptReleaseContext(hProv, 0);
-        return 1;
+        CryptDestroyKey(key);
+        CryptReleaseContext(win_env.hProv, 0);
+        return -1;
     }
 
-    print_hex("Encrypted", buffer, dataLen);
+    print_hex("Encrypted", buffer, data_len);
 
-    // --- Optional: Decrypt ---
-    if (!CryptSetKeyParam(hKey, KP_IV, iv, 0)) {
-        printf("CryptSetKeyParam (reset IV for decryption) failed.\n");
-    }
+	return buf_len;
+}
 
-    if (!CryptDecrypt(hKey, 0, TRUE, 0, buffer, &dataLen)) {
+// Function to handle AES-128 CBC decryption
+int aes_decrypt_data(
+    unsigned char       *data,
+    DWORD				data_len,
+    HCRYPTKEY			key,
+    unsigned char       *iv
+) {
+    data_len = data_len + 1;  // Include null terminator
+
+    // Padding to make space for encryption (CBC needs padding)
+    DWORD	buf_len = data_len + DC_AES_BLOCK_SIZE; // Ensure buffer is large enough
+    BYTE	*buffer = malloc(buf_len);
+    memcpy(buffer, data, data_len);
+
+	if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
+
+    if (!CryptDecrypt(key, 0, TRUE, 0, buffer, &data_len)) {
         printf("CryptDecrypt failed: %lu\n", GetLastError());
+		return -1;
     } else {
         printf("Decrypted: %s\n", buffer);
     }
 
     // Cleanup
-    CryptDestroyKey(hKey);           // Key securely destroyed
-    CryptReleaseContext(hProv, 0);   // Free context
+    CryptDestroyKey(key); 						// Key securely destroyed
+	if (win_env.hProv)
+    	CryptReleaseContext(win_env.hProv, 0);	// Free context
     free(buffer);
 
-    return 0;
+	return buf_len;
 }
+
+#endif
