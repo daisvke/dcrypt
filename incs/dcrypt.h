@@ -21,13 +21,16 @@
 // Hold the data needed for unmaping the file data
 typedef struct s_windows
 {
-    HANDLE* hFile_out;
-    HANDLE* hMap_out;
+    HANDLE* hFile;
+    HANDLE* hMap;
 }   t_windows;
+
+# define DC_TARGET_PATHS        { "D:\\Documents\\infection" } // No '\' at the end
 
 extern t_windows win_env;
 # else
 # include <unistd.h>
+# define DC_TARGET_PATHS        { "~/infection" } // No '/' at the end
 #endif
 
 /*------------------------ Defines, enum, struct --------------------------*/
@@ -39,7 +42,6 @@ extern t_windows win_env;
 
 // Paths of the target directories
 # define DC_TARGET_ARRAY_SIZE   1
-# define DC_TARGET_PATHS        { "/home/alien/infection" } // No '/' at the end
 
 // Unhandled paths
 # define DC_UNHANDLED_DIRS_ARRAY_SIZE   2

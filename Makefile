@@ -31,9 +31,11 @@ TARGET				?= unix
 
 # Compiler selection based on TARGET
 ifeq ($(TARGET), win)  # Windows
+	TEMP_FOLDER1	= "D:\Documents\infection"
     CC				= x86_64-w64-mingw32-gcc
     CFLAGS			= -Wall -Wextra -O2
 else
+	TEMP_FOLDER1	= ~/infection
     CC				= clang
     CFLAGS			= -Wall -Wextra -O2
 	SSLFLAGS		= -lcrypto -lssl
@@ -45,25 +47,19 @@ endif
 # ****************************
 
 # Source files
-
 SRCS_DIR			= srcs/
 SRCS_FILES			= $(notdir $(wildcard $(SRCS_DIR)*.c))
 
 # Include files
-
 INCS_DIR			= incs/
 INCS_FILES			= $(notdir $(wildcard $(INCS_DIR)*.h))
 INCS 				= $(addprefix $(INCS_DIR), $(INCS_FILES))
 
 # Obj files
-
 OBJS_DIR			= objs/
 OBJS				= $(addprefix $(OBJS_DIR), $(SRCS_FILES:.c=.o))
 
 # Test files
-
-# Temporary folders where binaries are copied to
-TEMP_FOLDER1		= ~/infection
 QUINE_NAME			= bacteria
 
 # Path for a test file to copy to the folders above
@@ -80,7 +76,13 @@ TARGET_TEST_FILE2 	= $(TEMP_FOLDER1)/$(SOURCE_TEST_NAME1)
 # ****************************
 
 $(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INCS)
-	@mkdir -p $(OBJS_DIR) || echo "Directory already exists"
+ifeq ($(TARGET), win)
+	@PowerShell -Command " \
+		if (-Not (Test-Path -Path '$(OBJS_DIR)')) \
+			{ New-Item -Path '$(OBJS_DIR)' -ItemType Directory }"
+else
+	mkdir -p $(OBJS_DIR)
+endif
 	$(CC) -I$(INCS_DIR) -c $(CFLAGS) $< -o $@
 
 .PHONY: unix
@@ -99,8 +101,15 @@ win: $(OBJS)
 .PHONY: setup
 # Setup for the tests
 setup:
+ifeq ($(TARGET), win)
+	PowerShell -Command " \
+		if (-Not (Test-Path -Path '$(TEMP_FOLDER1)')) \
+			{ New-Item -Path '$(TEMP_FOLDER1)' -ItemType Directory }; \
+			Copy-Item -Path '$(SOURCE_TEST_FILE1)' -Destination '$(TEMP_FOLDER1)'"
+else
 	mkdir -p $(TEMP_FOLDER1)
 	cp $(SOURCE_TEST_FILE1) $(TEMP_FOLDER1)
+endif
 
 # Set default values for arguments (can be given from command line)
 i	?= 10
@@ -137,7 +146,19 @@ debug: $(NAME)
 .PHONY: clean fclean
 
 clean:
-	rm -rf $(OBJS_DIR) $(ASM_OBJS_DIR) $(TEMP_FOLDER1)
+ifeq ($(TARGET), win)
+	PowerShell -Command " \
+		Remove-Item -Path '$(OBJS_DIR)', '$(TEMP_FOLDER1)' \
+		-Recurse -Force -ErrorAction SilentlyContinue"
+else
+	rm -rf $(OBJS_DIR) $(TEMP_FOLDER1)
+endif
 
 fclean: clean
-	rm -rf $(NAME)
+ifeq ($(TARGET), win)
+	PowerShell -Command " \
+		Remove-Item -Path '$(NAME)' \
+		-Force -ErrorAction SilentlyContinue"
+else
+	rm -f $(NAME)
+endif

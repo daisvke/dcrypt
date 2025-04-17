@@ -30,8 +30,8 @@ void* map_file(const char* filename) {
     }
 
     // Hold the data needed for unmaping the file data 
-    win_env.hFile_out = hFile;
-    win_env.hMap_out = hMap;
+    win_env.hFile = hFile;
+    win_env.hMap = hMap;
 
     CloseHandle(hMap);
     CloseHandle(hFile);
@@ -39,10 +39,10 @@ void* map_file(const char* filename) {
     return data;
 }
 
-void unmap_file(void* addr, HANDLE hMap, HANDLE hFile) {
+void unmap_file(void* addr) {
     UnmapViewOfFile(addr);
-    CloseHandle(hMap);
-    CloseHandle(hFile);
+    CloseHandle(win_env.hMap);
+    CloseHandle(win_env.hFile);
 }
 
 # else
@@ -83,10 +83,6 @@ void* map_file(const char* filename) {
     return data;
 }
 
-void unmap_file(void* addr, size_t size, int fd) {
-    munmap(addr, size);
-    close(fd);
-}
 #endif
 
 // Verify that the file header's magic number is ours
@@ -211,12 +207,24 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
     {
         if (write_decrypted_data_to_file(env, (char *)target_path) == DC_ERROR)
             return DC_ERROR;
+
+        // Unmap the data from the memory
+        #ifdef _WIN32
+        unmap_file(env->mapped_data);
+        # else
         munmap(env->mapped_data, env->encrypted_filesize + DC_DCRYPT_HEADER_SIZE);
+        #endif
     } else
     {
-        if (write_encrypted_data_to_file(env, target_path) == DC_ERROR)
+        if (write_encrypted_data_to_file(env, (char *)target_path) == DC_ERROR)
             return DC_ERROR;
+
+        // Unmap the data from the memory
+        #ifdef _WIN32
+        unmap_file(env->mapped_data);
+        # else
         munmap(env->mapped_data, env->dcrypt_header.original_filesize);
+        #endif
     }
 
     // Remove the old file from the system

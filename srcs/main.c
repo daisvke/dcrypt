@@ -6,12 +6,14 @@ t_windows	win_env = {0};
 
 void print_results(t_env *env)
 {
-	printf(
-		"\n=======================================\n"
-		FMT_INFO
-		"Successfully processed %ld files.\n",
-		env->handled_file_count
-	);
+	#ifdef _WIN32
+	const char	*msg = "Successfully processed %lld files.\n";
+	# else
+	const char	*msg = "Successfully processed %ld files.\n";
+	#endif
+
+	printf("\n=======================================\n" FMT_INFO);
+	printf(msg, env->handled_file_count);
 
 	printf(
 		FMT_INFO
