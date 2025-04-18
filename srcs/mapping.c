@@ -5,16 +5,17 @@
 
 void* map_file(const char* filename) {
     HANDLE hFile = CreateFileA(
-        filename, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+        filename, GENERIC_READ | GENERIC_WRITE,
+        FILE_SHARE_READ | FILE_SHARE_WRITE, // Allow other processes to read/write too
+        NULL,
         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
     );
 
     if (hFile == INVALID_HANDLE_VALUE) {
+        // DWORD err = GetLastError();
+        // printf("CreateFileA failed. Error code: %lu\n", err);
         return NULL;
     }
-
-    // DWORD fileSize = GetFileSize(hFile, NULL);
-    // if (size_out) *size_out = (size_t)fileSize;
 
     HANDLE hMap = CreateFileMappingA(hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
     if (!hMap) {
@@ -134,7 +135,7 @@ int map_file_into_memory(t_env *env, const char *filename)
         }
         env->dcrypt_header.original_filesize = res;
     }
-
+    // TODO
     // // Abort if the current target already contains our signature
     // if (search_binary((char *)mapped_data, dcrypt_header.original_filesize, DC_SIGNATURE))
     //     return 1;

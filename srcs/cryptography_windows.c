@@ -9,9 +9,9 @@
 // Import raw AES key to to get a key handle
 HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
     struct {
-        BLOBHEADER hdr;
-        DWORD key_size;
-        BYTE key[16]; // max 16 bytes for AES-128
+        BLOBHEADER	hdr;
+        DWORD		key_size;
+        BYTE		key[16]; // max 16 bytes for AES-128
     } blob;
 
     blob.hdr.bType = PLAINTEXTKEYBLOB;
@@ -21,8 +21,10 @@ HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
     blob.key_size = key_len;
     memcpy(blob.key, raw_key, key_len);
 
+	DWORD blob_len = sizeof(BLOBHEADER) + sizeof(DWORD) + key_len;
+
     HCRYPTKEY hKey;
-    if (!CryptImportKey(hProv, (BYTE *)&blob, sizeof(blob), 0, 0, &hKey)) {
+    if (!CryptImportKey(hProv, (BYTE *)&blob, blob_len, 0, 0, &hKey)) {
         printf("CryptImportKey (PLAINTEXTKEYBLOB) failed: %lu\n", GetLastError());
         return 0;
     }

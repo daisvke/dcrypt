@@ -116,7 +116,11 @@ void handle_dir(t_env *env, char *target_dir_path)
 			struct stat	statbuf;
 
 			// Use snprintf() to safely concatenate the strings
-			snprintf(path, sizeof(path), "%s/%s", target_dir_path, entry->d_name);
+			snprintf(
+				path, sizeof(path),
+				"%s%c%s",
+				target_dir_path, DC_PATH_SEP, entry->d_name
+			);
 
 			// Check if it's a directory
 			if (stat(path, &statbuf) == 0 && S_ISDIR(statbuf.st_mode))

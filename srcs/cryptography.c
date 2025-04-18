@@ -242,20 +242,24 @@ unsigned char *get_encryption_key(t_env *env)
 		// Generate the key that will be used for the encryption
         #ifdef _WIN32
 		win_env.hKey = generate_encryption_key();
+		if (!win_env.hKey) return NULL;
+        static unsigned char array[2] = {"1"};
+        return array; // We have to return an unsigned char *
         # else
 		env->encryption_key = generate_random_based_key(
             DC_KEYCHARSET, DC_AES_KEY_SIZE, false
         );
-        #endif
         env->key_allocated = true;
 		if (!env->encryption_key) return NULL;
 
-		if (env->modes & DC_VERBOSE)
-			printf(
-                FMT_INFO
-                " Generated random key => " FMT_YELLOW "%s\n" FMT_RESET,
-                env->encryption_key
-            );
+        if (env->modes & DC_VERBOSE)
+        printf(
+            FMT_INFO
+            " Generated random key => " FMT_YELLOW "%s\n" FMT_RESET,
+            env->encryption_key
+        );
+        #endif
+
         return env->encryption_key;
 	}
 }

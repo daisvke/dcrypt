@@ -28,13 +28,15 @@ typedef struct s_windows
 }   t_windows;
 
 # define DC_TARGET_PATHS        { "D:\\Documents\\infection" } // No '\' at the end
-
+# define DC_PATH_SEP            '\\' // Paths separator 
 extern t_windows win_env;
 
 # else
 
 # include <unistd.h>
 # define DC_TARGET_PATHS        { "~/infection" } // No '/' at the end
+# define DC_PATH_SEP            '/' // Paths separator 
+
 #endif
 
 /*------------------------ Defines, enum, struct --------------------------*/
