@@ -4,8 +4,11 @@
 # ▐▙▄▄▀▝▚▄▄▖▐▌ ▐▌ ▐▌  ▐▌    █  
                                      
 
-
-NAME				= dcrypt
+ifeq ($(TARGET), win)
+	NAME				= dcrypt.exe
+else
+	NAME				= dcrypt
+endif
 
 # ****************************
 #       ANSI ESCAPE CODES
@@ -31,11 +34,11 @@ TARGET				?= unix
 
 # Compiler selection based on TARGET
 ifeq ($(TARGET), win)  # Windows
-	TEMP_FOLDER1	= "D:\Documents\infection"
+	TEMP_FOLDER1	= D:\Documents\infection
     CC				= x86_64-w64-mingw32-gcc
     CFLAGS			= -Wall -Wextra -O2
 else
-	TEMP_FOLDER1	= ~/infection
+	TEMP_FOLDER1	= /home/alien/infection
     CC				= clang
     CFLAGS			= -Wall -Wextra -O2
 	SSLFLAGS		= -lcrypto -lssl
@@ -92,7 +95,7 @@ unix: $(OBJS)
 
 .PHONY: win
 win: $(OBJS)
-	@echo "$(INFO) Building for Windows"
+	@echo "Building for Windows"
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 
@@ -104,7 +107,7 @@ win: $(OBJS)
 # Setup for the tests
 setup:
 ifeq ($(TARGET), win)
-	PowerShell -Command " \
+	@PowerShell -Command " \
 		if (-Not (Test-Path -Path '$(TEMP_FOLDER1)')) \
 			{ New-Item -Path '$(TEMP_FOLDER1)' -ItemType Directory }; \
 			Copy-Item -Path '$(SOURCE_TEST_FILE1)' -Destination '$(TEMP_FOLDER1)'"
@@ -147,20 +150,28 @@ debug: $(NAME)
 
 .PHONY: clean fclean re
 
+
+# The use of try-catch let us skip errors
 clean:
 ifeq ($(TARGET), win)
-	PowerShell -Command " \
-		Remove-Item -Path '$(OBJS_DIR)', '$(TEMP_FOLDER1)' \
-		-Recurse -Force -ErrorAction SilentlyContinue"
+	@PowerShell -Command " \
+		try { \
+			Remove-Item -Path '$(OBJS_DIR)', '$(TEMP_FOLDER1)' -Recurse -Force -ErrorAction Stop \
+		} catch { \
+			Write-Host 'Error removing folder: ' $$_.Exception.Message \
+		}"
 else
-	rm -rf $(OBJS_DIR) $(TEMP_FOLDER1)
+	rm -rf $(OBJS_DIR)
 endif
 
 fclean: clean
 ifeq ($(TARGET), win)
-	PowerShell -Command " \
-		Remove-Item -Path '$(NAME)' \
-		-Force -ErrorAction SilentlyContinue"
+	@PowerShell -Command " \
+		try { \
+			Remove-Item -Path '$(NAME)' -Force -ErrorAction Stop \
+		} catch { \
+			Write-Host 'Error removing folder: ' $$_.Exception.Message \
+		}"
 else
 	rm -f $(NAME)
 endif

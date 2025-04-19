@@ -167,13 +167,10 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
     DWORD bytes_written;
 
     // Write the header
-    if (!WriteFile(hFile, &env->dcrypt_header, DC_DCRYPT_HEADER_SIZE, &bytes_written, NULL)) {
-        CloseHandle(hFile);
-        return DC_ERROR;
-    }
-
-    // Write the encrypted data
-    if (!WriteFile(hFile, env->mapped_data, env->encrypted_filesize, &bytes_written, NULL)) {
+    if (!WriteFile(hFile, &env->dcrypt_header, DC_DCRYPT_HEADER_SIZE, &bytes_written, NULL) ||
+        // Write the encrypted data
+        !WriteFile(hFile, env->mapped_data, env->encrypted_filesize, &bytes_written, NULL))
+    {
         CloseHandle(hFile);
         return DC_ERROR;
     }
