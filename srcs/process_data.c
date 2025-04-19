@@ -19,6 +19,7 @@ int process_mapped_data(t_env *env)
 			data,									// The file data (starting after the header)
 			env->encrypted_filesize,				// The encrypted file size (without the custom header size)
 			#ifdef _WIN32
+			// Import raw AES key to to get a key handle linked to the key
 			import_raw_aes_key(win_env.hProv, env->decryption_key, DC_AES_KEY_SIZE),
 			# else
 			env->decryption_key,					// The randomly generated encryption key

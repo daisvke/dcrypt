@@ -6,7 +6,20 @@
 # include <wincrypt.h>
 # include <stdio.h>
 
-// Import raw AES key to to get a key handle
+/*
+ * Import raw AES key to to get a key handle linked to the key.
+ *
+ * Raw AES key cannot be used directly for encryption due to the way
+ * CryptoAPI manages cryptographic keys.
+ * CryptoAPI requires keys to be imported into a secure key container,
+ * which handles key storage, access control, and cryptographic operations securely.
+ *
+ * Using the raw key directly bypasses these security mechanisms 
+ * and can lead to vulnerabilities, such as exposing the key 
+ * in memory or logs, which compromises the security of the 
+ * encryption process.
+ */
+
 HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
     struct {
         BLOBHEADER	hdr;
@@ -14,16 +27,25 @@ HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
         BYTE		key[16]; // max 16 bytes for AES-128
     } blob;
 
-    blob.hdr.bType = PLAINTEXTKEYBLOB;
-    blob.hdr.bVersion = CUR_BLOB_VERSION;
-    blob.hdr.reserved = 0;
-    blob.hdr.aiKeyAlg = CALG_AES_128;
-    blob.key_size = key_len;
+    blob.hdr.bType		= PLAINTEXTKEYBLOB;
+    blob.hdr.bVersion	= CUR_BLOB_VERSION;
+    blob.hdr.reserved	= 0;
+    blob.hdr.aiKeyAlg	= CALG_AES_128;
+    blob.key_size		= key_len;
     memcpy(blob.key, raw_key, key_len);
 
-	DWORD blob_len = sizeof(BLOBHEADER) + sizeof(DWORD) + key_len;
+	DWORD		blob_len = sizeof(BLOBHEADER) + sizeof(DWORD) + key_len;
+    HCRYPTKEY	hKey;
 
-    HCRYPTKEY hKey;
+	// Acquire a crypto context
+	if (!CryptAcquireContext(
+		&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT
+	))
+		if (win_env.hProv)
+			CryptReleaseContext(win_env.hProv, 0);
+		return -1;
+
+	// Import the raw key
     if (!CryptImportKey(hProv, (BYTE *)&blob, blob_len, 0, 0, &hKey)) {
         printf("CryptImportKey (PLAINTEXTKEYBLOB) failed: %lu\n", GetLastError());
         return 0;
@@ -46,7 +68,9 @@ HCRYPTKEY generate_encryption_key(void)
 	DWORD		mode = CRYPT_MODE_CBC; // Set AES key to use CBC mode
 
 	// Acquire a crypto context
-	if (!CryptAcquireContext(&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) ||
+	if (!CryptAcquireContext(
+		&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT
+		) ||
 		!CryptGenKey(win_env.hProv, CALG_AES_128, CRYPT_EXPORTABLE, &hKey) ||
 		!CryptSetKeyParam(hKey, KP_MODE, (BYTE *)&mode, 0))
 	{
@@ -101,7 +125,10 @@ int aes_decrypt_data(
     BYTE	*buffer = malloc(buf_len);
     memcpy(buffer, data, data_len);
 
-	if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
+		// Acquire a crypto context
+	if (!CryptAcquireContext(
+		&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) ||
+		!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
 
     if (!CryptDecrypt(key, 0, TRUE, 0, buffer, &data_len)) {
         printf("CryptDecrypt failed: %lu\n", GetLastError());
