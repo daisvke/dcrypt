@@ -154,7 +154,8 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
     snprintf(new_target_path, sizeof(new_target_path), "%s.%s", target_path, DC_DCRYPT_EXT);
 
     #ifdef _WIN32
-    HANDLE hFile = CreateFileA(
+    DWORD   bytes_written;
+    HANDLE  hFile = CreateFileA(
         new_target_path,
         GENERIC_WRITE, 0, NULL,
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL
@@ -162,9 +163,6 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
 
     if (hFile == INVALID_HANDLE_VALUE)
         return DC_ERROR;
-
-printf("DATA: %X %X\n", env->mapped_data[0],env->mapped_data[1]);
-    DWORD bytes_written;
 
     // Write the header
     if (!WriteFile(hFile, &env->dcrypt_header, DC_DCRYPT_HEADER_SIZE, &bytes_written, NULL) ||
@@ -188,7 +186,7 @@ printf("DATA: %X %X\n", env->mapped_data[0],env->mapped_data[1]);
     // Write the custom header first to the outfile
     if (write(outfilefd, &env->dcrypt_header, DC_DCRYPT_HEADER_SIZE) < 0 ||
         // Then write the processed data to the outfile
-        write(outfilefd, env->mapped_data, env->encrypted_filesize) < 0)
+        write(outfilefd, env->encrypted_data, env->encrypted_filesize) < 0)
     {
         close(outfilefd);
         return DC_ERROR;
@@ -238,12 +236,11 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
             // Unmap the data from the memory
             #ifdef _WIN32
             unmap_file(env->mapped_data);
+            if (env->modes & DC_VERBOSE)
+                printf("CreateFileA failed: %lu\n", GetLastError());
             # else
             munmap(env->mapped_data, env->dcrypt_header.original_filesize);
             #endif
-
-            if (env->modes & DC_VERBOSE)
-                printf("CreateFileA failed: %lu\n", GetLastError());
 
             return DC_ERROR;
         }
@@ -261,12 +258,11 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
             // Unmap the data from the memory
             #ifdef _WIN32
             unmap_file(env->mapped_data);
+            if (env->modes & DC_VERBOSE)
+                printf("CreateFileA failed: %lu\n", GetLastError());
             # else
             munmap(env->mapped_data, env->dcrypt_header.original_filesize);
             #endif
-
-            if (env->modes & DC_VERBOSE)
-                printf("CreateFileA failed: %lu\n", GetLastError());
 
             return DC_ERROR;
         }

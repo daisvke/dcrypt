@@ -103,11 +103,9 @@ int aes_encrypt_data(
         CryptReleaseContext(win_env.hProv, 0);
         return -1;
     }
-// unsigned char d2[data_len+16];
+
     // Overwrite original data with encrypted content
-    // memcpy(d2, buffer, data_len);
-    *encrypted_data = malloc(buf_len);
-    memcpy(*encrypted_data, buffer, buf_len);
+    *encrypted_data = buffer;
 
     print_hex("Encrypted", *encrypted_data, buf_len);
     free(buffer);

@@ -143,14 +143,14 @@ void    xor_with_additive_cipher(
     void *key, size_t key_length, void *data, size_t data_length, int mode);
 
 # ifdef _WIN32
-int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data,DWORD data_len, \
+int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
 int     aes_decrypt_data(unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
 HCRYPTKEY   generate_encryption_key(void);
 HCRYPTKEY   import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len);
 # else
-int     aes_encrypt_data(unsigned char *data, size_t data_len, \
+int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
 int     aes_decrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);

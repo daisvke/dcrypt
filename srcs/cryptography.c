@@ -37,6 +37,7 @@
 
 int aes_encrypt_data(
     unsigned char       *data,
+    unsigned char       **encrypted_data,
     size_t              data_len,
     const unsigned char *key,
     unsigned char       *iv
@@ -51,20 +52,31 @@ int aes_encrypt_data(
         return -1; // Initialization error
     }
 
+    // Allocate a buffer that's big enough for data + padding
+    int buf_len = data_len + EVP_CIPHER_block_size(EVP_aes_128_cbc());
+    unsigned char *buffer = malloc(buf_len);
+    if (!buffer) {
+        EVP_CIPHER_CTX_free(ctx);
+        return -1;
+    }
+
     int out_len;
     // Perform the encryption of data in 16 bytes chunk
-    if (EVP_EncryptUpdate(ctx, data, &out_len, data, data_len) != 1) {
+    if (EVP_EncryptUpdate(ctx, buffer, &out_len, data, data_len) != 1) {
+        free(buffer);
         EVP_CIPHER_CTX_free(ctx);
         return -1; // Encryption error
     }
 
     int final_len;
     // Write any remaining encrypted data, adding paddings if needed
-    if (EVP_EncryptFinal_ex(ctx, data + out_len, &final_len) != 1) {
+    if (EVP_EncryptFinal_ex(ctx, buffer + out_len, &final_len) != 1) {
+        free(buffer);
         EVP_CIPHER_CTX_free(ctx);
         return -1; // Finalization error
     }
 
+    *encrypted_data = buffer;
     EVP_CIPHER_CTX_free(ctx);
     return out_len + final_len; // Return the total length of the encrypted data
 }
