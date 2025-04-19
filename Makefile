@@ -88,6 +88,13 @@ else
 endif
 	$(CC) -I$(INCS_DIR) -c $(CFLAGS) $< -o $@
 
+all:
+ifeq ($(TARGET), win)
+	$(MAKE) win
+else
+	$(MAKE) unix
+endif
+
 .PHONY: unix
 unix: $(OBJS)
 	@echo "$(INFO) Building for Linux"

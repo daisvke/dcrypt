@@ -17,6 +17,7 @@ void* map_file(const char* filename) {
         return NULL;
     }
 
+    // Create a handle for the mapped file
     win_env.hMap = CreateFileMappingA(win_env.hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
     if (!win_env.hMap) {
         CloseHandle(win_env.hFile);
@@ -103,13 +104,22 @@ int map_file_into_memory(t_env *env, const char *filename)
     // Determine the file size by moving the cursor till the end
     off_t res = lseek(fd, 0, SEEK_END);
     // Check that lseek didn't fail and not returning > int max
-    if (res < 0 || res > 2147483647) return DC_ERROR;
+    if (res < 0 || res > 2147483647) {
+        close(fd);
+        return DC_ERROR;
+    }
 
     // Put back the cursor at the beginning of the file
-    if (lseek(fd, 0, SEEK_SET) < 0) return DC_ERROR;
+    if (lseek(fd, 0, SEEK_SET) < 0) {
+        close(fd);
+        return DC_ERROR;
+    }
 
     env->mapped_data = map_file(filename);
-    if (!env->mapped_data) return DC_ERROR;
+    if (!env->mapped_data) {
+        close(fd);
+        return DC_ERROR;
+    }
 
     if (env->modes & DC_REVERSE)
     {
@@ -119,6 +129,7 @@ int map_file_into_memory(t_env *env, const char *filename)
                     stderr,
                     FMT_ERROR " Signature not found in the file header, abort decryption...\n"
                 );
+            close(fd);
             return DC_ERROR;
         }
 
@@ -133,6 +144,7 @@ int map_file_into_memory(t_env *env, const char *filename)
                     stderr,
                     FMT_ERROR " Signature found in the file header, abort encryption...\n"
                 );
+            close(fd);
             return DC_ERROR;
         }
         env->dcrypt_header.original_filesize = res;
@@ -142,6 +154,7 @@ int map_file_into_memory(t_env *env, const char *filename)
     // if (search_binary((char *)mapped_data, dcrypt_header.original_filesize, DC_SIGNATURE))
     //     return 1;
 
+    close(fd);
     return DC_SUCCESS;
 }
 
@@ -226,7 +239,7 @@ bool write_decrypted_data_to_file(t_env *env, char *target_path)
 // Write the processed file data back to a new file
 int write_processed_data_to_file(t_env *env, const char *target_path)
 {
-    char    temp_path[strlen(target_path) - 1];
+    char    temp_path[strlen(target_path)];
     // Copy the original string to the temporary variable
     strcpy(temp_path, target_path);
 
@@ -236,6 +249,7 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
             // Unmap the data from the memory
             #ifdef _WIN32
             unmap_file(env->mapped_data);
+            printf("After unmap\n");
             if (env->modes & DC_VERBOSE)
                 printf("CreateFileA failed: %lu\n", GetLastError());
             # else
@@ -278,9 +292,9 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
     // Remove the old file from the system
     #ifdef _WIN32
     if (!DeleteFile(temp_path)) {
-        DWORD error = GetLastError(); // Get the error code
-        // You can handle the error here, for example:
-        printf("Error deleting file: %lu\n", error);
+        DWORD error = GetLastError();
+        if (env->modes & DC_VERBOSE)
+            printf("Error deleting file: %lu\n", error);
         return DC_ERROR;
     }
     # else
