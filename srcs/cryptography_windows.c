@@ -2,9 +2,7 @@
 
 #ifdef _WIN32
 
-# include <windows.h>
 # include <wincrypt.h>
-# include <stdio.h>
 
 /*
  * Import raw AES key to to get a key handle linked to the key.
@@ -84,14 +82,13 @@ HCRYPTKEY generate_encryption_key(void)
 
 int aes_encrypt_data(
     unsigned char       *data,
+    unsigned char       **encrypted_data,
     DWORD				data_len,
     HCRYPTKEY			key,
     unsigned char       *iv
 ) {
     // Set Initialization Vector
     if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
-
-    data_len = data_len + 1;  // Include null terminator
 
     // Padding to make space for encryption (CBC needs padding)
     DWORD	buf_len = data_len + DC_AES_BLOCK_SIZE; // Ensure buffer is large enough
@@ -106,8 +103,14 @@ int aes_encrypt_data(
         CryptReleaseContext(win_env.hProv, 0);
         return -1;
     }
+// unsigned char d2[data_len+16];
+    // Overwrite original data with encrypted content
+    // memcpy(d2, buffer, data_len);
+    *encrypted_data = malloc(buf_len);
+    memcpy(*encrypted_data, buffer, buf_len);
 
-    print_hex("Encrypted", buffer, data_len);
+    print_hex("Encrypted", *encrypted_data, buf_len);
+    free(buffer);
 
 	return buf_len;
 }
@@ -142,6 +145,10 @@ int aes_decrypt_data(
     CryptDestroyKey(key); 						// Key securely destroyed
 	if (win_env.hProv)
     	CryptReleaseContext(win_env.hProv, 0);	// Free context
+
+    // Overwrite original data with encrypted content
+    memcpy(data, buffer, data_len);
+        
     free(buffer);
 
 	return buf_len;

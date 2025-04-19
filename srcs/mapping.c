@@ -4,46 +4,48 @@
 # include <windows.h>
 
 void* map_file(const char* filename) {
-    HANDLE hFile = CreateFileA(
+    win_env.hFile = CreateFileA(
         filename, GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, // Allow other processes to read/write too
         NULL,
         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
     );
 
-    if (hFile == INVALID_HANDLE_VALUE) {
+    if (win_env.hFile == INVALID_HANDLE_VALUE) {
         // DWORD err = GetLastError();
         // printf("CreateFileA failed. Error code: %lu\n", err);
         return NULL;
     }
 
-    HANDLE hMap = CreateFileMappingA(hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
-    if (!hMap) {
-        CloseHandle(hFile);
+    win_env.hMap = CreateFileMappingA(win_env.hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
+    if (!win_env.hMap) {
+        CloseHandle(win_env.hFile);
         return NULL;
     }
 
-    void* data = MapViewOfFile(hMap, FILE_MAP_READ, 0, 0, 0);
+    void* data = MapViewOfFile(win_env.hMap, FILE_MAP_READ, 0, 0, 0);
     if (!data) {
-        CloseHandle(hMap);
-        CloseHandle(hFile);
+        CloseHandle(win_env.hMap);
+        CloseHandle(win_env.hFile);
         return NULL;
     }
-
-    // Hold the data needed for unmaping the file data 
-    win_env.hFile = hFile;
-    win_env.hMap = hMap;
-
-    CloseHandle(hMap);
-    CloseHandle(hFile);
 
     return data;
 }
 
-void unmap_file(void* addr) {
-    UnmapViewOfFile(addr);
-    CloseHandle(win_env.hMap);
-    CloseHandle(win_env.hFile);
+void unmap_file(void* data) {
+    if (data && !UnmapViewOfFile(data)) {
+        printf("UnmapViewOfFile failed: %lu\n", GetLastError());
+        return;
+    }
+    if (win_env.hMap && !CloseHandle(win_env.hMap)) {
+        printf("CloseHandle(hMapping) failed: %lu\n", GetLastError());
+        return;
+    }
+    if (win_env.hFile && !CloseHandle(win_env.hFile)) {
+        printf("CloseHandle(hFile) failed: %lu\n", GetLastError());
+        return;
+    }
 }
 
 # else
@@ -146,7 +148,6 @@ int map_file_into_memory(t_env *env, const char *filename)
 bool write_encrypted_data_to_file(t_env *env, const char *target_path)
 {
     char    new_target_path[1024]; // Create a buffer to hold the full path
-    int     outfilefd;
 
     // Use snprintf() to safely concatenate the strings and get the file path
     //  with our custom extension
@@ -159,17 +160,16 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL
     );
 
-    if (hFile == INVALID_HANDLE_VALUE) {
-        printf("CreateFileA failed: %lu\n", GetLastError());
+    if (hFile == INVALID_HANDLE_VALUE)
         return DC_ERROR;
-    }
 
+printf("DATA: %X %X\n", env->mapped_data[0],env->mapped_data[1]);
     DWORD bytes_written;
 
     // Write the header
     if (!WriteFile(hFile, &env->dcrypt_header, DC_DCRYPT_HEADER_SIZE, &bytes_written, NULL) ||
         // Write the encrypted data
-        !WriteFile(hFile, env->mapped_data, env->encrypted_filesize, &bytes_written, NULL))
+        !WriteFile(hFile, env->encrypted_data, env->encrypted_filesize, &bytes_written, NULL))
     {
         CloseHandle(hFile);
         return DC_ERROR;
@@ -178,6 +178,7 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
     CloseHandle(hFile);
 
     #else
+    int     outfilefd;
 
     outfilefd = open(new_target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);        
 
@@ -233,8 +234,19 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
 
     if (env->modes & DC_REVERSE)
     {
-        if (write_decrypted_data_to_file(env, (char *)target_path) == DC_ERROR)
+        if (write_decrypted_data_to_file(env, (char *)target_path) == DC_ERROR) {
+            // Unmap the data from the memory
+            #ifdef _WIN32
+            unmap_file(env->mapped_data);
+            # else
+            munmap(env->mapped_data, env->dcrypt_header.original_filesize);
+            #endif
+
+            if (env->modes & DC_VERBOSE)
+                printf("CreateFileA failed: %lu\n", GetLastError());
+
             return DC_ERROR;
+        }
 
         // Unmap the data from the memory
         #ifdef _WIN32
@@ -242,10 +254,22 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
         # else
         munmap(env->mapped_data, env->encrypted_filesize + DC_DCRYPT_HEADER_SIZE);
         #endif
-    } else
+    }
+    else
     {
-        if (write_encrypted_data_to_file(env, (char *)target_path) == DC_ERROR)
+        if (write_encrypted_data_to_file(env, (char *)target_path) == DC_ERROR) {
+            // Unmap the data from the memory
+            #ifdef _WIN32
+            unmap_file(env->mapped_data);
+            # else
+            munmap(env->mapped_data, env->dcrypt_header.original_filesize);
+            #endif
+
+            if (env->modes & DC_VERBOSE)
+                printf("CreateFileA failed: %lu\n", GetLastError());
+
             return DC_ERROR;
+        }
 
         // Unmap the data from the memory
         #ifdef _WIN32
@@ -256,7 +280,16 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
     }
 
     // Remove the old file from the system
+    #ifdef _WIN32
+    if (!DeleteFile(temp_path)) {
+        DWORD error = GetLastError(); // Get the error code
+        // You can handle the error here, for example:
+        printf("Error deleting file: %lu\n", error);
+        return DC_ERROR;
+    }
+    # else
     if (remove(temp_path) != 0) return DC_ERROR;
+    #endif
 
     return DC_SUCCESS;
 }

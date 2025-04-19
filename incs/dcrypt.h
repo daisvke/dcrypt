@@ -116,8 +116,9 @@ typedef struct s_dcrypt_header
 
 typedef struct s_env
 {
-    unsigned char       *mapped_data; // file is mapped in memory here
-    uint16_t            modes;        // options given from command line
+    unsigned char       *mapped_data;       // File is mapped in memory here
+    unsigned char       *encrypted_data;   // Encrypted mapped data
+    uint16_t            modes;              // Options given from command line
     t_dcrypt_header     dcrypt_header;
     int                 encrypted_filesize;
     unsigned char       *encryption_key;
@@ -142,7 +143,7 @@ void    xor_with_additive_cipher(
     void *key, size_t key_length, void *data, size_t data_length, int mode);
 
 # ifdef _WIN32
-int     aes_encrypt_data(unsigned char *data, DWORD data_len, \
+int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data,DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
 int     aes_decrypt_data(unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
