@@ -6,6 +6,48 @@
 # include <wincrypt.h>
 # include <stdio.h>
 
+
+bool write_encrypted_data_to_file(t_env *env, const char *target_path)
+{
+    char new_target_path[1024];
+    snprintf(new_target_path, sizeof(new_target_path), "%s.%s", target_path, DC_DCRYPT_EXT);
+
+    HANDLE hFile = CreateFileA(
+        new_target_path,
+        GENERIC_WRITE,
+        0,
+        NULL,
+        CREATE_ALWAYS,
+        FILE_ATTRIBUTE_NORMAL,
+        NULL
+    );
+
+    if (hFile == INVALID_HANDLE_VALUE) {
+        printf("CreateFileA failed: %lu\n", GetLastError());
+        return DC_ERROR;
+    }
+
+    DWORD bytes_written;
+
+    // Write the header
+    if (!WriteFile(hFile, &env->dcrypt_header, DC_DCRYPT_HEADER_SIZE, &bytes_written, NULL)) {
+        printf("Failed to write header: %lu\n", GetLastError());
+        CloseHandle(hFile);
+        return DC_ERROR;
+    }
+
+    // Write the encrypted data
+    if (!WriteFile(hFile, env->mapped_data, env->encrypted_filesize, &bytes_written, NULL)) {
+        printf("Failed to write data: %lu\n", GetLastError());
+        CloseHandle(hFile);
+        return DC_ERROR;
+    }
+
+    CloseHandle(hFile);
+    return DC_SUCCESS;
+}
+
+
 /*
  * Import raw AES key to to get a key handle linked to the key.
  *

@@ -89,8 +89,6 @@ void handle_file(t_env *env, const char *filepath)
 			perror("An error occurred while attempting to write the mapped data into the file");
 			return;
 		}
-	
-	++env->handled_file_count;
 }
 
 void handle_dir(t_env *env, char *target_dir_path)
@@ -145,6 +143,7 @@ void handle_dir(t_env *env, char *target_dir_path)
 					// Remember the created file path to avoid handling it twice
 					created_files[created_files_count] = strdup(path);
 					++created_files_count;
+					++env->handled_file_count;
 				}
 			}
 		}

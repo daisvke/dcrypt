@@ -171,3 +171,11 @@ After the encryption, all files get the `.dcrypt` extension and the custom heade
 ## Windows
 - gcc : need MSYS2 + add C:\msys64\ucrt64\bin in env
 - make : need GNUWin32 + add C:\Program Files (x86)\GnuWin32\bin
+
+## Useful commands
+```powershell
+# Get file in hexidecimal notation and only print the first 3 lines
+Format-Hex .\sample.txt.dcrypt | Select-Object -First 3
+# Equivalent on Unix
+hexdump -C ./sample.txt.dcrypt | head -n 3
+```

@@ -87,10 +87,12 @@ endif
 
 .PHONY: unix
 unix: $(OBJS)
+	@echo "$(INFO) Building for Linux"
 	$(CC) $(CFLAGS) $(SSLFLAGS) $(OBJS) -o $(NAME)
 
 .PHONY: win
 win: $(OBJS)
+	@echo "$(INFO) Building for Windows"
 	$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 
@@ -143,7 +145,7 @@ debug: $(NAME)
 #       CLEANING
 # ****************************
 
-.PHONY: clean fclean
+.PHONY: clean fclean re
 
 clean:
 ifeq ($(TARGET), win)
@@ -161,4 +163,11 @@ ifeq ($(TARGET), win)
 		-Force -ErrorAction SilentlyContinue"
 else
 	rm -f $(NAME)
+endif
+
+re: fclean setup
+ifeq ($(TARGET), win)
+	$(MAKE) win
+else
+	$(MAKE) unix
 endif

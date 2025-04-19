@@ -34,7 +34,7 @@ extern t_windows win_env;
 # else
 
 # include <unistd.h>
-# define DC_TARGET_PATHS        { "~/infection" } // No '/' at the end
+# define DC_TARGET_PATHS        { "/home/alien/infection" } // No '/' at the end
 # define DC_PATH_SEP            '/' // Paths separator 
 
 #endif

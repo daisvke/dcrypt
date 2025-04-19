@@ -36,9 +36,8 @@ int main(int argc, char *argv[])
 	char *target_dir_paths[DC_TARGET_ARRAY_SIZE] = DC_TARGET_PATHS;
 
 	// Open each target directory one by one
-	for (size_t i = 0; i < DC_TARGET_ARRAY_SIZE; ++i) {
+	for (size_t i = 0; i < DC_TARGET_ARRAY_SIZE; ++i)
 		handle_dir(&env, target_dir_paths[i]);
-	}
 
 	print_results(&env);
 
