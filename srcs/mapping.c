@@ -149,10 +149,6 @@ int map_file_into_memory(t_env *env, const char *filename)
         }
         env->dcrypt_header.original_filesize = res;
     }
-    // TODO
-    // // Abort if the current target already contains our signature
-    // if (search_binary((char *)mapped_data, dcrypt_header.original_filesize, DC_SIGNATURE))
-    //     return 1;
 
     close(fd);
     return DC_SUCCESS;
@@ -239,7 +235,7 @@ bool write_decrypted_data_to_file(t_env *env, char *target_path)
 // Write the processed file data back to a new file
 int write_processed_data_to_file(t_env *env, const char *target_path)
 {
-    char    temp_path[strlen(target_path)];
+    char    temp_path[strlen(target_path) + 1];
     // Copy the original string to the temporary variable
     strcpy(temp_path, target_path);
 

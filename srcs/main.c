@@ -7,9 +7,9 @@ t_windows	win_env = {0};
 void print_results(t_env *env)
 {
 	#ifdef _WIN32
-	const char	*msg = "Successfully processed %lld files.\n";
+	const char	*msg = "Successfully processed %lld file(s).\n";
 	# else
-	const char	*msg = "Successfully processed %ld files.\n";
+	const char	*msg = "Successfully processed %ld file(s).\n";
 	#endif
 
 	printf("\n=======================================\n" FMT_INFO);

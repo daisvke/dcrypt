@@ -112,8 +112,6 @@ typedef struct s_dcrypt_header
     // 0x0026 Encrypted file contents (AES-128 CBC)
 }               t_dcrypt_header;
 
-/*---------------------------- Global variables ---------------------------*/
-
 typedef struct s_env
 {
     unsigned char       *mapped_data;       // File is mapped in memory here
@@ -148,7 +146,7 @@ int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, DW
 int     aes_decrypt_data(unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
 HCRYPTKEY   generate_encryption_key(void);
-HCRYPTKEY   import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len);
+HCRYPTKEY   import_raw_aes_key(t_env *env, HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len);
 # else
 int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);

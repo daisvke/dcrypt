@@ -18,7 +18,8 @@
  * encryption process.
  */
 
-HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
+HCRYPTKEY import_raw_aes_key(t_env *env, HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len)
+{
     struct {
         BLOBHEADER	hdr;
         DWORD		key_size;
@@ -30,6 +31,7 @@ HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
     blob.hdr.reserved	= 0;
     blob.hdr.aiKeyAlg	= CALG_AES_128;
     blob.key_size		= key_len;
+
     memcpy(blob.key, raw_key, key_len);
 
 	DWORD		blob_len = sizeof(BLOBHEADER) + sizeof(DWORD) + key_len;
@@ -37,16 +39,15 @@ HCRYPTKEY import_raw_aes_key(HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len) {
 
 	// Acquire a crypto context
 	if (!CryptAcquireContext(
-		&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT
-	)) {
-		if (win_env.hProv)
-			CryptReleaseContext(win_env.hProv, 0);
-		return -1;
-	}
+		&hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT
+	)) return 0;
 
 	// Import the raw key
     if (!CryptImportKey(hProv, (BYTE *)&blob, blob_len, 0, 0, &hKey)) {
-        printf("CryptImportKey (PLAINTEXTKEYBLOB) failed: %lu\n", GetLastError());
+		if (env->modes & DC_VERBOSE)
+            printf("CryptImportKey (PLAINTEXTKEYBLOB) failed: %lu\n", GetLastError());
+		if (hProv)
+			CryptReleaseContext(hProv, 0);
         return 0;
     }
 
@@ -120,23 +121,19 @@ int aes_decrypt_data(
     HCRYPTKEY			key,
     unsigned char       *iv
 ) {
-    data_len = data_len + 1;  // Include null terminator
+    if (!key) return -1;
+    DWORD   mode = CRYPT_MODE_CBC;
 
-    // Padding to make space for encryption (CBC needs padding)
-    DWORD	buf_len = data_len + DC_AES_BLOCK_SIZE; // Ensure buffer is large enough
-    BYTE	*buffer = malloc(buf_len);
-    memcpy(buffer, data, data_len);
+    // Acquire a crypto context
+	if (!CryptSetKeyParam(key, KP_MODE, (BYTE*)&mode, 0) ||
+		!CryptSetKeyParam(key, KP_IV, iv, 0))
+        return -1;
 
-		// Acquire a crypto context
-	if (!CryptAcquireContext(
-		&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT) ||
-		!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
-
-    if (!CryptDecrypt(key, 0, TRUE, 0, buffer, &data_len)) {
+    if (!CryptDecrypt(key, 0, TRUE, 0, data, &data_len)) {
         printf("CryptDecrypt failed: %lu\n", GetLastError());
 		return -1;
     } else {
-        printf("Decrypted: %s\n", buffer);
+        printf("Decrypted: %s\n", data);
     }
 
     // Cleanup
@@ -144,12 +141,7 @@ int aes_decrypt_data(
 	if (win_env.hProv)
     	CryptReleaseContext(win_env.hProv, 0);	// Free context
 
-    // Overwrite original data with encrypted content
-    memcpy(data, buffer, data_len);
-        
-    free(buffer);
-
-	return buf_len;
+	return data_len;
 }
 
 #endif

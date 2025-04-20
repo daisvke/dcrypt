@@ -55,7 +55,7 @@ void init_dcrypt_header(t_env *env)
 	}
 }
 
-void handle_file(t_env *env, const char *filepath)
+int handle_file(t_env *env, const char *filepath)
 {
 	// Init the header that will be placed at the top of the file
 	init_dcrypt_header(env);
@@ -70,7 +70,7 @@ void handle_file(t_env *env, const char *filepath)
 	if (map_file_into_memory(env, filepath))
 		if (env->modes & DC_VERBOSE) {
 			perror("An error occurred while attempting to map the file into memory");
-			return;
+			return DC_ERROR;
 		}
 
 	if (process_mapped_data(env))
@@ -80,16 +80,17 @@ void handle_file(t_env *env, const char *filepath)
 			else
 				fprintf(stderr, FMT_ERROR "Failed to encrypt data.\n");
 			// perror("An error occurred while attempting to process the mapped data");
-			return;
+			return DC_ERROR;
 		}
 
 	// Write the final file data in the target path
 	if (write_processed_data_to_file(env, filepath)) {
 		if (env->modes & DC_VERBOSE) {
 			perror("An error occurred while attempting to write the mapped data into the file");
-			return;
+			return DC_ERROR;
 		}
 	}
+	return DC_SUCCESS;
 }
 
 void handle_dir(t_env *env, char *target_dir_path)
@@ -139,7 +140,7 @@ void handle_dir(t_env *env, char *target_dir_path)
 					is_extension_handled(env, path) &&
 					!is_created_file(created_files, created_files_count, path))
 				{
-					handle_file(env, path);
+					if (handle_file(env, path) == DC_ERROR) continue;
 
 					// Remember the created file path to avoid handling it twice
 					created_files[created_files_count] = strdup(path);
