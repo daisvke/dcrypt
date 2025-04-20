@@ -62,6 +62,74 @@ void print_hex(const char *label, BYTE *data, DWORD len) {
     printf("\n");
 }
 
+char *get_aes_key_as_ascii(HCRYPTKEY hKey) {
+    DWORD blobLen = 0;
+    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, NULL, &blobLen)) {
+        printf("CryptExportKey (get size) failed: %lu\n", GetLastError());
+        return NULL;
+    }
+
+    BYTE *blob = malloc(blobLen);
+    if (!blob) return NULL;
+
+    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, blob, &blobLen)) {
+        printf("CryptExportKey failed: %lu\n", GetLastError());
+        free(blob);
+        return NULL;
+    }
+
+    // Key starts after header + length
+    BYTE *keyData = blob + sizeof(BLOBHEADER) + sizeof(DWORD);
+    DWORD keyLen = *(DWORD *)(blob + sizeof(BLOBHEADER));
+
+    // Allocate string buffer (add 1 for null terminator)
+    char *asciiKey = malloc(keyLen + 1);
+    if (!asciiKey) {
+        free(blob);
+        return NULL;
+    }
+
+    memcpy(asciiKey, keyData, keyLen);
+    asciiKey[keyLen] = '\0'; // null-terminate
+
+    free(blob);
+    return asciiKey;
+}
+char *get_aes_key_as_hex_string(HCRYPTKEY hKey) {
+    DWORD blobLen = 0;
+    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, NULL, &blobLen)) {
+        printf("CryptExportKey (get size) failed: %lu\n", GetLastError());
+        return NULL;
+    }
+
+    BYTE *blob = malloc(blobLen);
+    if (!blob) return NULL;
+
+    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, blob, &blobLen)) {
+        printf("CryptExportKey failed: %lu\n", GetLastError());
+        free(blob);
+        return NULL;
+    }
+
+    // Get pointer to key bytes (after BLOBHEADER + DWORD)
+    BYTE *keyData = blob + sizeof(BLOBHEADER) + sizeof(DWORD);
+    DWORD keyLen = *(DWORD *)(blob + sizeof(BLOBHEADER));
+
+    // Each byte -> 2 chars, +1 for null terminator
+    char *hexStr = malloc(keyLen * 2 + 1);
+    if (!hexStr) {
+        free(blob);
+        return NULL;
+    }
+
+    for (DWORD i = 0; i < keyLen; i++)
+        sprintf(&hexStr[i * 2], "%02X", keyData[i]);
+
+    hexStr[keyLen * 2] = '\0'; // null-terminate
+    free(blob);
+    return hexStr;
+}
+
 HCRYPTKEY generate_encryption_key(void)
 {
 	HCRYPTKEY	hKey = 0;
@@ -77,8 +145,17 @@ HCRYPTKEY generate_encryption_key(void)
 		if (win_env.hProv)
 			CryptReleaseContext(win_env.hProv, 0);
 	}
-
-	return hKey;
+    char *asciiKey = get_aes_key_as_ascii(hKey);
+    char *hexKey = get_aes_key_as_hex_string(hKey);
+    if (asciiKey) {
+        printf("AES Key (ASCII): %s\n", asciiKey);
+        printf("HEX Key (ASCII): %s\n", hexKey);
+        free(hexKey);
+        free(asciiKey);
+    }
+    
+    
+    return hKey;
 }
 
 int aes_encrypt_data(
@@ -108,10 +185,14 @@ int aes_encrypt_data(
     // Overwrite original data with encrypted content
     *encrypted_data = buffer;
 
-    print_hex("Encrypted", *encrypted_data, buf_len);
-    free(buffer);
+    print_hex("Encrypted", *encrypted_data, data_len);
 
-	return buf_len;
+    // Cleanup
+    CryptDestroyKey(key); 						// Key securely destroyed
+	if (win_env.hProv)
+    	CryptReleaseContext(win_env.hProv, 0);	// Free context
+
+	return data_len;
 }
 
 // Function to handle AES-128 CBC decryption
@@ -122,10 +203,10 @@ int aes_decrypt_data(
     unsigned char       *iv
 ) {
     if (!key) return -1;
-    DWORD   mode = CRYPT_MODE_CBC;
 
-    // Acquire a crypto context
-	if (!CryptSetKeyParam(key, KP_MODE, (BYTE*)&mode, 0) ||
+    // Set cipher mode
+    DWORD   mode = CRYPT_MODE_CBC;
+	if (!CryptSetKeyParam(key, KP_MODE, (BYTE *)&mode, 0) ||
 		!CryptSetKeyParam(key, KP_IV, iv, 0))
         return -1;
 
