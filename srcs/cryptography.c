@@ -261,7 +261,7 @@ unsigned char *get_encryption_key(t_env *env)
 		env->encryption_key = generate_random_based_key(
             DC_KEYCHARSET, DC_AES_KEY_SIZE, false
         );
-        env->key_allocated = true;
+        env->key_allocated = true;//TODO useless?
 		if (!env->encryption_key) return NULL;
 
         print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);

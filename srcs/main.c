@@ -15,9 +15,9 @@ void print_results(t_env *env)
 	printf("\n=======================================\n" FMT_INFO);
 	printf(msg, env->handled_file_count);
 
-	if (env->modes & DC_REVERSE)
+	if (env->modes & DC_REVERSE && env->decryption_key)
 		printf(FMT_INFO "Used key: %s\n", env->decryption_key);
-	else
+	else if (env->encryption_key)
 		#ifdef _WIN32
 		printf(FMT_INFO "Used key: %s\n", env->encryption_key);
 		# else

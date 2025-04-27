@@ -12,6 +12,7 @@ void* map_file(const char* filename) {
     );
 
     if (win_env.hFile == INVALID_HANDLE_VALUE) {
+        // TODO
         // DWORD err = GetLastError();
         // printf("CreateFileA failed. Error code: %lu\n", err);
         return NULL;
@@ -98,7 +99,14 @@ bool is_magic_nbr_correct(const unsigned char *data)
 int map_file_into_memory(t_env *env, const char *filename)
 {
     // Open the target binary file
-    int fd = open(filename, O_RDONLY | O_BINARY);
+    int fd = open(
+        filename,
+        #ifdef _WIN32
+        O_RDONLY | O_BINARY
+        # else
+        O_RDONLY
+        #endif
+    );
     if (fd < 0) return DC_ERROR;
     
     // Determine the file size by moving the cursor till the end
@@ -214,8 +222,20 @@ bool write_decrypted_data_to_file(t_env *env, char *target_path)
     // We remove our custom extension by terminating the filename earlier.
     target_path[strlen(target_path) - DC_DCRYPT_EXT_SIZE] = '\0';
 
-    // 0755: rwx for owner, rx for group and others
-    outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0755);
+    /*
+     * - 0755: rwx for owner, rx for group and others
+     * - O_BINARY to avoid new line translations
+     */
+
+    outfilefd = open(
+        target_path,
+        #ifdef _WIN32
+        O_CREAT | O_RDWR | O_TRUNC | O_BINARY,
+        # else
+        O_CREAT | O_RDWR | O_TRUNC,
+        #endif
+        0755
+    );
 
     // Check if open() has failed
     if (outfilefd == 1) return DC_ERROR;

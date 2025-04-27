@@ -17,7 +17,7 @@ const char *handled_extensions[] = {
     "eml", "msg", "ost", "pst", "potm", "potx", "ppam", "ppsx", "ppsm", "pps", 
     "pot", "pptm", "pptx", "ppt", "xltm", "xltx", "xlc", "xlm", "xlt", "xlw", 
     "xlsb", "xlsm", "xlsx", "xls", "dotx", "dotm", "dot", "docm", "docb", "docx", 
-    "doc"
+    "doc", NULL
 };
 
 const char* get_file_extension(const char *filepath) {
@@ -49,9 +49,10 @@ bool is_extension_handled(t_env *env, char *filepath)
 	}
 	else
 	{ // Otherwise, extension has to be part of the handled extensions' list
-		for (size_t i = 0; handled_extensions[i]; ++i)
+		for (size_t i = 0; handled_extensions[i]; ++i){
 			if (strcmp(extension, handled_extensions[i]) == 0)
 				return true;
+        }
 	}
 
     if (env->modes & DC_VERBOSE)

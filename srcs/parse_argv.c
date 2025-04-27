@@ -66,7 +66,8 @@ void parse_argv(t_env *env, int argc, char *argv[])
         switch (opt) {
             case 'k':
                 check_arg_key(opt, env->modes & DC_VERBOSE);
-                env->encryption_key = (unsigned char *)optarg; 
+                env->encryption_key = malloc(DC_AES_BLOCK_SIZE + 1);
+                hexstr_to_bytes((unsigned char *)optarg, env->encryption_key, DC_AES_BLOCK_SIZE);
                 break;
             case 'r':
                 env->modes |= DC_REVERSE;

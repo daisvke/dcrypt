@@ -172,6 +172,21 @@ After the encryption, all files get the `.dcrypt` extension and the custom heade
 - gcc : need MSYS2 + add C:\msys64\ucrt64\bin in env
 - make : need GNUWin32 + add C:\Program Files (x86)\GnuWin32\bin
 
+### CRLF
+- When you open a file normally:
+```
+    outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
+```
+Windows automatically translates line endings (`\r\n` and `\n`) and messes things up.
+
+- Unless you explicitly tell it "binary mode", Windows thinks you are reading a "text file" and tries to be smart (but actually breaks binary data).
+
+- This is why we have to use the `O_BINARY` flag:
+```
+    outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0755);
+```
+- On Linux, no such translation exists. 
+
 ## Useful commands
 ```powershell
 # Get file in hexidecimal notation and only print the first 3 lines
