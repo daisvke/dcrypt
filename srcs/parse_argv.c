@@ -64,7 +64,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
                 check_arg_key(opt, env->modes & DC_VERBOSE);
                 env->decryption_key = (unsigned char *)optarg;
 				if (env->modes & DC_VERBOSE)
-					printf(FMT_MODE_ON " REVERSE mode enabled\n");
+					printf(FMT_MODE_ON "REVERSE mode enabled\n");
                 break;
             case 'v':
                 print_version();
@@ -85,7 +85,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
     }
 
 	if (env->modes & DC_VERBOSE)
-        printf(FMT_MODE_ON " VERBOSE mode enabled\n");
+        printf(FMT_MODE_ON "VERBOSE mode enabled\n");
 }
 
 void detect_silent_mode(t_env *env, int argc, char *argv[])

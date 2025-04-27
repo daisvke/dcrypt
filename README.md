@@ -50,8 +50,8 @@ When dcrypt encrypts a file, it modifies the original content by adding a **cust
 |-------------|---------------------------------------|-------------------------------------------|
 | **0x0000**  | `"2DCRYPT!"`                           | Magic value/signature to identify encrypted files. |
 | **0x0008**  | **Initialization Vector used during AES encryption**     | Random IV is used during AES encryption and stored here in plaintext. |
-| **0x001e**  | **Original file size**                 | The size of the original unencrypted file. Helps verify successful decryption. |
-| **0x0026**  | **Encrypted file contents (AES-128 CBC)** | The actual **AES-128 CBC** encrypted content of the original file.
+| **0x0018**  | **Original file size**                 | The size of the original unencrypted file. Helps verify successful decryption. |
+| **0x001C**  | **Encrypted file contents (AES-128 CBC)** | The actual **AES-128 CBC** encrypted content of the original file.
 
 ### **Data encryption**
 dcrypt performs AES-128 CBC encryption in order to encrypt the data.

@@ -24,7 +24,7 @@ void* map_file(const char* filename) {
         return NULL;
     }
 
-    void* data = MapViewOfFile(win_env.hMap, FILE_MAP_READ, 0, 0, 0);
+    void* data = MapViewOfFile(win_env.hMap, FILE_MAP_ALL_ACCESS, 0, 0, 0);
     if (!data) {
         CloseHandle(win_env.hMap);
         CloseHandle(win_env.hFile);

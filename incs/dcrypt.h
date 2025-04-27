@@ -21,10 +21,11 @@
 // Hold the data needed for unmaping the file data
 typedef struct s_windows
 {
-    HANDLE*     hFile;
-    HANDLE*     hMap;
-    HCRYPTPROV  hProv;
-    HCRYPTKEY   hKey;
+    HANDLE*         hFile;
+    HANDLE*         hMap;
+    HCRYPTPROV      hProv;
+    HCRYPTKEY       hKey;
+    unsigned char   *key;
 }   t_windows;
 
 # define DC_TARGET_PATHS        { "D:\\Documents\\infection" } // No '\' at the end
@@ -106,7 +107,7 @@ typedef struct s_dcrypt_header
 
     uint8_t     iv_key[DC_IV_SIZE];
 
-    // 0x001e Original file size
+    // 0x0018 Original file size
     uint64_t    original_filesize;
 
     // 0x0026 Encrypted file contents (AES-128 CBC)
@@ -115,10 +116,10 @@ typedef struct s_dcrypt_header
 typedef struct s_env
 {
     unsigned char       *mapped_data;       // File is mapped in memory here
-    unsigned char       *encrypted_data;   // Encrypted mapped data
+    unsigned char       *encrypted_data;    // Encrypted mapped data
     uint16_t            modes;              // Options given from command line
     t_dcrypt_header     dcrypt_header;
-    int                 encrypted_filesize;
+    int                 encrypted_filesize; // File size without the header 
     unsigned char       *encryption_key;
     unsigned char       *decryption_key;
     bool                key_allocated;
@@ -146,7 +147,7 @@ int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, DW
 int     aes_decrypt_data(unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
 HCRYPTKEY   generate_encryption_key(void);
-HCRYPTKEY   import_raw_aes_key(t_env *env, HCRYPTPROV hProv, BYTE *raw_key, DWORD key_len);
+HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *hex_key, DWORD key_len);
 # else
 int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);

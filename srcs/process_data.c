@@ -15,22 +15,36 @@ int process_mapped_data(t_env *env)
 		if (env->modes & DC_VERBOSE)
 			printf(FMT_INFO " Starting decryption...\n");
 
-		if (aes_decrypt_data(
+		printf("\n0 filesize: %d, key: %s, iv: %s\n",
+			env->encrypted_filesize,					// The encrypted file size (without the custom header size)
+				win_env.key,env->dcrypt_header.iv_key
+		);
+
+		int	decrypted_size;
+		if ((decrypted_size = aes_decrypt_data(
 			data,									// The file data (starting after the header)
 			env->encrypted_filesize,				// The encrypted file size (without the custom header size)
 			#ifdef _WIN32
 			// Import raw AES key to to get a key handle linked to the key
-			import_raw_aes_key(env, win_env.hProv, "824238A6C65F0C698E290A41F2B67857", DC_AES_KEY_SIZE),
+			import_raw_aes_key(env, (unsigned char *)"A81FC5B973ADD8332FDFB044BE4C350C", DC_AES_KEY_SIZE),
 			# else
 			env->decryption_key,					// The randomly generated encryption key
 			#endif
 			env->dcrypt_header.iv_key				// Initialization vector
-		) == -1) return DC_ERROR;
+		)) == -1) return DC_ERROR;
+
+		if (decrypted_size != (int)env->dcrypt_header.original_filesize) {
+			printf(
+				FMT_ERROR "Decrypted data length (%d) doesn't match original filesize (%lld).\n",
+				decrypted_size, env->dcrypt_header.original_filesize
+			);
+			return DC_ERROR;
+		}
 
 		if (env->modes & DC_VERBOSE) {
-			printf(FMT_INFO " Decrypted %zu bytes.\n", env->encrypted_filesize);
+			printf(FMT_INFO " Decrypted %u bytes.\n", env->encrypted_filesize);
 			printf(FMT_DONE "Decryption complete.\n");
-		}	
+		}
 	}
 	else // Encryption mode
 	{
@@ -49,24 +63,22 @@ int process_mapped_data(t_env *env)
 			env->dcrypt_header.iv_key					// Initialization vector
 		)) == -1) return DC_ERROR;
 
-// 		DWORD keyLen = 0;
-// DWORD size = sizeof(DWORD);
-// if (!CryptGetKeyParam(win_env.hKey, KP_KEYLEN, (BYTE *)&keyLen, &size, 0)) {
-//     printf("Key handle is invalid before decryption: %lu\n", GetLastError());
-//     return -1;
-// }
+printf("filesize: %d, key: %s\n",
+	env->encrypted_filesize,					// The encrypted file size (without the custom header size)
+		 win_env.key
+	);
 
-// 		if (aes_decrypt_data(
-// 			env->encrypted_data,						// The file data (starting after the header)
-// 			env->encrypted_filesize,					// The encrypted file size (without the custom header size)
-// 			#ifdef _WIN32
-// 			// Import raw AES key to to get a key handle linked to the key
-// 			win_env.hKey,
-// 			# else
-// 			env->decryption_key,					// The randomly generated encryption key
-// 			#endif
-// 			env->dcrypt_header.iv_key				// Initialization vector
-// 		) == -1) return DC_ERROR;
+		// if (aes_decrypt_data(
+		// 	env->encrypted_data,						// The file data (starting after the header)
+		// 	env->encrypted_filesize,					// The encrypted file size (without the custom header size)
+		// 	#ifdef _WIN32
+		// 	// Import raw AES key to to get a key handle linked to the key
+		// 	import_raw_aes_key(env, win_env.key, DC_AES_KEY_SIZE),
+		// 	# else
+		// 	env->decryption_key,					// The randomly generated encryption key
+		// 	#endif
+		// 	env->dcrypt_header.iv_key				// Initialization vector
+		// ) == -1) return DC_ERROR;
 
 		printf("encryyyyy size: %X %X\n",env->encrypted_data[0],env->encrypted_data[1]);
 		if (env->modes & DC_VERBOSE) {
