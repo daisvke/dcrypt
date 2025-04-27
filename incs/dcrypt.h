@@ -18,6 +18,10 @@
 
 # ifdef _WIN32
 # include <windows.h>
+
+# define DC_TARGET_PATHS        { "D:\\Documents\\infection" } // No '\' at the end
+# define DC_PATH_SEP            '\\' // Paths separator 
+
 // Hold the data needed for unmaping the file data
 typedef struct s_windows
 {
@@ -25,11 +29,9 @@ typedef struct s_windows
     HANDLE*         hMap;
     HCRYPTPROV      hProv;
     HCRYPTKEY       hKey;
-    unsigned char   *key;
+    // unsigned char   *encryption_key;
 }   t_windows;
 
-# define DC_TARGET_PATHS        { "D:\\Documents\\infection" } // No '\' at the end
-# define DC_PATH_SEP            '\\' // Paths separator 
 extern t_windows win_env;
 
 # else
@@ -74,6 +76,7 @@ enum e_returns
 # define DC_DCRYPT_EXT          "dcrypt"
 # define DC_DCRYPT_EXT_SIZE     7
 # define DC_AES_KEY_SIZE        16
+# define DC_AES_HEX_KEY_SIZE    32 // Key size of string formatted hex key (16 x 2)
 # define DC_AES_BLOCK_SIZE      16
 
 enum e_modes
@@ -136,24 +139,29 @@ int     map_file_into_memory(t_env *env, const char *filename);
 int     process_mapped_data(t_env *env);
 int     write_processed_data_to_file(t_env *env, const char *target_path);
 
+/*------------------------------- Utils ---------------------------*/
+
+void    hexstr_to_bytes(const unsigned char *hexstr, unsigned char *out, size_t out_len);
+void    print_hex(const char *label, const unsigned char *data, size_t out_len);
+
 /*---------------------------- Cryptography ------------------------*/
 
-void    xor_with_additive_cipher(
+void            xor_with_additive_cipher(
     void *key, size_t key_length, void *data, size_t data_length, int mode);
 
 # ifdef _WIN32
-int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, DWORD data_len, \
+int             aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
-int     aes_decrypt_data(unsigned char *data, DWORD data_len, \
+int             aes_decrypt_data(unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
-HCRYPTKEY   generate_encryption_key(void);
-HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *hex_key, DWORD key_len);
+HCRYPTKEY       generate_encryption_key(void);
+HCRYPTKEY       import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len);
 # else
-int     aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, size_t data_len, \
+int             aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
-int     aes_decrypt_data(unsigned char *data, size_t data_len, \
+int             aes_decrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
-unsigned char    *generate_random_based_key(const char *_charset, \
+unsigned char   *generate_random_based_key(const char *_charset, \
     size_t strength, bool blocking);
 # endif
 

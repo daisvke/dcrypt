@@ -264,12 +264,7 @@ unsigned char *get_encryption_key(t_env *env)
         env->key_allocated = true;
 		if (!env->encryption_key) return NULL;
 
-        if (env->modes & DC_VERBOSE)
-        printf(
-            FMT_INFO
-            " Generated random key => " FMT_YELLOW "%s\n" FMT_RESET,
-            env->encryption_key
-        );
+        print_hex("Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
         #endif
 
         return env->encryption_key;

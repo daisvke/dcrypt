@@ -20,15 +20,24 @@ void print_version()
 
 void check_arg_key(const char opt, bool verbose)
 {
-	// Check if the argument is provided and that the key has required length
-	if ((!optarg || (strlen(optarg) != DC_AES_KEY_SIZE)))
+	/*
+     * Check if the argument is provided and that the AES key has required length.
+     *
+     * CryptoAPI from Windows generates AES keys that can contain non-printable
+     *  characters. The key is essentially a binary blob of data, and it is not
+     *  restricted to printable ASCII characters.
+     * 
+     * This is why 
+     */
+
+	if (!optarg || (strlen(optarg) != DC_AES_HEX_KEY_SIZE))
 	{
         if (verbose)
         {
             fprintf(
                 stderr,
                 FMT_ERROR
-                " The -%c option require a 128 bits encryption key as an argument.\n",
+                " The -%c option require a 32 bytes string as an argument.\n",
                 opt
             );
         }
@@ -57,12 +66,12 @@ void parse_argv(t_env *env, int argc, char *argv[])
         switch (opt) {
             case 'k':
                 check_arg_key(opt, env->modes & DC_VERBOSE);
-                env->encryption_key = (unsigned char *)optarg;
+                env->encryption_key = (unsigned char *)optarg; 
                 break;
             case 'r':
                 env->modes |= DC_REVERSE;
                 check_arg_key(opt, env->modes & DC_VERBOSE);
-                env->decryption_key = (unsigned char *)optarg;
+                env->decryption_key = (unsigned char *)optarg; 
 				if (env->modes & DC_VERBOSE)
 					printf(FMT_MODE_ON "REVERSE mode enabled\n");
                 break;

@@ -15,10 +15,11 @@ void print_results(t_env *env)
 	printf("\n=======================================\n" FMT_INFO);
 	printf(msg, env->handled_file_count);
 
-	printf(
+	print_hex(
 		FMT_INFO
-		"Used key: %s\n",
-		env->modes & DC_REVERSE ? env->decryption_key : env->encryption_key
+		"Used key:",
+		env->modes & DC_REVERSE ? env->decryption_key : env->encryption_key,
+		DC_AES_KEY_SIZE
 	);
 }
 

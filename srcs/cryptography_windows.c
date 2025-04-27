@@ -4,12 +4,6 @@
 
 # include <wincrypt.h>
 
-void hexstr_to_bytes(const char *hexstr, BYTE *out, size_t out_len) {
-    for (size_t i = 0; i < out_len; ++i) {
-        sscanf(hexstr + 2 * i, "%2hhx", &out[i]);
-    }
-}
-
 /*
  * Import raw AES key to to get a key handle linked to the key.
  *
@@ -24,7 +18,7 @@ void hexstr_to_bytes(const char *hexstr, BYTE *out, size_t out_len) {
  * encryption process.
  */
 
-HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *hex_key, DWORD key_len)
+HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len)
 {
     struct {
         BLOBHEADER	hdr;
@@ -38,9 +32,7 @@ HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *hex_key, DWORD key
     blob.hdr.aiKeyAlg	= CALG_AES_128;
     blob.key_size		= key_len;
     
-    BYTE    raw_key[key_len];
-    hexstr_to_bytes((char *)hex_key, raw_key, key_len);
-    memcpy(blob.key, raw_key, key_len);
+    memcpy(blob.key, key, key_len);
 
 	DWORD		blob_len = sizeof(BLOBHEADER) + sizeof(DWORD) + key_len;
     HCRYPTKEY	hKey;
@@ -62,13 +54,13 @@ HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *hex_key, DWORD key
     return hKey;
 }
 
-void print_hex(const char *label, BYTE *data, DWORD len) {
-    printf("%s: ", label);
-    for (DWORD i = 0; i < len; ++i) {
-        printf("%02X", data[i]);
-    }
-    printf("\n");
-}
+// void print_hex(const char *label, BYTE *data, DWORD len) {
+//     printf("%s: ", label);
+//     for (DWORD i = 0; i < len; ++i) {
+//         printf("%02X", data[i]);
+//     }
+//     printf("\n");
+// }
 
 void set_aes_key_as_hex_string(HCRYPTKEY hKey) {
     DWORD blobLen = 0;
@@ -123,7 +115,6 @@ HCRYPTKEY generate_encryption_key(void)
     // Print the AES key (this will be the only way for the user to get it)
     set_aes_key_as_hex_string(hKey);
     if (win_env.key) {
-        printf("HEX Key (ASCII): %s\n", win_env.key);
         free(win_env.key); // Once printed the string formatted key is useless
     } else {
         printf(FMT_ERROR "Failed to get string formatted AES key.\n");
