@@ -49,7 +49,7 @@ int process_mapped_data(t_env *env)
 	else // Encryption mode
 	{
 		if (env->modes & DC_VERBOSE)
-			printf(FMT_INFO " Starting encryption...\n");
+			printf(FMT_INFO "Starting encryption...\n");
 
 		// // We need to convert the hex string key given from the command line to its byte representation
 		// unsigned char	key[DC_AES_KEY_SIZE];

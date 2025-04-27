@@ -1,10 +1,10 @@
 #include "dcrypt.h"
 
-void print_hex(const char *label, const unsigned char *data, size_t out_len) {
-    if (!data || !out_len) return;
+void print_hex(const char *label, const unsigned char *data, size_t data_len) {
+    if (!data || !data_len) return;
 
     printf("%s: ", label);
-    for (size_t i = 0; i < out_len; ++i) {
+    for (size_t i = 0; i < data_len; ++i) {
         printf("%02X", data[i]);
     }
     printf("\n");

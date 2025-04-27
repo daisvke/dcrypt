@@ -62,7 +62,7 @@ HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len
 //     printf("\n");
 // }
 
-void set_aes_key_as_hex_string(HCRYPTKEY hKey) {
+void set_aes_key_as_hex_string(t_env *env, HCRYPTKEY hKey) {
     DWORD blobLen = 0;
     if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, NULL, &blobLen)) {
         printf("CryptExportKey (get size) failed: %lu\n", GetLastError());
@@ -83,20 +83,20 @@ void set_aes_key_as_hex_string(HCRYPTKEY hKey) {
     DWORD keyLen = *(DWORD *)(blob + sizeof(BLOBHEADER));
 
     // Each byte -> 2 chars, +1 for null terminator
-    win_env.key = malloc(keyLen * 2 + 1);
-    if (!win_env.key) {
+    env->encryption_key = malloc(keyLen * 2 + 1);
+    if (!env->encryption_key) {
         free(blob);
         return;
     }
 
     for (DWORD i = 0; i < keyLen; i++)
-        sprintf((char *)&win_env.key[i * 2], "%02X", keyData[i]);
+        sprintf((char *)&env->encryption_key[i * 2], "%02X", keyData[i]);
 
-    win_env.key[keyLen * 2] = '\0'; // null-terminate
+    env->encryption_key[keyLen * 2] = '\0'; // null-terminate
     free(blob);
 }
 
-HCRYPTKEY generate_encryption_key(void)
+HCRYPTKEY generate_encryption_key(t_env *env)
 {
 	HCRYPTKEY	hKey = 0;
 	DWORD		mode = CRYPT_MODE_CBC; // Set AES key to use CBC mode
@@ -113,10 +113,10 @@ HCRYPTKEY generate_encryption_key(void)
 	}
 
     // Print the AES key (this will be the only way for the user to get it)
-    set_aes_key_as_hex_string(hKey);
-    if (win_env.key) {
-        free(win_env.key); // Once printed the string formatted key is useless
-    } else {
+    set_aes_key_as_hex_string(env, hKey);
+    if (env->encryption_key)
+        printf(FMT_DONE "Generated random key: %s\n", env->encryption_key);
+    else {
         printf(FMT_ERROR "Failed to get string formatted AES key.\n");
         return 0;
     }

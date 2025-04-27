@@ -142,7 +142,7 @@ int     write_processed_data_to_file(t_env *env, const char *target_path);
 /*------------------------------- Utils ---------------------------*/
 
 void    hexstr_to_bytes(const unsigned char *hexstr, unsigned char *out, size_t out_len);
-void    print_hex(const char *label, const unsigned char *data, size_t out_len);
+void    print_hex(const char *label, const unsigned char *data, size_t data_len);
 
 /*---------------------------- Cryptography ------------------------*/
 
@@ -154,7 +154,7 @@ int             aes_encrypt_data(unsigned char *data, unsigned char **encrypted_
     HCRYPTKEY key, unsigned char *iv);
 int             aes_decrypt_data(unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
-HCRYPTKEY       generate_encryption_key(void);
+HCRYPTKEY       generate_encryption_key(t_env *env);
 HCRYPTKEY       import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len);
 # else
 int             aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, size_t data_len, \

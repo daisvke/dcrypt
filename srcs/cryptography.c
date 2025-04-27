@@ -253,7 +253,7 @@ unsigned char *get_encryption_key(t_env *env)
         if (env->encryption_key) return env->encryption_key;
 		// Generate the key that will be used for the encryption
         #ifdef _WIN32
-		win_env.hKey = generate_encryption_key();
+		win_env.hKey = generate_encryption_key(env);
 		if (!win_env.hKey) return NULL;
         static unsigned char array[2] = {"1"};
         return array; // We have to return an unsigned char *
@@ -264,7 +264,7 @@ unsigned char *get_encryption_key(t_env *env)
         env->key_allocated = true;
 		if (!env->encryption_key) return NULL;
 
-        print_hex("Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
+        print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
         #endif
 
         return env->encryption_key;

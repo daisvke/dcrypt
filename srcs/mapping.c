@@ -98,7 +98,7 @@ bool is_magic_nbr_correct(const unsigned char *data)
 int map_file_into_memory(t_env *env, const char *filename)
 {
     // Open the target binary file
-    int fd = open(filename, O_RDONLY);
+    int fd = open(filename, O_RDONLY | O_BINARY);
     if (fd < 0) return DC_ERROR;
     
     // Determine the file size by moving the cursor till the end
@@ -215,7 +215,7 @@ bool write_decrypted_data_to_file(t_env *env, char *target_path)
     target_path[strlen(target_path) - DC_DCRYPT_EXT_SIZE] = '\0';
 
     // 0755: rwx for owner, rx for group and others
-    outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC, 0755);
+    outfilefd = open(target_path, O_CREAT | O_RDWR | O_TRUNC | O_BINARY, 0755);
 
     // Check if open() has failed
     if (outfilefd == 1) return DC_ERROR;
