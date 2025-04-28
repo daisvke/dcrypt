@@ -54,19 +54,11 @@ HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len
     return hKey;
 }
 
-// void print_hex(const char *label, BYTE *data, DWORD len) {
-//     printf("%s: ", label);
-//     for (DWORD i = 0; i < len; ++i) {
-//         printf("%02X", data[i]);
-//     }
-//     printf("\n");
-// }
-
-void set_aes_key_as_hex_string(t_env *env, HCRYPTKEY hKey) {
+void save_aes_key_as_bytes(t_env *env, HCRYPTKEY hKey) {
     DWORD blobLen = 0;
     if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, NULL, &blobLen)) {
         printf("CryptExportKey (get size) failed: %lu\n", GetLastError());
-        return;
+        return;//TODO handle error
     }
 
     BYTE *blob = malloc(blobLen);
@@ -80,19 +72,16 @@ void set_aes_key_as_hex_string(t_env *env, HCRYPTKEY hKey) {
 
     // Get pointer to key bytes (after BLOBHEADER + DWORD)
     BYTE *keyData = blob + sizeof(BLOBHEADER) + sizeof(DWORD);
-    DWORD keyLen = *(DWORD *)(blob + sizeof(BLOBHEADER));
+    DWORD key_len = *(DWORD *)(blob + sizeof(BLOBHEADER));
 
-    // Each byte -> 2 chars, +1 for null terminator
-    env->encryption_key = malloc(keyLen * 2 + 1);
+    env->encryption_key = malloc(key_len + 1);
     if (!env->encryption_key) {
         free(blob);
         return;
     }
+    memcpy(env->encryption_key, keyData, key_len);
+    env->encryption_key[key_len] = '\0';
 
-    for (DWORD i = 0; i < keyLen; i++)
-        sprintf((char *)&env->encryption_key[i * 2], "%02X", keyData[i]);
-
-    env->encryption_key[keyLen * 2] = '\0'; // null-terminate
     free(blob);
 }
 
@@ -113,9 +102,9 @@ HCRYPTKEY generate_encryption_key(t_env *env)
 	}
 
     // Print the AES key (this will be the only way for the user to get it)
-    set_aes_key_as_hex_string(env, hKey);
+    save_aes_key_as_bytes(env, hKey);
     if (env->encryption_key)
-        printf(FMT_DONE "Generated random key: %s\n", env->encryption_key);
+        print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
     else {
         printf(FMT_ERROR "Failed to get string formatted AES key.\n");
         return 0;
@@ -131,15 +120,13 @@ int aes_encrypt_data(
     HCRYPTKEY			key,
     unsigned char       *iv
 ) {
-    DWORD   keyLen = 0;
+    DWORD   key_len = 0;
     DWORD   size = sizeof(DWORD);
-    if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&keyLen, &size, 0)) {
+    if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&key_len, &size, 0)) {
         printf(FMT_ERROR " Key handle is invalid before encryption: %lu\n", GetLastError());
         return -1;
     }
-    // Print the value of keyLen
-    printf(FMT_INFO " The value of keyLen is: %lu\n", (unsigned long)keyLen);
-    print_hex("IV for encryption", iv, 16);
+    print_hex(FMT_INFO " IV for decryption", iv, 16);
 
     // Set Initialization Vector
     if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
@@ -161,7 +148,7 @@ int aes_encrypt_data(
     // Overwrite original data with encrypted content
     *encrypted_data = buffer;
 
-    print_hex(FMT_DONE "Encrypted", *encrypted_data, data_len);
+    // print_hex(FMT_DONE "Encrypted", *encrypted_data, data_len);
 
     // Cleanup
     CryptDestroyKey(key); 						// Key securely destroyed
@@ -180,15 +167,13 @@ int aes_decrypt_data(
 ) {
     if (!key) return -1;
 
-	DWORD   keyLen = 0;
+	DWORD   key_len = 0;
     DWORD   size = sizeof(DWORD);
-    if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&keyLen, &size, 0)) {
+    if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&key_len, &size, 0)) {
         printf(FMT_ERROR " Key handle is invalid before decryption: %lu\n", GetLastError());
         return -1;
     }
-    // Print the value of keyLen
-    printf(FMT_INFO " The value of keyLen is: %lu\n", (unsigned long)keyLen);
-    print_hex("IV for decryption", iv, 16);
+    print_hex(FMT_INFO " IV for decryption", iv, 16);
 
     // Set cipher mode
     DWORD   mode = CRYPT_MODE_CBC;

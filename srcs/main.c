@@ -18,11 +18,7 @@ void print_results(t_env *env)
 	if (env->modes & DC_REVERSE && env->decryption_key)
 		printf(FMT_INFO "Used key: %s\n", env->decryption_key);
 	else if (env->encryption_key)
-		#ifdef _WIN32
-		printf(FMT_INFO "Used key: %s\n", env->encryption_key);
-		# else
 		print_hex(FMT_INFO "Used key", env->encryption_key, DC_AES_KEY_SIZE);
-		#endif
 }
 
 int main(int argc, char *argv[])

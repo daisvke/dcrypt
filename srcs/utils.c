@@ -5,7 +5,7 @@ void print_hex(const char *label, const unsigned char *data, size_t data_len) {
 
     printf("%s: ", label);
     for (size_t i = 0; i < data_len; ++i) {
-        printf("%02X", data[i]);
+        printf(FMT_YELLOW "%02X" FMT_RESET, data[i]);
     }
     printf("\n");
 }

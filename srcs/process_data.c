@@ -50,12 +50,7 @@ int process_mapped_data(t_env *env)
 	{
 		if (env->modes & DC_VERBOSE)
 			printf(FMT_INFO "Starting encryption...\n");
-
-		// // We need to convert the hex string key given from the command line to its byte representation
-		// unsigned char	key[DC_AES_KEY_SIZE];
-		// hexstr_to_bytes(env->encryption_key, key, DC_AES_KEY_SIZE);
-		// key[DC_AES_KEY_SIZE] = '\0';
-
+			
 		if ((env->encrypted_filesize = aes_encrypt_data(
 			data,										// The file data (starting after the header)
 			&env->encrypted_data,
@@ -67,18 +62,6 @@ int process_mapped_data(t_env *env)
 			#endif
 			env->dcrypt_header.iv_key					// Initialization vector
 		)) == -1) return DC_ERROR;
-
-		// if (aes_decrypt_data(
-		// 	env->encrypted_data,						// The file data (starting after the header)
-		// 	env->encrypted_filesize,					// The encrypted file size (without the custom header size)
-		// 	#ifdef _WIN32
-		// 	// Import raw AES key to to get a key handle linked to the key
-		// 	import_raw_aes_key(env, env.encryption_key, DC_AES_KEY_SIZE),
-		// 	# else
-		// 	env->decryption_key,					// The randomly generated encryption key
-		// 	#endif
-		// 	env->dcrypt_header.iv_key				// Initialization vector
-		// ) == -1) return DC_ERROR;
 
 		if (env->modes & DC_VERBOSE) {
 			printf(

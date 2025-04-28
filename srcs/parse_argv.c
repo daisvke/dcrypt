@@ -68,6 +68,10 @@ void parse_argv(t_env *env, int argc, char *argv[])
                 check_arg_key(opt, env->modes & DC_VERBOSE);
                 env->encryption_key = malloc(DC_AES_BLOCK_SIZE + 1);
                 hexstr_to_bytes((unsigned char *)optarg, env->encryption_key, DC_AES_BLOCK_SIZE);
+                env->encryption_key[DC_AES_BLOCK_SIZE] = '\0';
+                #ifdef _WIN32
+                win_env.hKey = import_raw_aes_key(env, env->encryption_key, DC_AES_KEY_SIZE);
+                #endif
                 break;
             case 'r':
                 env->modes |= DC_REVERSE;
