@@ -4,6 +4,8 @@
 
 dcrypt is a cross-platform file encryption/decryption tool that adds a custom header to encrypted files, storing essential metadata for decryption and management of the encrypted content.
 
+---
+
 ### **Features**
 
 - dcrypt only works in the specified directories inside `dcrypt.h`:
@@ -76,6 +78,8 @@ make quine
 make quine n=30 ext="txt vob cpp crt"
 ```
 
+---
+
 ## Screenshots
 
 `make quine` creates test files with different extensions...
@@ -121,6 +125,8 @@ This prevents patterns from appearing in the encrypted data.
 
 When using OpenSSL's EVP functions for encryption, the default padding scheme used is PKCS#7 padding.<br />
 If the plaintext data is not a multiple of the block size (16 bytes for AES), PKCS#7 padding adds bytes to the end of the plaintext.
+
+---
 
 ### **Key Generators**
 
@@ -204,6 +210,8 @@ To set up your development environment on Windows, you will need to install the 
   C:\Program Files (x86)\GnuWin32\bin
   ```
 
+---
+
 ### CryptoAPI
 When developing our application, we evaluated several cryptographic libraries and frameworks available for Windows. After careful consideration, we decided to use **CryptoAPI** for the following reasons:
  - **Native Integration with Windows**
@@ -214,6 +222,8 @@ Being a native API, CryptoAPI is optimized for performance on Windows platforms.
 
  - **Broader Windows OS Compatibility**
 CryptoAPI is designed to work seamlessly across various versions of the Windows operating system, including Windows 7, 8, 10, and Windows Server editions. This broad compatibility allows our application to support a wide range of Windows environments, making it accessible to more users without the need for additional dependencies or compatibility layers.
+
+---
 
 ### CRLF
 - When you open a file normally:
