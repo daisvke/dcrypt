@@ -2,7 +2,7 @@
 
 ## **Description**
 
-dcrypt is a file encryption/decryption tool that adds a custom header to encrypted files, storing essential metadata for decryption and management of the encrypted content.
+dcrypt is a cross-platform file encryption/decryption tool that adds a custom header to encrypted files, storing essential metadata for decryption and management of the encrypted content.
 
 ### **Features**
 
@@ -41,6 +41,54 @@ const char *handled_extensions[] = {
 - If they already have this extension, they will not be renamed.
 - The key with which the files are encrypted have to be 16 characters long.
 - The program will do the reverse operation using the encryption key in order to restore the files to their original state.
+
+---
+
+## Commands
+
+```sh
+# Compilation
+make
+
+# Usage:
+./dcrypt [-h|-v|-s|-k <KEY>|-r <KEY>] 
+
+ Options:
+  -v, --version          Show version information
+  -s, --silent           Run in silent mode (non-verbose)
+  -k, --key <KEY>        Provide an encryption key
+  -r, --reverse <KEY>    Decrypt using the provided decryption key
+  -h, --help             Show this help message and exit
+```
+
+---
+
+## Testing
+
+```sh
+# Cleans, create test folder with test files, compiles, then runs the program
+make run
+
+# Creates test files to the test folder
+make quine
+
+# Or if you want 30 files for each given extension
+make quine n=30 ext="txt vob cpp crt"
+```
+
+## Screenshots
+
+`make quine` creates test files with different extensions...
+
+![make quine](screenshots/quine.png)
+
+After the encryption, all files get the `.dcrypt` extension and the custom header at the beginning of the files.
+
+![encryption](screenshots/encryption.png)
+
+---
+
+## Technical aspects
 
 ### **Explanation of the dcrypt Header Structure:**
 
@@ -130,48 +178,6 @@ Our keygen function generates a random encryption key of a specified width using
  	improve the randomness of the key.
 
 ---
-
-## Commands
-
-```sh
-# Compilation
-make
-
-# Usage:
-./dcrypt [-h|-v|-s|-k <KEY>|-r <KEY>] 
-
- Options:
-  -v, --version          Show version information
-  -s, --silent           Run in silent mode (non-verbose)
-  -k, --key <KEY>        Provide an encryption key
-  -r, --reverse <KEY>    Decrypt using the provided decryption key
-  -h, --help             Show this help message and exit
-```
-
----
-
-## Testing
-
-```sh
-# Cleans, create test folder with test files, compiles, then runs the program
-make run
-
-# Creates test files to the test folder
-make quine
-
-# Or if you want 30 files for each given extension
-make quine n=30 ext="txt vob cpp crt"
-```
-
-## Screenshots
-
-`make quine` creates test files with different extensions...
-
-![make quine](screenshots/quine.png)
-
-After the encryption, all files get the `.dcrypt` extension and the custom header at the beginning of the files.
-
-![encryption](screenshots/encryption.png)
 
 ## Windows
 To set up your development environment on Windows, you will need to install the following tools:
