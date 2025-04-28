@@ -76,6 +76,11 @@ If the plaintext data is not a multiple of the block size (16 bytes for AES), PK
 
 ### **Key Generators**
 
+#### Key length
+- CryptoAPI from Windows generates AES keys that can contain non-printable characters. The key is essentially a binary blob of data, and it is not restricted to printable ASCII characters.
+
+- This is why we use keys that are converted to hex strings, hence the 32B (16 x 2) size, as each byte of the key is expressed by two hex characters.
+
 #### **Keygen for AES 128bit keys: /dev/urandom**
 Our keygen function generates a random encryption key of a specified width using a given character set. It seeds the random number generator with /dev/urandom or /dev/random, and selects random characters from the character set to build the key.
 <br /><br />
@@ -169,8 +174,29 @@ After the encryption, all files get the `.dcrypt` extension and the custom heade
 ![encryption](screenshots/encryption.png)
 
 ## Windows
-- gcc : need MSYS2 + add C:\msys64\ucrt64\bin in env
-- make : need GNUWin32 + add C:\Program Files (x86)\GnuWin32\bin
+To set up your development environment on Windows, you will need to install the following tools:
+
+### Installation
+
+#### GCC
+- **Installation**: You need to install **MSYS2**. You can download it from [MSYS2's official website](https://www.msys2.org/).
+- **Environment Setup**: After installing MSYS2, add the following path to your system's environment variables:
+  ```
+  C:\msys64\ucrt64\bin
+  ```
+- **Update Packages**: Open the MSYS2 terminal and run the following commands to update the package database and install GCC:
+  ```bash
+  pacman -Syu                     # Update the package database
+  pacman -Su                      # Update installed packages
+  pacman -S mingw-w64-x86_64-gcc  # Install GCC for 64-bit
+  ```
+
+#### Make
+- **Installation**: You need to install **GNUWin32**. You can download it from [GnuWin32's official website](http://gnuwin32.sourceforge.net/).
+- **Environment Setup**: After installing GNUWin32, add the following path to your system's environment variables:
+  ```
+  C:\Program Files (x86)\GnuWin32\bin
+  ```
 
 ### CRLF
 - When you open a file normally:

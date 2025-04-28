@@ -27,7 +27,8 @@ void check_arg_key(const char opt, bool verbose)
      *  characters. The key is essentially a binary blob of data, and it is not
      *  restricted to printable ASCII characters.
      * 
-     * This is why 
+     * This is why we use keys that are converted to hex strings, hence the 32B
+     *  (16 x 2) size, as each byte of the key is expressed by two hex characters.
      */
 
 	if (!optarg || (strlen(optarg) != DC_AES_HEX_KEY_SIZE))
@@ -64,30 +65,43 @@ void parse_argv(t_env *env, int argc, char *argv[])
     // Second pass: Process other options
     while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
+            case 'h':
+                print_help();
+                exit(EXIT_SUCCESS);
+
             case 'k':
+                // Check the given key
                 check_arg_key(opt, env->modes & DC_VERBOSE);
+
+                // Convert given hex key string to bytes for later use
                 env->encryption_key = malloc(DC_AES_BLOCK_SIZE + 1);
                 hexstr_to_bytes((unsigned char *)optarg, env->encryption_key, DC_AES_BLOCK_SIZE);
                 env->encryption_key[DC_AES_BLOCK_SIZE] = '\0';
+
+                // On Windows, we need to import the key before using it with CryptoAPI
                 #ifdef _WIN32
                 win_env.hKey = import_raw_aes_key(env, env->encryption_key, DC_AES_KEY_SIZE);
                 #endif
                 break;
+
             case 'r':
+                // Set the decryption mode
                 env->modes |= DC_REVERSE;
+                // Check the given key
                 check_arg_key(opt, env->modes & DC_VERBOSE);
+                // Assign the given key as the decryption key
                 env->decryption_key = (unsigned char *)optarg; 
 				if (env->modes & DC_VERBOSE)
 					printf(FMT_MODE_ON "REVERSE mode enabled\n");
                 break;
+
             case 'v':
                 print_version();
                 break;
-            case 'h':
-                print_help();
-                exit(EXIT_SUCCESS);
+
             case 's':
                 break;
+
             default:
 				if (env->modes & DC_VERBOSE)
 					fprintf(

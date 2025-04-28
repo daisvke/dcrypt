@@ -28,7 +28,7 @@ int process_mapped_data(t_env *env)
 			// Import raw AES key to to get a key handle linked to the key
 			import_raw_aes_key(env, key, DC_AES_KEY_SIZE),
 			# else
-			key,					// The randomly generated encryption key
+			key,									// The randomly generated encryption key
 			#endif
 			env->dcrypt_header.iv_key				// Initialization vector
 		)) == -1) return DC_ERROR;
@@ -50,7 +50,7 @@ int process_mapped_data(t_env *env)
 	{
 		if (env->modes & DC_VERBOSE)
 			printf(FMT_INFO "Starting encryption...\n");
-			
+
 		if ((env->encrypted_filesize = aes_encrypt_data(
 			data,										// The file data (starting after the header)
 			&env->encrypted_data,
@@ -58,7 +58,7 @@ int process_mapped_data(t_env *env)
 			#ifdef _WIN32
 			win_env.hKey,
 			# else
-			env->encryption_key, // The randomly generated encryption key
+			env->encryption_key,						// The randomly generated encryption key
 			#endif
 			env->dcrypt_header.iv_key					// Initialization vector
 		)) == -1) return DC_ERROR;
