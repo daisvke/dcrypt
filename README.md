@@ -41,7 +41,7 @@ const char *handled_extensions[] = {
 - IVs are stored inside the headers of the encrypted files.
 - The program renames all the files in the mentioned folders adding the ".dcrypt" extension.
 - If they already have this extension, they will not be renamed.
-- The key with which the files are encrypted have to be 32 characters long (it is then converted to a 16 bytes key internally).
+- The key with which the files are encrypted have to be 32 characters long (it is then converted to a 16 bytes key internally as we are performing an AES-128 CBC encryption).
 - The program will do the reverse operation using the encryption key in order to restore the files to their original state.
 
 ---
