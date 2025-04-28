@@ -204,6 +204,17 @@ To set up your development environment on Windows, you will need to install the 
   C:\Program Files (x86)\GnuWin32\bin
   ```
 
+### CryptoAPI
+When developing our application, we evaluated several cryptographic libraries and frameworks available for Windows. After careful consideration, we decided to use **CryptoAPI** for the following reasons:
+ - **Native Integration with Windows**
+CryptoAPI is a built-in cryptographic API provided by Microsoft, which means it is natively integrated into the Windows operating system. This integration ensures better compatibility and performance, as it leverages the underlying Windows security features and infrastructure.
+
+ - **Performance Optimization**
+Being a native API, CryptoAPI is optimized for performance on Windows platforms. It takes advantage of hardware acceleration where available, providing efficient cryptographic operations that are crucial for applications requiring high throughput and low latency.
+
+ - **Broader Windows OS Compatibility**
+CryptoAPI is designed to work seamlessly across various versions of the Windows operating system, including Windows 7, 8, 10, and Windows Server editions. This broad compatibility allows our application to support a wide range of Windows environments, making it accessible to more users without the need for additional dependencies or compatibility layers.
+
 ### CRLF
 - When you open a file normally:
 ```
