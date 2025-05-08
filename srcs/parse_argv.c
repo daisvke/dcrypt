@@ -64,7 +64,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
     optind = 1;
 
     // Second pass: Process other options
-    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) >= 0) {
         switch (opt) {
             case 'h':
                 print_help();
@@ -110,7 +110,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
 						stderr,
 						FMT_ERROR "Invalid arguments. Use -h or --help for usage.\n"
 					);
-                dc_free(&env->encryption_key);
+                dc_free((void **)&env->encryption_key);
 				exit(EXIT_FAILURE);
 		}
     }
@@ -133,7 +133,7 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 	opterr = 0;                     // Disable error messages
 
     // First pass: check for silent mode
-    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) >= 0) {
         if (opt == 's') {
             silent_mode = true;
             break; // Exit the loop once silent mode is detected

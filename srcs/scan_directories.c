@@ -23,19 +23,16 @@ bool is_created_file(
 	return false; // File is not in the created files list
 }
 
-void init_dcrypt_header(t_env *env)
+int init_dcrypt_header(t_env *env)
 {
 	// Set the file signature
 	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
 	// Get the encryption key that will be used to encrypt/decrypt the file
-	// During decryption, this key will be the IV key
-	if (!get_encryption_key(env)) {
+	// During decryption, this key will be the IV key.
+	if (!get_iv_key(env)) {
 		if (env->modes & DC_VERBOSE)
-			fprintf(
-				stderr,
-				FMT_ERROR "Failed to get the encryption key. Aborting...\n"
-			);
-		exit(EXIT_FAILURE);
+			perror(FMT_ERROR "Failed to get the IV key. Aborting...\n");
+		return DC_ERROR;
 	}
 
 	/*
@@ -53,12 +50,13 @@ void init_dcrypt_header(t_env *env)
 
 		free(iv_key);
 	}
+	return DC_SUCCESS;
 }
 
 int handle_file(t_env *env, const char *filepath)
 {
 	// Init the header that will be placed at the top of the file
-	init_dcrypt_header(env);
+	if (init_dcrypt_header(env)) return DC_ERROR;
 
 	/* Create a mapping between the target file and the memory region occupied
 	 * by the program. This is to facilitate the memory handling to manipulate
@@ -67,7 +65,7 @@ int handle_file(t_env *env, const char *filepath)
 	 * Then, process the encryption
 	 */
 
-	if (map_file_into_memory(env, filepath))
+	if (map_file_into_memory(env, filepath) == DC_ERROR)
 		if (env->modes & DC_VERBOSE) {
 			perror("An error occurred while attempting to map the file into memory");
 			return DC_ERROR;
@@ -86,7 +84,10 @@ int handle_file(t_env *env, const char *filepath)
 	// Write the final file data in the target path
 	if (write_processed_data_to_file(env, filepath)) {
 		if (env->modes & DC_VERBOSE) {
-			perror("An error occurred while attempting to write the mapped data into the file");
+			perror(
+				FMT_ERROR
+				"An error occurred while attempting to write the mapped data into the file"
+			);
 			return DC_ERROR;
 		}
 	}
@@ -149,6 +150,8 @@ void handle_dir(t_env *env, char *target_dir_path)
 
 					// Remember the created file path to avoid handling it twice
 					created_files[created_files_count] = strdup(path);
+					if (!created_files[created_files_count])
+						perror(FMT_ERROR "strdup failed");
 					++created_files_count;
 					++env->handled_file_count;
 				}
@@ -161,5 +164,6 @@ void handle_dir(t_env *env, char *target_dir_path)
 		dc_free((void **)&created_files[i]);
 
 	// Close the directory stream
-	closedir(dir);
+	if (closedir(dir) < 0 && (env->modes & DC_VERBOSE))
+		perror(FMT_ERROR "Failed to close the directory");
 }

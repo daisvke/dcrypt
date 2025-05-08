@@ -111,8 +111,7 @@ int map_file_into_memory(t_env *env, const char *filename)
     
     // Determine the file size by moving the cursor till the end
     off_t res = lseek(fd, 0, SEEK_END);
-    // Check that lseek didn't fail and not returning > int max
-    if (res < 0 || res > 2147483647) {
+    if (res < 0) {
         close(fd);
         return DC_ERROR;
     }

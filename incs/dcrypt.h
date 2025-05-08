@@ -165,13 +165,13 @@ int             aes_encrypt_data(unsigned char *data, unsigned char **encrypted_
     const unsigned char *key, unsigned char *iv);
 int             aes_decrypt_data(unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
-unsigned char   *generate_random_based_key(const char *_charset, \
+unsigned char   *generate_random_based_key(t_env *env, const char *_charset, \
     size_t strength, bool blocking);
 # endif
 
 unsigned char    *generate_time_based_rand_key_nanosec(const char *_charset, \
     size_t strength);
-unsigned char    *get_encryption_key(t_env *env);
+unsigned char    *get_iv_key(t_env *env);
 
 /*---------------------------- File handling ------------------------*/
 

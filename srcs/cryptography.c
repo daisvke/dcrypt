@@ -152,10 +152,10 @@ int aes_decrypt_data(
  */
 
  unsigned char *generate_random_based_key(
-	const char *charset, size_t strength, bool blocking
+	    t_env *env, const char *charset, size_t strength, bool blocking
 	) {
 	unsigned char *key = malloc((strength + 1) * sizeof(char));
-	if (key == NULL) return NULL;
+	if (!key) return NULL;
 
 	int charset_length = strlen(charset);
 
@@ -167,11 +167,11 @@ int aes_decrypt_data(
 
     unsigned char random_bytes[strength];
     if (read(fd, random_bytes, strength) != (int)strength) {
-        perror("read");
         close(fd);
-        exit(EXIT_FAILURE);
+        return NULL;
     }
-    close(fd);
+    if (close(fd) < 0 && (env->modes & DC_VERBOSE))
+        perror("Failed to close the file");
 
     for (size_t i = 0; i < strength; ++i) {
         int random_index = random_bytes[i] % charset_length;
@@ -234,7 +234,7 @@ int aes_decrypt_data(
     return key;
 }
 
-unsigned char *get_encryption_key(t_env *env)
+unsigned char *get_iv_key(t_env *env)
 {
 	// In decryption mode, we use the IV saved in the file header
 	if (env->modes & DC_REVERSE)
@@ -259,10 +259,10 @@ unsigned char *get_encryption_key(t_env *env)
         return array; // We have to return an unsigned char *
         # else
 		env->encryption_key = generate_random_based_key(
-            DC_KEYCHARSET, DC_AES_KEY_SIZE, false
+            env, DC_KEYCHARSET, DC_AES_KEY_SIZE, false
         );
-        env->key_allocated = true;//TODO useless?
 		if (!env->encryption_key) return NULL;
+        env->key_allocated = true;//TODO useless?
 
         print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
         #endif
