@@ -6,7 +6,7 @@
 # include <openssl/evp.h>
 
 /*
- * Perform AES-128 CBC encryption
+ * Perform AESDC_CRYPT_ERROR28 CBC encryption
  * -------------------------------
  *
  * Chaining:
@@ -44,12 +44,12 @@ int aes_encrypt_data(
 ) {
     // A structure that holds the context for the encryption operation
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    if (!ctx) return -1; // Context creation error
+    if (!ctx) return DC_CRYPT_ERROR; // Context creation error
 
     // Initialize the encryption operation
     if (EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return -1; // Initialization error
+        return DC_CRYPT_ERROR; // Initialization error
     }
 
     // Allocate a buffer that's big enough for data + padding
@@ -57,7 +57,7 @@ int aes_encrypt_data(
     unsigned char *buffer = malloc(buf_len);
     if (!buffer) {
         EVP_CIPHER_CTX_free(ctx);
-        return -1;
+        return DC_CRYPT_ERROR;
     }
 
     int out_len;
@@ -65,7 +65,7 @@ int aes_encrypt_data(
     if (EVP_EncryptUpdate(ctx, buffer, &out_len, data, data_len) != 1) {
         free(buffer);
         EVP_CIPHER_CTX_free(ctx);
-        return -1; // Encryption error
+        return DC_CRYPT_ERROR; // Encryption error
     }
 
     int final_len;
@@ -73,7 +73,7 @@ int aes_encrypt_data(
     if (EVP_EncryptFinal_ex(ctx, buffer + out_len, &final_len) != 1) {
         free(buffer);
         EVP_CIPHER_CTX_free(ctx);
-        return -1; // Finalization error
+        return DC_CRYPT_ERROR; // Finalization error
     }
 
     *encrypted_data = buffer;
@@ -81,7 +81,7 @@ int aes_encrypt_data(
     return out_len + final_len; // Return the total length of the encrypted data
 }
 
-// Function to handle AES-128 CBC decryption
+// Function to handle AESDC_CRYPT_ERROR28 CBC decryption
 int aes_decrypt_data(
     unsigned char       *data,
     size_t              data_len,
@@ -89,24 +89,24 @@ int aes_decrypt_data(
     unsigned char       *iv
 ) {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    if (!ctx) return -1; // Context creation error
+    if (!ctx) return DC_CRYPT_ERROR; // Context creation error
 
     // Initialize the decryption operation
     if (EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return -1; // Initialization error
+        return DC_CRYPT_ERROR; // Initialization error
     }
 
     int out_len;
     if (EVP_DecryptUpdate(ctx, data, &out_len, data, data_len) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return -1; // Decryption error
+        return DC_CRYPT_ERROR; // Decryption error
     }
 
     int final_len;
     if (EVP_DecryptFinal_ex(ctx, data + out_len, &final_len) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return -1; // Finalization error
+        return DC_CRYPT_ERROR; // Finalization error
     }
 
     EVP_CIPHER_CTX_free(ctx);

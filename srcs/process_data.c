@@ -31,7 +31,7 @@ int process_mapped_data(t_env *env)
 			key,									// The randomly generated encryption key
 			#endif
 			env->dcrypt_header.iv_key				// Initialization vector
-		)) == -1) return DC_ERROR;
+		)) == DC_CRYPT_ERROR) return DC_ERROR;
 
 		if (decrypted_size != (int)env->dcrypt_header.original_filesize) {
 			printf(
@@ -61,7 +61,7 @@ int process_mapped_data(t_env *env)
 			env->encryption_key,						// The randomly generated encryption key
 			#endif
 			env->dcrypt_header.iv_key					// Initialization vector
-		)) == -1) return DC_ERROR;
+		)) == DC_CRYPT_ERROR) return DC_ERROR;
 
 		if (env->modes & DC_VERBOSE) {
 			printf(

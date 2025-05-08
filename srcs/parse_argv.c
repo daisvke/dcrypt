@@ -63,7 +63,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
     optind = 1;
 
     // Second pass: Process other options
-    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != DC_CRYPT_ERROR) {
         switch (opt) {
             case 'h':
                 print_help();
@@ -130,7 +130,7 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 	opterr = 0;                     // Disable error messages
 
     // First pass: check for silent mode
-    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != DC_CRYPT_ERROR) {
         if (opt == 's') {
             silent_mode = true;
             break; // Exit the loop once silent mode is detected

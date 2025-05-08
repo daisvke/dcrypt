@@ -63,6 +63,8 @@ enum e_returns
     DC_ERROR
 };
 
+# define DC_CRYPT_ERROR			-1
+
 // Maximum amount of handled files on a directory
 # define DC_MAX_FILES           1024
 

@@ -73,7 +73,7 @@ int handle_file(t_env *env, const char *filepath)
 			return DC_ERROR;
 		}
 
-	if (process_mapped_data(env))
+	if (process_mapped_data(env) == DC_ERROR)
 		if (env->modes & DC_VERBOSE) {
 			if (env->modes & DC_REVERSE)
 				fprintf(stderr, FMT_ERROR "Failed to decrypt data.\n");

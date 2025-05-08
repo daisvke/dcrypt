@@ -124,12 +124,12 @@ int aes_encrypt_data(
     DWORD   size = sizeof(DWORD);
     if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&key_len, &size, 0)) {
         printf(FMT_ERROR " Key handle is invalid before encryption: %lu\n", GetLastError());
-        return -1;
+        return DC_CRYPT_ERROR;
     }
     print_hex(FMT_INFO " IV for decryption", iv, 16);
 
     // Set Initialization Vector
-    if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return -1;
+    if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return DC_CRYPT_ERROR;
 
     // Padding to make space for encryption (CBC needs padding)
     DWORD	buf_len = data_len + DC_AES_BLOCK_SIZE; // Ensure buffer is large enough
@@ -142,7 +142,7 @@ int aes_encrypt_data(
         free(buffer);
         CryptDestroyKey(key);
         CryptReleaseContext(win_env.hProv, 0);
-        return -1;
+        return DC_CRYPT_ERROR;
     }
 
     // Overwrite original data with encrypted content
@@ -158,20 +158,20 @@ int aes_encrypt_data(
 	return data_len;
 }
 
-// Function to handle AES-128 CBC decryption
+// Function to handle AESDC_CRYPT_ERROR28 CBC decryption
 int aes_decrypt_data(
     unsigned char       *data,
     DWORD				data_len,
     HCRYPTKEY			key,
     unsigned char       *iv
 ) {
-    if (!key) return -1;
+    if (!key) return DC_CRYPT_ERROR;
 
 	DWORD   key_len = 0;
     DWORD   size = sizeof(DWORD);
     if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&key_len, &size, 0)) {
         printf(FMT_ERROR " Key handle is invalid before decryption: %lu\n", GetLastError());
-        return -1;
+        return DC_CRYPT_ERROR;
     }
     print_hex(FMT_INFO " IV for decryption", iv, 16);
 
@@ -179,11 +179,11 @@ int aes_decrypt_data(
     DWORD   mode = CRYPT_MODE_CBC;
 	if (!CryptSetKeyParam(key, KP_MODE, (BYTE *)&mode, 0) ||
 		!CryptSetKeyParam(key, KP_IV, iv, 0))
-        return -1;
+        return DC_CRYPT_ERROR;
 
     if (!CryptDecrypt(key, 0, TRUE, 0, data, &data_len)) {
         printf(FMT_ERROR "CryptDecrypt failed: %lu\n", GetLastError());
-		return -1;
+		return DC_CRYPT_ERROR;
     } else {
         printf(FMT_DONE "Decrypted: %s\n", data);
     }
