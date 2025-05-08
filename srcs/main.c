@@ -40,12 +40,4 @@ int main(int argc, char *argv[])
 
 	print_results(&env);
 	exit_gracefully(&env);
-
-	// TODO del?
-	// // Free the key if memory has been allocated
-	// if (env.key_allocated)
-	// {
-	// 	free((void *)env.encryption_key);
-	// 	env.encryption_key = NULL;
-	// }
 }
