@@ -24,7 +24,7 @@ void print_results(t_env *env)
 int main(int argc, char *argv[])
 {
 	static t_env	env;
-perror(FMT_ERROR "hey");
+
 	// Detect first silent mode
 	detect_silent_mode(&env, argc, argv);
 

@@ -18,7 +18,7 @@ void print_version()
 	exit(EXIT_SUCCESS);
 }
 
-void check_arg_key(const char opt, bool verbose)
+void check_arg_key(t_env *env, const char opt, bool verbose)
 {
 	/*
      * Check if the argument is provided and that the AES key has required length.
@@ -42,6 +42,7 @@ void check_arg_key(const char opt, bool verbose)
                 opt
             );
         }
+        dc_free((void **)&env->encryption_key);
 		exit(EXIT_FAILURE);
 	}
 }
@@ -63,7 +64,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
     optind = 1;
 
     // Second pass: Process other options
-    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != DC_CRYPT_ERROR) {
+    while ((opt = getopt_long(argc, argv, short_opts, long_opts, NULL)) != -1) {
         switch (opt) {
             case 'h':
                 print_help();
@@ -71,10 +72,11 @@ void parse_argv(t_env *env, int argc, char *argv[])
 
             case 'k':
                 // Check the given key
-                check_arg_key(opt, env->modes & DC_VERBOSE);
+                check_arg_key(env, opt, env->modes & DC_VERBOSE);
 
                 // Convert given hex key string to bytes for later use
                 env->encryption_key = malloc(DC_AES_BLOCK_SIZE + 1);
+                if (!env->encryption_key) exit(EXIT_FAILURE);
                 hexstr_to_bytes((unsigned char *)optarg, env->encryption_key, DC_AES_BLOCK_SIZE);
                 env->encryption_key[DC_AES_BLOCK_SIZE] = '\0';
 
@@ -88,7 +90,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
                 // Set the decryption mode
                 env->modes |= DC_REVERSE;
                 // Check the given key
-                check_arg_key(opt, env->modes & DC_VERBOSE);
+                check_arg_key(env, opt, env->modes & DC_VERBOSE);
                 // Assign the given key as the decryption key
                 env->decryption_key = (unsigned char *)optarg; 
 				if (env->modes & DC_VERBOSE)
@@ -108,6 +110,7 @@ void parse_argv(t_env *env, int argc, char *argv[])
 						stderr,
 						FMT_ERROR "Invalid arguments. Use -h or --help for usage.\n"
 					);
+                dc_free(&env->encryption_key);
 				exit(EXIT_FAILURE);
 		}
     }
@@ -122,7 +125,7 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
     bool                silent_mode = false;
     const char          *short_opts1 = "s";
     const struct option long_opts1[] = {
-        { "silent",  no_argument,       NULL, 's' },
+    { "silent",  no_argument,       NULL, 's' },
         { NULL, 0, NULL, 0 }
     };
 
@@ -130,7 +133,7 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 	opterr = 0;                     // Disable error messages
 
     // First pass: check for silent mode
-    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != DC_CRYPT_ERROR) {
+    while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) != -1) {
         if (opt == 's') {
             silent_mode = true;
             break; // Exit the loop once silent mode is detected

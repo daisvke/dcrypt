@@ -37,7 +37,7 @@ extern t_windows win_env;
 # else
 
 # include <unistd.h>
-# define DC_TARGET_PATHS        { "/home/alien/infection" } // No '/' at the end
+# define DC_TARGET_PATHS        { "/home/mint/infection" } // No '/' at the end
 # define DC_PATH_SEP            '/' // Paths separator 
 
 #endif
@@ -145,6 +145,8 @@ int     write_processed_data_to_file(t_env *env, const char *target_path);
 
 void    hexstr_to_bytes(const unsigned char *hexstr, unsigned char *out, size_t out_len);
 void    print_hex(const char *label, const unsigned char *data, size_t data_len);
+void    dc_free(void **ptr);
+void    exit_gracefully(t_env *env);
 
 /*---------------------------- Cryptography ------------------------*/
 

@@ -38,7 +38,7 @@ ifeq ($(TARGET), win)  # Windows
     CC				= x86_64-w64-mingw32-gcc
     CFLAGS			= -Wall -Wextra -O2
 else
-	TEMP_FOLDER1	= /home/alien/infection
+	TEMP_FOLDER1	= /home/mint/infection
     CC				= clang
     CFLAGS			= -Wall -Wextra -O2
 	SSLFLAGS		= -lcrypto -lssl

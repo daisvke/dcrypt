@@ -102,7 +102,12 @@ void handle_dir(t_env *env, char *target_dir_path)
 	struct dirent	*entry;
 	// Open the directory stream
 	DIR				*dir = opendir(target_dir_path);
-	if (!dir) return;
+
+	if (!dir) {
+		if (env->modes & DC_VERBOSE)
+			perror(FMT_ERROR " Failed ro open directory");
+		return;
+	}
 
 	// Loop through each entry in the directory
 	while ((entry = readdir(dir)) != NULL)
@@ -153,10 +158,7 @@ void handle_dir(t_env *env, char *target_dir_path)
 
 	// Free allocated memory for created files
 	for (size_t i = 0; i < created_files_count; ++i)
-	{
-		free(created_files[i]);
-		created_files[i] = NULL;
-	}
+		dc_free((void **)&created_files[i]);
 
 	// Close the directory stream
 	closedir(dir);
