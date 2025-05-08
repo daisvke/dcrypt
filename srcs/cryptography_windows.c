@@ -66,7 +66,7 @@ void save_aes_key_as_bytes(t_env *env, HCRYPTKEY hKey) {
 
     if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, blob, &blobLen)) {
         printf("CryptExportKey failed: %lu\n", GetLastError());
-        free(blob);
+        dc_free((void **)&blob);
         return;
     }
 
@@ -76,13 +76,13 @@ void save_aes_key_as_bytes(t_env *env, HCRYPTKEY hKey) {
 
     env->encryption_key = malloc(key_len + 1);
     if (!env->encryption_key) {
-        free(blob);
+        dc_free((void **)&blob);
         return;
     }
     memcpy(env->encryption_key, keyData, key_len);
     env->encryption_key[key_len] = '\0';
 
-    free(blob);
+    dc_free((void **)&blob);
 }
 
 HCRYPTKEY generate_encryption_key(t_env *env)

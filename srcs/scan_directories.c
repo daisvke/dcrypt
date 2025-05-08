@@ -29,7 +29,7 @@ int init_dcrypt_header(t_env *env)
 	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
 	// Get the encryption key that will be used to encrypt/decrypt the file
 	// During decryption, this key will be the IV key.
-	if (!get_iv_key(env)) {
+	if (!get_iv_or_encryption_key(env)) {
 		if (env->modes & DC_VERBOSE)
 			perror(FMT_ERROR "Failed to get the IV key. Aborting...\n");
 		return DC_ERROR;
@@ -40,15 +40,20 @@ int init_dcrypt_header(t_env *env)
 	 * The IV will be saved inside the custom header on the encrypted file.
 	 */
 
-	if (!(env->modes & DC_REVERSE)) {
+	if (env->modes & DC_ENCRYPT) {
 		unsigned char	*iv_key = generate_time_based_rand_key_nanosec(
 			DC_KEYCHARSET, DC_AES_KEY_SIZE
 		);
 
+		if (!iv_key) {
+			perror("Failed to generate IV");
+			return DC_ERROR;
+		}
+
 		// Copy the IV key to the custom header
 		memcpy(env->dcrypt_header.iv_key, iv_key, DC_AES_KEY_SIZE);
 
-		free(iv_key);
+		dc_free((void **)&iv_key);
 	}
 	return DC_SUCCESS;
 }
@@ -77,7 +82,6 @@ int handle_file(t_env *env, const char *filepath)
 				fprintf(stderr, FMT_ERROR "Failed to decrypt data.\n");
 			else
 				fprintf(stderr, FMT_ERROR "Failed to encrypt data.\n");
-			// perror("An error occurred while attempting to process the mapped data");
 			return DC_ERROR;
 		}
 
@@ -86,7 +90,7 @@ int handle_file(t_env *env, const char *filepath)
 		if (env->modes & DC_VERBOSE) {
 			perror(
 				FMT_ERROR
-				"An error occurred while attempting to write the mapped data into the file"
+				"An error occurred while attempting to write data into the file"
 			);
 			return DC_ERROR;
 		}

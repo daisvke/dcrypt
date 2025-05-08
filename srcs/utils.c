@@ -18,16 +18,20 @@ void hexstr_to_bytes(const unsigned char *hexstr, unsigned char *out, size_t out
             sscanf((char *)hexstr + 2 * i, "%2hhx", &out[i]);
 }
 
-// Free the pointer if is not empty and set the original pointer to NULL
-void    dc_free(void **ptr)
+// Free the pointer if is not empty, set the original pointer
+//  to NULL and return NULL
+void    *dc_free(void **ptr)
 {
     if (ptr && *ptr) {
-        free(ptr);
+        free(*ptr);
         *ptr = NULL;
     }
+
+    return NULL;
 }
 
 void    exit_gracefully(t_env *env)
 {
     dc_free((void **)&env->encryption_key);
+    dc_free((void **)&env->encrypted_data);
 }

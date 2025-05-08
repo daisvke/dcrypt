@@ -85,7 +85,8 @@ enum e_modes
 {
     // Display detailed notifications
     DC_VERBOSE                  = 1,
-    DC_REVERSE                  = 2
+    DC_ENCRYPT                  = 2,
+    DC_REVERSE                  = 4
 };
 
 enum e_dcrypt_header
@@ -145,7 +146,7 @@ int     write_processed_data_to_file(t_env *env, const char *target_path);
 
 void    hexstr_to_bytes(const unsigned char *hexstr, unsigned char *out, size_t out_len);
 void    print_hex(const char *label, const unsigned char *data, size_t data_len);
-void    dc_free(void **ptr);
+void    *dc_free(void **ptr);
 void    exit_gracefully(t_env *env);
 
 /*---------------------------- Cryptography ------------------------*/
@@ -161,9 +162,9 @@ int             aes_decrypt_data(unsigned char *data, DWORD data_len, \
 HCRYPTKEY       generate_encryption_key(t_env *env);
 HCRYPTKEY       import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len);
 # else
-int             aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, size_t data_len, \
-    const unsigned char *key, unsigned char *iv);
-int             aes_decrypt_data(unsigned char *data, size_t data_len, \
+int             aes_encrypt_data(t_env *env, unsigned char *data, unsigned char **encrypted_data,
+    size_t data_len, const unsigned char *key, unsigned char *iv);
+int             aes_decrypt_data(t_env *env, unsigned char *data, size_t data_len, \
     const unsigned char *key, unsigned char *iv);
 unsigned char   *generate_random_based_key(t_env *env, const char *_charset, \
     size_t strength, bool blocking);
@@ -171,7 +172,7 @@ unsigned char   *generate_random_based_key(t_env *env, const char *_charset, \
 
 unsigned char    *generate_time_based_rand_key_nanosec(const char *_charset, \
     size_t strength);
-unsigned char    *get_iv_key(t_env *env);
+unsigned char    *get_iv_or_encryption_key(t_env *env);
 
 /*---------------------------- File handling ------------------------*/
 

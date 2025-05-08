@@ -87,8 +87,6 @@ void parse_argv(t_env *env, int argc, char *argv[])
                 break;
 
             case 'r':
-                // Set the decryption mode
-                env->modes |= DC_REVERSE;
                 // Check the given key
                 check_arg_key(env, opt, env->modes & DC_VERBOSE);
                 // Assign the given key as the decryption key
@@ -123,9 +121,11 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 {
     int                 opt;
     bool                silent_mode = false;
-    const char          *short_opts1 = "s";
+    const char          *short_opts1 = "sk:r:";
     const struct option long_opts1[] = {
-    { "silent",  no_argument,       NULL, 's' },
+        { "silent",  no_argument,       NULL, 's' },
+        { "key",     required_argument, NULL, 'k' },
+        { "reverse", required_argument, NULL, 'r' },
         { NULL, 0, NULL, 0 }
     };
 
@@ -134,9 +134,15 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 
     // First pass: check for silent mode
     while ((opt = getopt_long(argc, argv, short_opts1, long_opts1, NULL)) >= 0) {
-        if (opt == 's') {
-            silent_mode = true;
-            break; // Exit the loop once silent mode is detected
+        switch (opt) {
+            case 's':
+                silent_mode = true;
+                break;
+            case 'k':
+                env->modes |= DC_ENCRYPT;
+                break;
+            case 'r':
+                env->modes |= DC_REVERSE;
         }
     }
 
@@ -145,4 +151,13 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
 		env->modes |= DC_VERBOSE;
 		opterr = original_opterr;
 	}
+
+    if ((env->modes & DC_ENCRYPT) && (env->modes & DC_REVERSE)) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR "The -k and -r options cannot be used at the same time.\n"
+            );
+        exit(EXIT_FAILURE);
+    }
 }

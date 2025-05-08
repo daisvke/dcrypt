@@ -36,6 +36,7 @@
  */
 
 int aes_encrypt_data(
+    t_env               *env,
     unsigned char       *data,
     unsigned char       **encrypted_data,
     size_t              data_len,
@@ -44,12 +45,18 @@ int aes_encrypt_data(
 ) {
     // A structure that holds the context for the encryption operation
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    if (!ctx) return DC_CRYPT_ERROR; // Context creation error
+    if (!ctx) {
+        if (env->modes & DC_VERBOSE)
+            perror("Context creation error");
+        return DC_CRYPT_ERROR;
+    }
 
     // Initialize the encryption operation
     if (EVP_EncryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return DC_CRYPT_ERROR; // Initialization error
+        if (env->modes & DC_VERBOSE)
+            perror("Initialization error");
+        return DC_CRYPT_ERROR;
     }
 
     // Allocate a buffer that's big enough for data + padding
@@ -57,56 +64,75 @@ int aes_encrypt_data(
     unsigned char *buffer = malloc(buf_len);
     if (!buffer) {
         EVP_CIPHER_CTX_free(ctx);
+        if (env->modes & DC_VERBOSE)
+            perror("Failed to allocate memory");
         return DC_CRYPT_ERROR;
     }
 
     int out_len;
     // Perform the encryption of data in 16 bytes chunk
     if (EVP_EncryptUpdate(ctx, buffer, &out_len, data, data_len) != 1) {
-        free(buffer);
+        dc_free((void **)&buffer);
         EVP_CIPHER_CTX_free(ctx);
-        return DC_CRYPT_ERROR; // Encryption error
+        if (env->modes & DC_VERBOSE)
+            perror("Encryption error");
+        return DC_CRYPT_ERROR;
     }
 
     int final_len;
     // Write any remaining encrypted data, adding paddings if needed
     if (EVP_EncryptFinal_ex(ctx, buffer + out_len, &final_len) != 1) {
-        free(buffer);
+        dc_free((void **)&buffer);
         EVP_CIPHER_CTX_free(ctx);
-        return DC_CRYPT_ERROR; // Finalization error
+        if (env->modes & DC_VERBOSE)
+            perror("Finalization error");
+        return DC_CRYPT_ERROR;
     }
 
     *encrypted_data = buffer;
     EVP_CIPHER_CTX_free(ctx);
-    return out_len + final_len; // Return the total length of the encrypted data
+
+    // Return the total length of the encrypted data
+    return out_len + final_len; 
 }
 
 // Function to handle AESDC_CRYPT_ERROR28 CBC decryption
 int aes_decrypt_data(
+    t_env               *env,
     unsigned char       *data,
     size_t              data_len,
     const unsigned char *key,
     unsigned char       *iv
 ) {
     EVP_CIPHER_CTX *ctx = EVP_CIPHER_CTX_new();
-    if (!ctx) return DC_CRYPT_ERROR; // Context creation error
+    if (!ctx) {
+        if (env->modes & DC_VERBOSE)
+            perror("Context creation error");
+        return DC_CRYPT_ERROR; // Context creation error
+    }
 
     // Initialize the decryption operation
     if (EVP_DecryptInit_ex(ctx, EVP_aes_128_cbc(), NULL, key, iv) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return DC_CRYPT_ERROR; // Initialization error
+        if (env->modes & DC_VERBOSE)
+            perror("Initialization error");
+        return DC_CRYPT_ERROR;
     }
 
     int out_len;
     if (EVP_DecryptUpdate(ctx, data, &out_len, data, data_len) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return DC_CRYPT_ERROR; // Decryption error
+        if (env->modes & DC_VERBOSE)
+            perror("Decryption error");
+        return DC_CRYPT_ERROR;
     }
 
     int final_len;
     if (EVP_DecryptFinal_ex(ctx, data + out_len, &final_len) != 1) {
         EVP_CIPHER_CTX_free(ctx);
-        return DC_CRYPT_ERROR; // Finalization error
+        if (env->modes & DC_VERBOSE)
+            perror("Finalization error");
+        return DC_CRYPT_ERROR;
     }
 
     EVP_CIPHER_CTX_free(ctx);
@@ -163,12 +189,12 @@ int aes_decrypt_data(
 		blocking ? "/dev/urandom" : "/dev/random",
 		O_RDONLY
 		);
-    if (fd < 0) return NULL;
+    if (fd < 0) return dc_free((void **)&key);
 
     unsigned char random_bytes[strength];
     if (read(fd, random_bytes, strength) != (int)strength) {
         close(fd);
-        return NULL;
+        return dc_free((void **)&key);
     }
     if (close(fd) < 0 && (env->modes & DC_VERBOSE))
         perror("Failed to close the file");
@@ -234,7 +260,7 @@ int aes_decrypt_data(
     return key;
 }
 
-unsigned char *get_iv_key(t_env *env)
+unsigned char *get_iv_or_encryption_key(t_env *env)
 {
 	// In decryption mode, we use the IV saved in the file header
 	if (env->modes & DC_REVERSE)

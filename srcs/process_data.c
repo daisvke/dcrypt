@@ -22,6 +22,7 @@ int process_mapped_data(t_env *env)
 
 		int	decrypted_size;
 		if ((decrypted_size = aes_decrypt_data(
+			env,
 			data,									// The file data (starting after the header)
 			env->encrypted_filesize,				// The encrypted file size (without the custom header size)
 			#ifdef _WIN32
@@ -33,9 +34,13 @@ int process_mapped_data(t_env *env)
 			env->dcrypt_header.iv_key				// Initialization vector
 		)) == DC_CRYPT_ERROR) return DC_ERROR;
 
-		if (decrypted_size != (int)env->dcrypt_header.original_filesize) {
-			printf(
-				FMT_ERROR "Decrypted data length (%d) doesn't match original filesize (%lld).\n",
+		if (decrypted_size != (int)env->dcrypt_header.original_filesize &&
+			(env->modes & DC_VERBOSE)
+		) {
+			fprintf(
+				stderr,
+				FMT_ERROR
+				"Decrypted data length (%d) doesn't match original filesize (%ld).\n",
 				decrypted_size, env->dcrypt_header.original_filesize
 			);
 			return DC_ERROR;
@@ -52,6 +57,7 @@ int process_mapped_data(t_env *env)
 			printf(FMT_INFO "Starting encryption...\n");
 
 		if ((env->encrypted_filesize = aes_encrypt_data(
+			env,
 			data,										// The file data (starting after the header)
 			&env->encrypted_data,
 			env->dcrypt_header.original_filesize,		// The original file size

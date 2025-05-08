@@ -256,7 +256,7 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
 {
     char    temp_path[strlen(target_path) + 1];
     // Copy the original string to the temporary variable
-    strcpy(temp_path, target_path);
+    if (!strcpy(temp_path, target_path) || !target_path) return DC_ERROR;
 
     if (env->modes & DC_REVERSE)
     {

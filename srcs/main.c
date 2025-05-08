@@ -39,11 +39,13 @@ int main(int argc, char *argv[])
 		handle_dir(&env, target_dir_paths[i]);
 
 	print_results(&env);
+	exit_gracefully(&env);
 
-	// Free the key if memory has been allocated
-	if (env.key_allocated)
-	{
-		free((void *)env.encryption_key);
-		env.encryption_key = NULL;
-	}
+	// TODO del?
+	// // Free the key if memory has been allocated
+	// if (env.key_allocated)
+	// {
+	// 	free((void *)env.encryption_key);
+	// 	env.encryption_key = NULL;
+	// }
 }
