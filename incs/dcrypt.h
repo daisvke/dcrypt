@@ -154,9 +154,9 @@ void            xor_with_additive_cipher(
     void *key, size_t key_length, void *data, size_t data_length, int mode);
 
 # ifdef _WIN32
-int             aes_encrypt_data(unsigned char *data, unsigned char **encrypted_data, DWORD data_len, \
-    HCRYPTKEY key, unsigned char *iv);
-int             aes_decrypt_data(unsigned char *data, DWORD data_len, \
+int             aes_encrypt_data(t_env *env, unsigned char *data, unsigned char **encrypted_data,
+    DWORD data_len, HCRYPTKEY key, unsigned char *iv);
+int             aes_decrypt_data(t_env *env, unsigned char *data, DWORD data_len, \
     HCRYPTKEY key, unsigned char *iv);
 HCRYPTKEY       generate_encryption_key(t_env *env);
 HCRYPTKEY       import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len);

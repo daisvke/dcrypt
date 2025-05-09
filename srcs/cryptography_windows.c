@@ -114,6 +114,7 @@ HCRYPTKEY generate_encryption_key(t_env *env)
 }
 
 int aes_encrypt_data(
+    t_env               *env,
     unsigned char       *data,
     unsigned char       **encrypted_data,
     DWORD				data_len,
@@ -160,6 +161,7 @@ int aes_encrypt_data(
 
 // Function to handle AESDC_CRYPT_ERROR28 CBC decryption
 int aes_decrypt_data(
+    t_env               *env,
     unsigned char       *data,
     DWORD				data_len,
     HCRYPTKEY			key,
