@@ -47,6 +47,20 @@ int set_iv_on_dcrypt_header(t_env *env)
 	return DC_SUCCESS;
 }
 
+void clean_after_file(t_env *env)
+{
+    dc_free((void **)&env->encrypted_data);
+
+	#ifdef _WIN32
+	if (win_env.hFile) { // Free the file handle
+        CloseHandle(win_env.hFile);
+    }
+    if (win_env.hMap) { // Free the mapped data handle
+        CloseHandle(win_env.hMap);
+    }
+	#endif
+}
+
 int handle_file(t_env *env, const char *filepath)
 {
 	// Init the header that will be placed at the top of the file
@@ -85,14 +99,7 @@ int handle_file(t_env *env, const char *filepath)
 		}
 	}
 
-	#ifdef _WIN32
-	if (win_env.hFile) { // Free the file handle
-        CloseHandle(win_env.hFile);
-    }
-    if (win_env.hMap) { // Free the mapped data handle
-        CloseHandle(win_env.hMap);
-    }
-	#endif
+	clean_after_file(env);
 
 	return DC_SUCCESS;
 }

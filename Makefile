@@ -1,8 +1,6 @@
-# ▗▄▄▄  ▗▄▄▖▗▄▄▖▗▖  ▗▖▗▄▄▖▗▄▄▄▖
-# ▐▌  █▐▌   ▐▌ ▐▌▝▚▞▘ ▐▌ ▐▌ █  
-# ▐▌  █▐▌   ▐▛▀▚▖ ▐▌  ▐▛▀▘  █  
-# ▐▙▄▄▀▝▚▄▄▖▐▌ ▐▌ ▐▌  ▐▌    █  
-                                     
+# ****************************
+#         D C R Y P T
+# ****************************
 
 ifeq ($(TARGET), win)
 	NAME				= dcrypt.exe
@@ -32,15 +30,21 @@ DONE				= $(GREEN)[DONE]$(RESET)
 
 TARGET				?= unix
 
+ifeq ($(DEBUG), yes)
+	CFLAGS			= -g3
+else
+	CFLAGS			= -03
+endif
+
 # Compiler selection based on TARGET
 ifeq ($(TARGET), win)  # Windows
 	TEMP_FOLDER1	= D:\Documents\infection
     CC				= x86_64-w64-mingw32-gcc
-    CFLAGS			= -Wall -Wextra -O2
+    CFLAGS			+= -Wall -Wextra -O2
 else
 	TEMP_FOLDER1	= /home/alien/infection
     CC				= clang
-    CFLAGS			= -Wall -Wextra -O2
+    CFLAGS			+= -Wall -Wextra
 	SSLFLAGS		= -lcrypto -lssl
 endif
 

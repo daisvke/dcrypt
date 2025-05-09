@@ -49,8 +49,11 @@ const char *handled_extensions[] = {
 ## Commands
 
 ```sh
-# Compilation
+# Compilation (fully optimized with -03 flag)
 make
+
+# Or, for debug (-g3 flag)
+make DEBUG=yes
 
 # Usage:
 ./dcrypt [-h|-v|-s|-k <KEY>|-r <KEY>] 

@@ -34,7 +34,6 @@ void    *dc_free(void **ptr)
 void exit_gracefully(t_env *env, int exit_code)
 {
     dc_free((void **)&env->encryption_key);
-    dc_free((void **)&env->encrypted_data);
 
     #ifdef _WIN32
 	if (win_env.hProv) {
