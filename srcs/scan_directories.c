@@ -23,17 +23,8 @@ bool is_created_file(
 	return false; // File is not in the created files list
 }
 
-int init_dcrypt_header(t_env *env)
+int set_iv_on_dcrypt_header(t_env *env)
 {
-	// Set the file signature
-	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
-	// Get the encryption key that will be used
-	if (get_encryption_key(env) == DC_ERROR) {
-		if (env->modes & DC_VERBOSE)
-			perror(FMT_ERROR "Failed to get the key. Aborting...\n");
-		return DC_ERROR;
-	}
-
 	/*
 	 * In encryption mode, generate the IV used by AES encryption.
 	 * The IV will be saved inside the custom header on the encrypted file.
@@ -59,7 +50,7 @@ int init_dcrypt_header(t_env *env)
 int handle_file(t_env *env, const char *filepath)
 {
 	// Init the header that will be placed at the top of the file
-	if (init_dcrypt_header(env)) return DC_ERROR;
+	if (set_iv_on_dcrypt_header(env)) return DC_ERROR;
 
 	/* Create a mapping between the target file and the memory region occupied
 	 * by the program. This is to facilitate the memory handling to manipulate

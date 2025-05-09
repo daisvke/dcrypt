@@ -260,11 +260,26 @@ int aes_decrypt_data(
     return key;
 }
 
-int get_encryption_key(t_env *env)
+int set_key(t_env *env)
 {
 	// In decryption mode, we use the IV saved in the file header
 	if (env->modes & DC_REVERSE)
 	{
+        #ifdef _WIN32
+        // We need to convert the hex string key given from the command line to
+        //  its byte representation
+		unsigned char	key[DC_AES_KEY_SIZE + 1];
+		hexstr_to_bytes(env->decryption_key, key, DC_AES_KEY_SIZE);
+		key[DC_AES_KEY_SIZE] = '\0';
+
+        // Import raw AES key to to get a key handle linked to the key
+        if (import_raw_aes_key(env, key, DC_AES_KEY_SIZE) == DC_ERROR)
+            if (env->modes & DC_VERBOSE) {
+                fprintf(stderr, FMT_ERROR " Failed to import raw AES key\n");
+                return DC_ERROR;
+            }
+        #endif
+
 		if (env->modes & DC_VERBOSE)
 			printf(
                 FMT_INFO
@@ -287,7 +302,7 @@ int get_encryption_key(t_env *env)
         env->encryption_key = generate_random_based_key(
             env, DC_KEYCHARSET, DC_AES_KEY_SIZE, false
         );
-		if (!env->encryption_key) return NULL;
+		if (!env->encryption_key) return DC_ERROR;
 
         print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
         #endif

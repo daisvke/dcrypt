@@ -30,8 +30,20 @@ void    *dc_free(void **ptr)
     return NULL;
 }
 
-void    exit_gracefully(t_env *env)
+// Free all allocated memory and destroy the key, then exit
+void exit_gracefully(t_env *env, int exit_code)
 {
     dc_free((void **)&env->encryption_key);
     dc_free((void **)&env->encrypted_data);
+
+    #ifdef _WIN32
+    if (win_env.hKey) {
+        CryptDestroyKey(win_env.hKey);          // Key securely destroyed
+    }
+	if (win_env.hProv) {
+    	CryptReleaseContext(win_env.hProv, 0);  // Free context
+    }
+    #endif
+
+    exit(exit_code);
 }

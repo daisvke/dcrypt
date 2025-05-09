@@ -146,7 +146,7 @@ int     write_processed_data_to_file(t_env *env, const char *target_path);
 void    hexstr_to_bytes(const unsigned char *hexstr, unsigned char *out, size_t out_len);
 void    print_hex(const char *label, const unsigned char *data, size_t data_len);
 void    *dc_free(void **ptr);
-void    exit_gracefully(t_env *env);
+void    exit_gracefully(t_env *env, int exit_code);
 
 /*---------------------------- Cryptography ------------------------*/
 
@@ -171,7 +171,7 @@ unsigned char   *generate_random_based_key(t_env *env, const char *_charset, \
 
 unsigned char   *generate_time_based_rand_key_nanosec(const char *_charset, \
     size_t strength);
-int             get_encryption_key(t_env *env);
+int             set_key(t_env *env);
 
 /*---------------------------- File handling ------------------------*/
 

@@ -40,7 +40,7 @@ HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len
 	// Acquire a crypto context
 	if (!CryptAcquireContext(
 		&win_env.hProv, NULL, NULL, PROV_RSA_AES, CRYPT_VERIFYCONTEXT
-	)) return 0;
+	)) return DC_ERROR;
 
 	// Import the raw key
     if (!CryptImportKey(win_env.hProv, (BYTE *)&blob, blob_len, 0, 0, &hKey)) {
@@ -48,10 +48,13 @@ HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len
             printf("CryptImportKey (PLAINTEXTKEYBLOB) failed: %lu\n", GetLastError());
 		if (win_env.hProv)
 			CryptReleaseContext(win_env.hProv, 0);
-        return 0;
+        return DC_ERROR;
     }
 
-    return hKey;
+    // Save the key handle: it contains the link to the actual key
+    win_env.hKey = hKey;
+
+    return DC_SUCCESS;
 }
 
 int save_aes_key_as_bytes(t_env *env, HCRYPTKEY hKey) {
@@ -196,8 +199,9 @@ int aes_encrypt_data(
             );
         // Clean up
         dc_free((void **)&buffer);
-        CryptDestroyKey(key);
-        CryptReleaseContext(win_env.hProv, 0);
+        // TODO del
+        // CryptDestroyKey(key);
+        // CryptReleaseContext(win_env.hProv, 0);
         return DC_CRYPT_ERROR;
     }
 
@@ -207,10 +211,11 @@ int aes_encrypt_data(
     // For testing: print the encrypted data
     // print_hex(FMT_DONE "Encrypted", *encrypted_data, data_len);
 
+    // TODO del
     // Cleanup
-    CryptDestroyKey(key); 						// Key securely destroyed
-	if (win_env.hProv)
-    	CryptReleaseContext(win_env.hProv, 0);	// Free context
+    // CryptDestroyKey(key); 						// Key securely destroyed
+	// if (win_env.hProv)
+    // 	CryptReleaseContext(win_env.hProv, 0);	// Free context
 
 	return data_len;
 }
@@ -225,7 +230,7 @@ int aes_decrypt_data(
 ) {
     if (!key) {
         if (env->modes & DC_VERBOSE)
-            fprintf(stderr, FMT_ERROR " Failed to import raw AES key");
+            fprintf(stderr, FMT_ERROR " Failed to import raw AES key\n");
         return DC_CRYPT_ERROR;
     }
 
@@ -271,10 +276,10 @@ int aes_decrypt_data(
         // printf(FMT_DONE "Decrypted: %s\n", data);
     }
 
-    // Cleanup
-    CryptDestroyKey(key); 						// Key securely destroyed
-	if (win_env.hProv)
-    	CryptReleaseContext(win_env.hProv, 0);	// Free context
+    // // Cleanup
+    // CryptDestroyKey(key); 						// Key securely destroyed
+	// if (win_env.hProv)
+    // 	CryptReleaseContext(win_env.hProv, 0);	// Free context
 
 	return data_len;
 }
