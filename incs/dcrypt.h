@@ -169,9 +169,9 @@ unsigned char   *generate_random_based_key(t_env *env, const char *_charset, \
     size_t strength, bool blocking);
 # endif
 
-unsigned char    *generate_time_based_rand_key_nanosec(const char *_charset, \
+unsigned char   *generate_time_based_rand_key_nanosec(const char *_charset, \
     size_t strength);
-unsigned char    *get_key(t_env *env);
+int             get_encryption_key(t_env *env);
 
 /*---------------------------- File handling ------------------------*/
 

@@ -260,7 +260,7 @@ int aes_decrypt_data(
     return key;
 }
 
-unsigned char *get_key(t_env *env)
+int get_encryption_key(t_env *env)
 {
 	// In decryption mode, we use the IV saved in the file header
 	if (env->modes & DC_REVERSE)
@@ -271,27 +271,26 @@ unsigned char *get_key(t_env *env)
                 " Using encryption key => " FMT_YELLOW "%s\n" FMT_RESET,
                 env->decryption_key
             );
-        return env->decryption_key;
 	}
 	else // In encryption mode, we generate a new encryption key
 	{
         // If the key has already been generated, we stop here
-        if (env->encryption_key) return env->encryption_key;
-		// Generate the key that will be used for the encryption
+        if (env->encryption_key) return DC_SUCCESS;
+
+        // Generate the key that will be used for the encryption
         #ifdef _WIN32
-		win_env.hKey = generate_encryption_key(env);
-		if (!win_env.hKey) return NULL;
-        static unsigned char array[2] = {"1"};
-        return array; // We have to return an unsigned char *
+        win_env.hKey = generate_encryption_key(env);
+		if (!win_env.hKey) return DC_ERROR;
+
         # else
-		env->encryption_key = generate_random_based_key(
+
+        env->encryption_key = generate_random_based_key(
             env, DC_KEYCHARSET, DC_AES_KEY_SIZE, false
         );
 		if (!env->encryption_key) return NULL;
 
         print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
         #endif
-
-        return env->encryption_key;
 	}
+    return DC_SUCCESS;
 }

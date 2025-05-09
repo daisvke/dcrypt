@@ -40,7 +40,11 @@ int process_mapped_data(t_env *env)
 			fprintf(
 				stderr,
 				FMT_ERROR
+				#ifdef _WIN32
+				"Decrypted data length (%d) doesn't match original filesize (%lld).\n",
+				# else
 				"Decrypted data length (%d) doesn't match original filesize (%ld).\n",
+				#endif
 				decrypted_size, env->dcrypt_header.original_filesize
 			);
 			return DC_ERROR;

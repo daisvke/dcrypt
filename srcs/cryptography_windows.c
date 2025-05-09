@@ -148,23 +148,54 @@ int aes_encrypt_data(
     DWORD   key_len = 0;
     DWORD   size = sizeof(DWORD);
     if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&key_len, &size, 0)) {
-        printf(FMT_ERROR " Key handle is invalid before encryption: %lu\n", GetLastError());
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR " Key handle is invalid before encryption: %lu\n",
+                GetLastError()
+            );
         return DC_CRYPT_ERROR;
     }
-    print_hex(FMT_INFO " IV for decryption", iv, 16);
+
+    if (env->modes & DC_VERBOSE)
+        print_hex(FMT_INFO " IV used for encryption", iv, 16);
 
     // Set Initialization Vector
-    if (!CryptSetKeyParam(key, KP_IV, iv, 0)) return DC_CRYPT_ERROR;
+    if (!CryptSetKeyParam(key, KP_IV, iv, 0)) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR " Failed to set cipher mode: %lu\n",
+                GetLastError()
+            );
+        return DC_CRYPT_ERROR;
+    }
 
     // Padding to make space for encryption (CBC needs padding)
     DWORD	buf_len = data_len + DC_AES_BLOCK_SIZE; // Ensure buffer is large enough
-    BYTE *buffer = calloc(1, buf_len); // zero-initialize
+    BYTE    *buffer = calloc(1, buf_len);           // Allocate and zero-initialize
+    if (!buffer) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR " Failed to allocate for the buffer: %lu\n",
+                GetLastError()
+            );
+        return DC_CRYPT_ERROR;
+    }
+    // Copy the data to encrypt to the padded buffer
     memcpy(buffer, data, data_len);    
 
     // Encrypt with padding (TRUE)
     if (!CryptEncrypt(key, 0, TRUE, 0, buffer, &data_len, buf_len)) {
-        printf(FMT_ERROR "CryptEncrypt failed: %lu\n", GetLastError());
-        free(buffer);
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR " CryptEncrypt failed: %lu\n",
+                GetLastError()
+            );
+        // Clean up
+        dc_free((void **)&buffer);
         CryptDestroyKey(key);
         CryptReleaseContext(win_env.hProv, 0);
         return DC_CRYPT_ERROR;
@@ -173,6 +204,7 @@ int aes_encrypt_data(
     // Overwrite original data with encrypted content
     *encrypted_data = buffer;
 
+    // For testing: print the encrypted data
     // print_hex(FMT_DONE "Encrypted", *encrypted_data, data_len);
 
     // Cleanup
@@ -211,7 +243,7 @@ int aes_decrypt_data(
     }
 
     if (env->modes & DC_VERBOSE)
-        print_hex(FMT_INFO " IV for decryption", iv, 16);
+        print_hex(FMT_INFO " IV used for decryption", iv, 16);
 
     // Set cipher modes
     DWORD   mode = CRYPT_MODE_CBC;
