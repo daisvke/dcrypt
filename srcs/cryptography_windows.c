@@ -54,35 +54,55 @@ HCRYPTKEY import_raw_aes_key(t_env *env, const unsigned char *key, DWORD key_len
     return hKey;
 }
 
-void save_aes_key_as_bytes(t_env *env, HCRYPTKEY hKey) {
-    DWORD blobLen = 0;
-    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, NULL, &blobLen)) {
-        printf("CryptExportKey (get size) failed: %lu\n", GetLastError());
-        return;//TODO handle error
+int save_aes_key_as_bytes(t_env *env, HCRYPTKEY hKey) {
+    DWORD blob_len = 0;
+    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, NULL, &blob_len)) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR
+                "CryptExportKey (get size) failed: %lu\n",
+                GetLastError()
+            );
+        return DC_ERROR;
     }
 
-    BYTE *blob = malloc(blobLen);
-    if (!blob) return;
+    BYTE *blob = malloc(blob_len);
+    if (!blob) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(stderr, FMT_ERROR "malloc failed: %lu\n", GetLastError());
+        return DC_ERROR;
+    }
 
-    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, blob, &blobLen)) {
-        printf("CryptExportKey failed: %lu\n", GetLastError());
+    if (!CryptExportKey(hKey, 0, PLAINTEXTKEYBLOB, 0, blob, &blob_len)) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR "CryptExportKey failed: %lu\n",
+                GetLastError()
+            );
         dc_free((void **)&blob);
-        return;
+        return DC_ERROR;
     }
 
     // Get pointer to key bytes (after BLOBHEADER + DWORD)
-    BYTE *keyData = blob + sizeof(BLOBHEADER) + sizeof(DWORD);
-    DWORD key_len = *(DWORD *)(blob + sizeof(BLOBHEADER));
+    BYTE    *key_data = blob + sizeof(BLOBHEADER) + sizeof(DWORD);
+    DWORD   key_len = *(DWORD *)(blob + sizeof(BLOBHEADER));
 
     env->encryption_key = malloc(key_len + 1);
     if (!env->encryption_key) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(stderr, FMT_ERROR "malloc failed: %lu\n", GetLastError());
         dc_free((void **)&blob);
-        return;
+        return DC_ERROR;
     }
-    memcpy(env->encryption_key, keyData, key_len);
+
+    // Copy key bytes to the global variable for later use
+    memcpy(env->encryption_key, key_data, key_len);
     env->encryption_key[key_len] = '\0';
 
     dc_free((void **)&blob);
+    return DC_SUCCESS;
 }
 
 HCRYPTKEY generate_encryption_key(t_env *env)
@@ -102,13 +122,17 @@ HCRYPTKEY generate_encryption_key(t_env *env)
 	}
 
     // Print the AES key (this will be the only way for the user to get it)
-    save_aes_key_as_bytes(env, hKey);
-    if (env->encryption_key)
-        print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
-    else {
-        printf(FMT_ERROR "Failed to get string formatted AES key.\n");
+    if (save_aes_key_as_bytes(env, hKey) == DC_ERROR || !env->encryption_key)
+    {
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR "Failed to get string formatted AES key.\n"
+            );
         return 0;
     }
+    if (env->encryption_key)
+        print_hex(FMT_DONE "Generated random key", env->encryption_key, DC_AES_KEY_SIZE);
     
     return hKey;
 }
@@ -167,27 +191,52 @@ int aes_decrypt_data(
     HCRYPTKEY			key,
     unsigned char       *iv
 ) {
-    if (!key) return DC_CRYPT_ERROR;
+    if (!key) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(stderr, FMT_ERROR " Failed to import raw AES key");
+        return DC_CRYPT_ERROR;
+    }
 
 	DWORD   key_len = 0;
     DWORD   size = sizeof(DWORD);
+
     if (!CryptGetKeyParam(key, KP_KEYLEN, (BYTE *)&key_len, &size, 0)) {
-        printf(FMT_ERROR " Key handle is invalid before decryption: %lu\n", GetLastError());
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR " Key handle is invalid before decryption: %lu\n",
+                GetLastError()
+            );
         return DC_CRYPT_ERROR;
     }
-    print_hex(FMT_INFO " IV for decryption", iv, 16);
 
-    // Set cipher mode
+    if (env->modes & DC_VERBOSE)
+        print_hex(FMT_INFO " IV for decryption", iv, 16);
+
+    // Set cipher modes
     DWORD   mode = CRYPT_MODE_CBC;
 	if (!CryptSetKeyParam(key, KP_MODE, (BYTE *)&mode, 0) ||
-		!CryptSetKeyParam(key, KP_IV, iv, 0))
+		!CryptSetKeyParam(key, KP_IV, iv, 0)) {
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR " Failed to set cipher modes: %lu\n",
+                GetLastError()
+            );
         return DC_CRYPT_ERROR;
+    }
 
     if (!CryptDecrypt(key, 0, TRUE, 0, data, &data_len)) {
-        printf(FMT_ERROR "CryptDecrypt failed: %lu\n", GetLastError());
-		return DC_CRYPT_ERROR;
+        if (env->modes & DC_VERBOSE)
+            fprintf(
+                stderr,
+                FMT_ERROR " CryptDecrypt failed: %lu\n",
+                GetLastError()
+            );
+        return DC_CRYPT_ERROR;
     } else {
-        printf(FMT_DONE "Decrypted: %s\n", data);
+        // For testing: print the decrypted data
+        // printf(FMT_DONE "Decrypted: %s\n", data);
     }
 
     // Cleanup

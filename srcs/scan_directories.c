@@ -29,7 +29,7 @@ int init_dcrypt_header(t_env *env)
 	memcpy(env->dcrypt_header.signature, DC_SIGNATURE, DC_MAGICNBR_SIZE);
 	// Get the encryption key that will be used to encrypt/decrypt the file
 	// During decryption, this key will be the IV key.
-	if (!get_iv_or_encryption_key(env)) {
+	if (!get_key(env)) {
 		if (env->modes & DC_VERBOSE)
 			perror(FMT_ERROR "Failed to get the IV key. Aborting...\n");
 		return DC_ERROR;
@@ -52,7 +52,7 @@ int init_dcrypt_header(t_env *env)
 
 		// Copy the IV key to the custom header
 		memcpy(env->dcrypt_header.iv_key, iv_key, DC_AES_KEY_SIZE);
-
+printf("%2X %2X",env->dcrypt_header.iv_key[0],env->dcrypt_header.iv_key[0]);
 		dc_free((void **)&iv_key);
 	}
 	return DC_SUCCESS;

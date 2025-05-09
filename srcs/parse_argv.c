@@ -160,4 +160,7 @@ void detect_silent_mode(t_env *env, int argc, char *argv[])
             );
         exit(EXIT_FAILURE);
     }
+
+    // Without the reverse mode we are in encryption mode
+    if (!(env->modes & DC_REVERSE)) env->modes |= DC_ENCRYPT;
 }

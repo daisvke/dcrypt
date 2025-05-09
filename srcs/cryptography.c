@@ -240,11 +240,11 @@ int aes_decrypt_data(
     const char *charset, size_t strength
     ) {
     unsigned char *key = malloc((strength + 1) * sizeof(char));
-    if (key == NULL) return NULL;
+    if (!key) return NULL;
 
-    int charset_length = strlen(charset);
+    int     charset_length = strlen(charset);
+    struct  timespec ts;
 
-    struct      timespec ts;
     clock_gettime(CLOCK_MONOTONIC, &ts); // Get the current time
 
     // Seed with nanosecond precision
@@ -260,7 +260,7 @@ int aes_decrypt_data(
     return key;
 }
 
-unsigned char *get_iv_or_encryption_key(t_env *env)
+unsigned char *get_key(t_env *env)
 {
 	// In decryption mode, we use the IV saved in the file header
 	if (env->modes & DC_REVERSE)

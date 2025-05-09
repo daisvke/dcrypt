@@ -247,3 +247,6 @@ Format-Hex .\sample.txt.dcrypt | Select-Object -First 3
 # Equivalent on Unix
 hexdump -C ./sample.txt.dcrypt | head -n 3
 ```
+
+## TODO
+- threads?

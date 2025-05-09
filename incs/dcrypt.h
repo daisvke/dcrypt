@@ -37,7 +37,7 @@ extern t_windows win_env;
 # else
 
 # include <unistd.h>
-# define DC_TARGET_PATHS        { "/home/mint/infection" } // No '/' at the end
+# define DC_TARGET_PATHS        { "/home/alien/infection" } // No '/' at the end
 # define DC_PATH_SEP            '/' // Paths separator 
 
 #endif
@@ -171,7 +171,7 @@ unsigned char   *generate_random_based_key(t_env *env, const char *_charset, \
 
 unsigned char    *generate_time_based_rand_key_nanosec(const char *_charset, \
     size_t strength);
-unsigned char    *get_iv_or_encryption_key(t_env *env);
+unsigned char    *get_key(t_env *env);
 
 /*---------------------------- File handling ------------------------*/
 
