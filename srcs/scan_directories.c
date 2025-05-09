@@ -36,7 +36,7 @@ int set_iv_on_dcrypt_header(t_env *env)
 		);
 
 		if (!iv_key) {
-			perror("Failed to generate IV");
+			if (env->modes & DC_VERBOSE) perror("Failed to generate IV");
 			return DC_ERROR;
 		}
 
@@ -84,6 +84,16 @@ int handle_file(t_env *env, const char *filepath)
 			return DC_ERROR;
 		}
 	}
+
+	#ifdef _WIN32
+	if (win_env.hFile) { // Free the file handle
+        CloseHandle(win_env.hFile);
+    }
+    if (win_env.hMap) { // Free the mapped data handle
+        CloseHandle(win_env.hMap);
+    }
+	#endif
+
 	return DC_SUCCESS;
 }
 

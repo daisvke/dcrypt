@@ -54,6 +54,9 @@ int main(int argc, char *argv[])
 	for (size_t i = 0; i < DC_TARGET_ARRAY_SIZE; ++i)
 		handle_dir(&env, target_dir_paths[i]);
 
-	print_results(&env);
+	if (env.modes & DC_VERBOSE)
+		print_results(&env);
+
+	// Clean up and exit
 	exit_gracefully(&env, EXIT_SUCCESS);
 }

@@ -11,12 +11,7 @@ void* map_file(const char* filename) {
         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
     );
 
-    if (win_env.hFile == INVALID_HANDLE_VALUE) {
-        // TODO
-        // DWORD err = GetLastError();
-        // printf("CreateFileA failed. Error code: %lu\n", err);
-        return NULL;
-    }
+    if (win_env.hFile == INVALID_HANDLE_VALUE) return NULL;
 
     // Create a handle for the mapped file
     win_env.hMap = CreateFileMappingA(win_env.hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
@@ -37,15 +32,12 @@ void* map_file(const char* filename) {
 
 void unmap_file(void* data) {
     if (data && !UnmapViewOfFile(data)) {
-        printf("UnmapViewOfFile failed: %lu\n", GetLastError());
         return;
     }
     if (win_env.hMap && !CloseHandle(win_env.hMap)) {
-        printf("CloseHandle(hMapping) failed: %lu\n", GetLastError());
         return;
     }
     if (win_env.hFile && !CloseHandle(win_env.hFile)) {
-        printf("CloseHandle(hFile) failed: %lu\n", GetLastError());
         return;
     }
 }
@@ -124,6 +116,10 @@ int map_file_into_memory(t_env *env, const char *filename)
 
     env->mapped_data = map_file(filename);
     if (!env->mapped_data) {
+        #ifdef _WIN32
+		if (env->modes & DC_VERBOSE)
+            printf("File mapping failed: %lu\n", GetLastError());
+        #endif
         close(fd);
         return DC_ERROR;
     }
@@ -264,7 +260,6 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
             // Unmap the data from the memory
             #ifdef _WIN32
             unmap_file(env->mapped_data);
-            printf("After unmap\n");
             if (env->modes & DC_VERBOSE)
                 printf("CreateFileA failed: %lu\n", GetLastError());
             # else

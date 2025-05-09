@@ -45,7 +45,7 @@ extern t_windows win_env;
 /*------------------------ Defines, enum, struct --------------------------*/
 
 // About the program
-# define DC_PROG_VERSION        "2.1.0"
+# define DC_PROG_VERSION        "3.0.0"
 # define DC_PROG_AUTHOR         "d."
 # define DC_PROG_NAME           "dcrypt"
 
