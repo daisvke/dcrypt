@@ -93,6 +93,7 @@ else
 endif
 	$(CC) -I$(INCS_DIR) -c $(CFLAGS) $< -o $@
 
+.PHONY: all
 all:
 ifeq ($(TARGET), win)
 	$(MAKE) win
