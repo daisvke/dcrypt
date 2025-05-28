@@ -4,7 +4,7 @@
 # include <windows.h>
 
 void* map_file(const char* filename) {
-    win_env.hFile = CreateFileA(
+    win_env.hFile = CreateFile(
         filename, GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ | FILE_SHARE_WRITE, // Allow other processes to read/write too
         NULL,
@@ -167,7 +167,7 @@ bool write_encrypted_data_to_file(t_env *env, const char *target_path)
 
     #ifdef _WIN32
     DWORD   bytes_written;
-    HANDLE  hFile = CreateFileA(
+    HANDLE  hFile = CreateFile(
         new_target_path,
         GENERIC_WRITE, 0, NULL,
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL
@@ -261,7 +261,7 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
             #ifdef _WIN32
             unmap_file(env->mapped_data);
             if (env->modes & DC_VERBOSE)
-                printf("CreateFileA failed: %lu\n", GetLastError());
+                printf("CreateFile failed: %lu\n", GetLastError());
             # else
             munmap(env->mapped_data, env->dcrypt_header.original_filesize);
             #endif
@@ -283,7 +283,7 @@ int write_processed_data_to_file(t_env *env, const char *target_path)
             #ifdef _WIN32
             unmap_file(env->mapped_data);
             if (env->modes & DC_VERBOSE)
-                printf("CreateFileA failed: %lu\n", GetLastError());
+                printf("CreateFile failed: %lu\n", GetLastError());
             # else
             munmap(env->mapped_data, env->dcrypt_header.original_filesize);
             #endif

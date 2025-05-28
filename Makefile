@@ -2,10 +2,12 @@
 #         D C R Y P T
 # ****************************
 
+# There are 2 path values to customize in the 'BUILD COMMANDS' section
+
 ifeq ($(TARGET), win)
-	NAME				= dcrypt.exe
+	NAME			= dcrypt.exe
 else
-	NAME				= dcrypt
+	NAME			= dcrypt
 endif
 
 # ****************************
@@ -37,11 +39,11 @@ else
 endif
 
 # Compiler selection based on TARGET
-ifeq ($(TARGET), win)  # Windows
+ifeq ($(TARGET), win)   # Windows ; CHANGE TO YOUR PATH
 	TEMP_FOLDER1	= D:\Documents\infection
     CC				= x86_64-w64-mingw32-gcc
-    CFLAGS			+= -Wall -Wextra -O2
-else
+    CFLAGS			+= -Wall -Wextra
+else					# CHANGE TO YOUR PATH
 	TEMP_FOLDER1	= /home/alien/infection
     CC				= clang
     CFLAGS			+= -Wall -Wextra

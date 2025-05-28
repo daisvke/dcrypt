@@ -47,13 +47,16 @@ const char *handled_extensions[] = {
 ---
 
 ## Commands
-
 ```sh
 # Compilation (fully optimized with -03 flag)
 make
+# Windows
+make TARGET=win
 
 # Or, for debug (-g3 flag)
 make DEBUG=yes
+# Windows
+make TARGET=win DEBUG=yes
 
 # Usage:
 ./dcrypt [-h|-v|-s|-k <KEY>|-r <KEY>] 
