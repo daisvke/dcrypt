@@ -61,8 +61,7 @@ SRCS_FILES			= $(notdir $(wildcard $(SRCS_DIR)*.c))
 
 # Include files
 INCS_DIR			= incs/
-INCS_FILES			= $(notdir $(wildcard $(INCS_DIR)*.h))
-INCS 				= $(addprefix $(INCS_DIR), $(INCS_FILES))
+INCS				= $(wildcard $(INCS_DIR)*.h)
 
 # Obj files
 OBJS_DIR			= objs/
