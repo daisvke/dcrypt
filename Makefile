@@ -35,7 +35,7 @@ TARGET				?= unix
 ifeq ($(DEBUG), yes)
 	CFLAGS			= -g3
 else
-	CFLAGS			= -03
+	CFLAGS			= -O3
 endif
 
 # Compiler selection based on TARGET

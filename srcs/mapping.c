@@ -14,7 +14,7 @@ void* map_file(const char* filename) {
     if (win_env.hFile == INVALID_HANDLE_VALUE) return NULL;
 
     // Create a handle for the mapped file
-    win_env.hMap = CreateFileMappingA(win_env.hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
+    win_env.hMap = CreateFileMapping(win_env.hFile, NULL, PAGE_READWRITE, 0, 0, NULL);
     if (!win_env.hMap) {
         CloseHandle(win_env.hFile);
         return NULL;
