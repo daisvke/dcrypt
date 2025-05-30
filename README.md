@@ -276,3 +276,7 @@ Format-Hex .\sample.txt.dcrypt | Select-Object -First 3
 # Equivalent on Unix
 hexdump -C ./sample.txt.dcrypt | head -n 3
 ```
+
+## Documentation
+* [Section Objects (Windows)](https://blahcat.github.io/2023-04-04-section-objects-kernel-user-communication-mode/)
+* [CreateFileMapping() (Windows)](https://learn.microsoft.com/en-us/windows/win32/memory/creating-a-file-mapping-object)
