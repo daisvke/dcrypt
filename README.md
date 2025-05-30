@@ -246,6 +246,27 @@ Windows automatically translates line endings (`\r\n` and `\n`) and messes thing
 ```
 - On Linux, no such translation exists. 
 
+---
+
+### Windows API in memory mapping 
+
+The API functions `CreateFileMapping` and `MapViewOfFile` are used during memory-mapped file operations.
+
+| API Function         | Purpose                                                                 |
+|----------------------|-------------------------------------------------------------------------|
+| `CreateFileMapping`  | Creates a file mapping object (sets up memory for mapping)              |
+| `MapViewOfFile`      | Maps a view of that object into the calling process’s address space     |
+
+#### Usage flow
+
+1. **Create/Open a file**  
+2. **CreateFileMapping**: Reserve memory (kernel object) for the file  
+3. **MapViewOfFile**: Access the file's contents in virtual memory  
+4. **Use the mapped data**
+5. **Clean up**: with `UnmapViewOfFile` and `CloseHandle`.
+
+---
+
 ## Useful commands
 ```powershell
 # Windows:
@@ -255,6 +276,3 @@ Format-Hex .\sample.txt.dcrypt | Select-Object -First 3
 # Equivalent on Unix
 hexdump -C ./sample.txt.dcrypt | head -n 3
 ```
-
-## TODO
-- threads?
