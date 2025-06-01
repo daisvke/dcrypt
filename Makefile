@@ -33,9 +33,9 @@ DONE				= $(GREEN)[DONE]$(RESET)
 TARGET				?= unix
 
 ifeq ($(DEBUG), yes)
-	CFLAGS			= -g3
+	CFLAGS			= -g3 -O0
 else
-	CFLAGS			= -O3
+	CFLAGS			= -g0 -O3
 endif
 
 # Compiler selection based on TARGET
@@ -104,7 +104,7 @@ endif
 .PHONY: unix
 unix: $(OBJS)
 	@echo "$(INFO) Building for Linux"
-	$(CC) $(CFLAGS) $(SSLFLAGS) $(OBJS) -o $(NAME)
+	$(CC) $(CFLAGS) $(OBJS) $(SSLFLAGS) -o $(NAME)
 
 .PHONY: win
 win: $(OBJS)
