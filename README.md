@@ -215,7 +215,6 @@ To set up your development environment on Windows, you will need to install the 
   ```
   C:\Program Files (x86)\GnuWin32\bin
   ```
-
 ---
 
 ### CryptoAPI
@@ -275,6 +274,15 @@ Format-Hex .\sample.txt.dcrypt | Select-Object -First 3
 
 # Equivalent on Unix
 hexdump -C ./sample.txt.dcrypt | head -n 3
+```
+---
+
+## Linux
+### Installation
+#### Valgrind & OpenSSL
+```
+sudo apt update
+sudo apt install valgrind libssl-dev
 ```
 
 ## Documentation
